@@ -1,2 +1,2 @@
 # SD3D
-A Simple Deferred 3D renderer
+A __S__ imple __D__ eferred __3D__ renderer
