@@ -18,6 +18,8 @@ include_directories(${OPENGL_INCLUDE_DIRS})
 include_directories("${GLAD_PATH}/include")
 
 add_executable(SD3D
+			   ${GLAD_PATH}/src/glad.c
 			   src/main.cpp
-			   ${GLAD_PATH}/src/glad.c)
+			   src/graphics/Shader.cpp
+			   src/graphics/Shader.h)
 target_link_libraries(SD3D glfw3.lib ${OPENGL_LIBRARIES})
