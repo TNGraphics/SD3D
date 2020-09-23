@@ -31,6 +31,15 @@ public:
 
 	[[nodiscard]] GLuint get_ID() const
 	{ return ID; }
+
+	[[maybe_unused]] void set(const char *name, bool val) const
+	{ glUniform1i(glGetUniformLocation(ID, name), val); }
+	[[maybe_unused]] void set(const char *name, int val) const
+	{ glUniform1i(glGetUniformLocation(ID, name), val); }
+	[[maybe_unused]] void set(const char *name, float val) const
+	{ glUniform1f(glGetUniformLocation(ID, name), val); }
+	[[maybe_unused]] void set(const char *name, double val) const
+	{ glUniform1d(glGetUniformLocation(ID, name), val); }
 };
 
 
