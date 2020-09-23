@@ -1,10 +1,14 @@
 //
 // Created by Tobias on 9/20/2020.
 //
+#define STB_IMAGE_IMPLEMENTATION
+
 #include <iostream>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
+
 #include "graphics/Shader.h"
 
 void framebuffer_size_callback(GLFWwindow*, int width, int height);

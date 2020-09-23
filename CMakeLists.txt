@@ -15,6 +15,8 @@ link_directories(${GLFW_PATH}/lib)
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
+include_directories(${STBI_PATH})
+
 include_directories("${GLAD_PATH}/include")
 
 add_executable(SD3D
