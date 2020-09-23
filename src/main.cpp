@@ -10,30 +10,6 @@
 void framebuffer_size_callback(GLFWwindow*, int width, int height);
 void processInput(GLFWwindow*);
 
-const char *vertexShaderSource = R"SHADER(#version 460 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
-
-out vec3 col;
-
-void main()
-{
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-	col = aColor;
-}
-)SHADER";
-
-const char *fragmentShaderSource = R"SHADER(#version 460 core
-out vec4 FragColor;
-
-in vec3 col;
-
-void main()
-{
-	FragColor = vec4(col, 1.0);
-}
-)SHADER";
-
 // TODO use NanoGUI for gui
 
 int main()
