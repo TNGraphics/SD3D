@@ -6,6 +6,11 @@
 #define SD3D_SHADER_H
 
 #include <glad/glad.h>
+#pragma warning(push, 0)
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#pragma warning(pop)
+
 #include <string>
 
 
@@ -45,6 +50,15 @@ public:
 
 	[[maybe_unused]] void set(const char *name, double val) const
 	{ glUniform1d(glGetUniformLocation(m_id, name), val); }
+
+	[[maybe_unused]] void set(const char *name, glm::mat2 val) const
+	{ glUniformMatrix2fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(val)); }
+
+	[[maybe_unused]] void set(const char *name, glm::mat3 val) const
+	{ glUniformMatrix3fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(val)); }
+
+	[[maybe_unused]] void set(const char *name, glm::mat4 val) const
+	{ glUniformMatrix4fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(val)); }
 };
 
 
