@@ -16,25 +16,25 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath)
 	auto fragmentSource{read_file_contents(fragmentPath)};
 
 	// TODO maybe there is a better way
-	const auto *vertexSourceCSTR{vertexSource.c_str()};
-	const auto *fragmentSourceCSTR{fragmentSource.c_str()};
+	const auto *vertexSourceCstr{vertexSource.c_str()};
+	const auto *fragmentSourceCstr{fragmentSource.c_str()};
 
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexSourceCSTR, nullptr);
+	glShaderSource(vertexShader, 1, &vertexSourceCstr, nullptr);
 	glCompileShader(vertexShader);
 	if(!check_shader_error(vertexShader)) std::cout << "VERTEX STAGE\n";
 
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentSourceCSTR, nullptr);
+	glShaderSource(fragmentShader, 1, &fragmentSourceCstr, nullptr);
 	glCompileShader(fragmentShader);
 	if(!check_shader_error(fragmentShader)) std::cout << "FRAGMENT STAGE\n";
 
-	ID = glCreateProgram();
-	glAttachShader(ID, vertexShader);
-	glAttachShader(ID, fragmentShader);
-	glLinkProgram(ID);
+	m_id = glCreateProgram();
+	glAttachShader(m_id, vertexShader);
+	glAttachShader(m_id, fragmentShader);
+	glLinkProgram(m_id);
 
-	check_program_error(ID);
+	check_program_error(m_id);
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
@@ -62,10 +62,10 @@ std::string Shader::read_file_contents(const char *path)
 	return ret.str();
 }
 
-int Shader::check_shader_error(GLuint shaderID)
+int Shader::check_shader_error(GLuint shaderId)
 {
 	int success;
-	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
 	if(!success)
 	{
 		glGetShaderInfoLog(shaderID, 512, nullptr, errorLogBuffer);
@@ -74,10 +74,10 @@ int Shader::check_shader_error(GLuint shaderID)
 	return success;
 }
 
-int Shader::check_program_error(GLuint programID)
+int Shader::check_program_error(GLuint programId)
 {
 	int success;
-	glGetShaderiv(programID, GL_COMPILE_STATUS, &success);
+	glGetShaderiv(programId, GL_COMPILE_STATUS, &success);
 	if(!success)
 	{
 		glGetProgramInfoLog(programID, 512, nullptr, errorLogBuffer);
