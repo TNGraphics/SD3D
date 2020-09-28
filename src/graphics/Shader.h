@@ -16,7 +16,6 @@ private:
 
 	static std::string read_file_contents(const char* path);
 
-	static char errorLogBuffer[];
 	static int check_shader_error(GLuint shaderId);
 	static int check_program_error(GLuint programId);
 

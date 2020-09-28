@@ -8,7 +8,6 @@
 
 #include "Shader.h"
 
-char Shader::errorLogBuffer[512];
 
 Shader::Shader(const char *vertexPath, const char *fragmentPath)
 {
@@ -42,7 +41,7 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath)
 
 [[maybe_unused]] void Shader::use() const
 {
-	glUseProgram(ID);
+	glUseProgram(m_id);
 }
 
 std::string Shader::read_file_contents(const char *path)
@@ -64,24 +63,26 @@ std::string Shader::read_file_contents(const char *path)
 
 int Shader::check_shader_error(GLuint shaderId)
 {
+	static char logBuffer[512];
 	int success;
 	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
 	if(!success)
 	{
-		glGetShaderInfoLog(shaderID, 512, nullptr, errorLogBuffer);
-		std::cout << "SHADER STAGE ERROR!\n" << errorLogBuffer << '\n';
+		glGetShaderInfoLog(shaderId, 512, nullptr, logBuffer);
+		std::cout << "SHADER STAGE ERROR!\n" << logBuffer << '\n';
 	}
 	return success;
 }
 
 int Shader::check_program_error(GLuint programId)
 {
+	static char logBuffer[512];
 	int success;
 	glGetShaderiv(programId, GL_COMPILE_STATUS, &success);
 	if(!success)
 	{
-		glGetProgramInfoLog(programID, 512, nullptr, errorLogBuffer);
-		std::cout << "SHADER PROGRAM ERROR!\n" << errorLogBuffer << '\n';
+		glGetProgramInfoLog(programId, 512, nullptr, logBuffer);
+		std::cout << "SHADER PROGRAM ERROR!\n" << logBuffer << '\n';
 	}
 	return success;
 }
