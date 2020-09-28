@@ -18,6 +18,8 @@ void process_input(GLFWwindow *window);
 
 // TODO use NanoGUI for gui
 
+float g_mixVal{};
+
 int main()
 {
 	stbi_set_flip_vertically_on_load(true);
@@ -53,10 +55,10 @@ int main()
 	// temp vertex data (2 cute lil triangles)
 	float vertices[] = {
 			// position		// color		  // tex coord
-			-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 2.0f,
-			0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 2.0f, 2.0f,
+			-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+			0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
 			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-			0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 0.0f
+			0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f
 	};
 
 	// EBO index data
@@ -67,7 +69,7 @@ int main()
 
 	Shader shader{"shaders/vert.glsl", "shaders/frag.glsl"};
 
-	Texture container{"img/container.jpg", Texture::Settings{.wrapS = GL_CLAMP_TO_EDGE, .wrapT = GL_CLAMP_TO_EDGE}};
+	Texture container{"img/container.jpg"};
 	Texture face{"img/face.png", Texture::Settings{.format = GL_RGBA}};
 
 	// Create and bind a VAO for vertex attributes
@@ -109,6 +111,7 @@ int main()
 		face.bind();
 
 		shader.use();
+		shader.set("mixVal", g_mixVal);
 		glBindVertexArray(VAO);
 //		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
@@ -130,4 +133,14 @@ void process_input(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+	if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	{
+		g_mixVal += 0.05f;
+		if(g_mixVal > 1.0f) g_mixVal = 1.0f;
+	}
+	if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	{
+		g_mixVal -= 0.05f;
+		if(g_mixVal < 0.0f) g_mixVal = 0.0f;
+	}
 }
