@@ -14,17 +14,20 @@ class Shader
 private:
 	GLuint m_id;
 
-	static std::string read_file_contents(const char* path);
+	static std::string read_file_contents(const char *path);
 
 	static int check_shader_error(GLuint shaderId);
+
 	static int check_program_error(GLuint programId);
 
 public:
 	// TODO maybe destructor with glDeleteShader ?+
-	Shader(const char* vertexPath, const char* fragmentPath);
-	Shader(const Shader& other)
+	Shader(const char *vertexPath, const char *fragmentPath);
+
+	Shader(const Shader &other)
 	{ m_id = other.m_id; }
-	Shader(Shader&&) = delete;
+
+	Shader(Shader &&) = delete;
 
 	[[maybe_unused]] void use() const;
 
@@ -33,10 +36,13 @@ public:
 
 	[[maybe_unused]] void set(const char *name, bool val) const
 	{ glUniform1i(glGetUniformLocation(m_id, name), val); }
+
 	[[maybe_unused]] void set(const char *name, int val) const
 	{ glUniform1i(glGetUniformLocation(m_id, name), val); }
+
 	[[maybe_unused]] void set(const char *name, float val) const
 	{ glUniform1f(glGetUniformLocation(m_id, name), val); }
+
 	[[maybe_unused]] void set(const char *name, double val) const
 	{ glUniform1d(glGetUniformLocation(m_id, name), val); }
 };

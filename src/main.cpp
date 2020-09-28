@@ -12,8 +12,9 @@
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
-void framebuffer_size_callback(GLFWwindow*, int width, int height);
-void processInput(GLFWwindow*);
+void framebuffer_size_callback(GLFWwindow *, int width, int height);
+
+void processInput(GLFWwindow *);
 
 // TODO use NanoGUI for gui
 
@@ -28,8 +29,8 @@ int main()
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create a window and check if it worked
-	GLFWwindow* window = glfwCreateWindow(600, 600, "First Window", nullptr, nullptr);
-	if(window == nullptr)
+	GLFWwindow *window = glfwCreateWindow(600, 600, "First Window", nullptr, nullptr);
+	if (window == nullptr)
 	{
 		std::cerr << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -38,7 +39,7 @@ int main()
 	glfwMakeContextCurrent(window);
 
 	// Try to load the OpenGL functions and fail if it didn't work
-	if(!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
 	{
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		glfwTerminate();
@@ -51,11 +52,11 @@ int main()
 
 	// temp vertex data (2 cute lil triangles)
 	float vertices[] = {
-			 // position		// color		  // tex coord
-			-0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-			 0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+			// position		// color		  // tex coord
+			-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 2.0f,
+			0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 2.0f, 2.0f,
 			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-			 0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f
+			0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 2.0f, 0.0f
 	};
 
 	// EBO index data
@@ -66,7 +67,7 @@ int main()
 
 	Shader shader{"shaders/vert.glsl", "shaders/frag.glsl"};
 
-	Texture container{"img/container.jpg"};
+	Texture container{"img/container.jpg", Texture::Settings{.wrapS = GL_CLAMP_TO_EDGE, .wrapT = GL_CLAMP_TO_EDGE}};
 	Texture face{"img/face.png", Texture::Settings{.format = GL_RGBA}};
 
 	// Create and bind a VAO for vertex attributes
@@ -86,16 +87,16 @@ int main()
 	// Bind vertex attributes
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 	shader.use();
 	shader.set("texture1", 0);
 	shader.set("texture2", 1);
 
-	while(!glfwWindowShouldClose(window))
+	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
 
@@ -127,6 +128,6 @@ void framebuffer_size_callback(GLFWwindow *, int width, int height)
 
 void processInput(GLFWwindow *window)
 {
-	if(glfwGetKey(window, GLFW_KEY_ESCAPE)  == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 }

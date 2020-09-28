@@ -21,12 +21,12 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath)
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSourceCstr, nullptr);
 	glCompileShader(vertexShader);
-	if(!check_shader_error(vertexShader)) std::cout << "VERTEX STAGE\n";
+	if (!check_shader_error(vertexShader)) std::cout << "VERTEX STAGE\n";
 
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(fragmentShader, 1, &fragmentSourceCstr, nullptr);
 	glCompileShader(fragmentShader);
-	if(!check_shader_error(fragmentShader)) std::cout << "FRAGMENT STAGE\n";
+	if (!check_shader_error(fragmentShader)) std::cout << "FRAGMENT STAGE\n";
 
 	m_id = glCreateProgram();
 	glAttachShader(m_id, vertexShader);
@@ -54,7 +54,7 @@ std::string Shader::read_file_contents(const char *path)
 		ret << shaderFile.rdbuf();
 		shaderFile.close();
 	}
-	catch(const std::ifstream::failure& e)
+	catch (const std::ifstream::failure &e)
 	{
 		std::cout << "ERROR when opening file\n" << e.what() << '\n';
 	}
@@ -66,7 +66,7 @@ int Shader::check_shader_error(GLuint shaderId)
 	static char logBuffer[512];
 	int success;
 	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
-	if(!success)
+	if (!success)
 	{
 		glGetShaderInfoLog(shaderId, 512, nullptr, logBuffer);
 		std::cout << "SHADER STAGE ERROR!\n" << logBuffer << '\n';
@@ -79,7 +79,7 @@ int Shader::check_program_error(GLuint programId)
 	static char logBuffer[512];
 	int success;
 	glGetShaderiv(programId, GL_COMPILE_STATUS, &success);
-	if(!success)
+	if (!success)
 	{
 		glGetProgramInfoLog(programId, 512, nullptr, logBuffer);
 		std::cout << "SHADER PROGRAM ERROR!\n" << logBuffer << '\n';
