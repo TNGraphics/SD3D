@@ -7,6 +7,15 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+
+#pragma warning(push, 0)
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#pragma warning(pop)
+
 #include <stb_image.h>
 
 #include "graphics/Shader.h"
@@ -54,11 +63,60 @@ int main()
 
 	// temp vertex data (2 cute lil triangles)
 	float vertices[] = {
-			// position		// color		  // tex coord
-			-0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-			0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-			0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f
+			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+			0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
+			-0.5f, 0.5f, 0.5f, 0.0f, 1.0f,
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
+			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+			-0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+			-0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+			0.5f, -0.5f, -0.5f, 1.0f, 1.0f,
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+			0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+			-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+			-0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f,
+			0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+			0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
+			-0.5f, 0.5f, 0.5f, 0.0f, 0.0f,
+			-0.5f, 0.5f, -0.5f, 0.0f, 1.0f
+	};
+
+	glm::vec3 cubePositions[] = {
+			glm::vec3(0.0f, 0.0f, 0.0f),
+			glm::vec3(2.0f, 5.0f, -15.0f),
+			glm::vec3(-1.5f, -2.2f, -2.5f),
+			glm::vec3(-3.8f, -2.0f, -12.3f),
+			glm::vec3(2.4f, -0.4f, -3.5f),
+			glm::vec3(-1.7f, 3.0f, -7.5f),
+			glm::vec3(1.3f, -2.0f, -2.5f),
+			glm::vec3(1.5f, 2.0f, -2.5f),
+			glm::vec3(1.5f, 0.2f, -1.5f),
+			glm::vec3(-1.3f, 1.0f, -1.5f)
 	};
 
 	// EBO index data
@@ -71,6 +129,8 @@ int main()
 
 	Texture container{"img/container.jpg"};
 	Texture face{"img/face.png", Texture::Settings{.format = GL_RGBA}};
+
+	glEnable(GL_DEPTH_TEST);
 
 	// Create and bind a VAO for vertex attributes
 	GLuint vao, vbo;
@@ -87,34 +147,59 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// Bind vertex attributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *) (6 * sizeof(float)));
-	glEnableVertexAttribArray(2);
 
 	shader.use();
 	shader.set("texture1", 0);
 	shader.set("texture2", 1);
 
+	double deltaTime;
+	double lastFrame{glfwGetTime()};
+
 	while (!glfwWindowShouldClose(window))
 	{
+		auto currentFrame{glfwGetTime()};
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
 		process_input(window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
 		container.bind();
 		glActiveTexture(GL_TEXTURE1);
 		face.bind();
 
+		auto projection{glm::perspective(glm::radians(45.0f), 600.0f / 600.0f, 0.1f, 100.0f)};
+
+		// camera
+		const auto radius = 10.0;
+		auto camX = sin(glfwGetTime()) * radius;
+		auto camZ = cos(glfwGetTime()) * radius;
+
+		glm::mat4 view{glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0))};
+
 		shader.use();
 		shader.set("mixVal", g_mixVal);
+		shader.set("view", view);
+		shader.set("projection", projection);
 		glBindVertexArray(vao);
-//		glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+
+		for (const auto &cubePosition : cubePositions)
+		{
+			glm::mat4 model{1.0};
+			model = glm::translate(model, cubePosition);
+			model = glm::rotate(model, (float) glfwGetTime(), glm::vec3{1.0, 0.3, 0.5});
+			shader.set("model", model);
+
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+//		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -133,14 +218,14 @@ void process_input(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
 	{
-		g_mixVal += 0.05f;
-		if(g_mixVal > 1.0f) g_mixVal = 1.0f;
+		g_mixVal += 0.1f;
+		if (g_mixVal > 1.0f) g_mixVal = 1.0f;
 	}
-	if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
 	{
-		g_mixVal -= 0.05f;
-		if(g_mixVal < 0.0f) g_mixVal = 0.0f;
+		g_mixVal -= 0.1f;
+		if (g_mixVal < 0.0f) g_mixVal = 0.0f;
 	}
 }
