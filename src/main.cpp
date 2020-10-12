@@ -14,9 +14,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <lyra/lyra.hpp>
+
 #pragma warning(pop)
 
 #include <stb_image.h>
+
+#include <spdlog/spdlog.h>
 
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
@@ -28,9 +32,25 @@ void process_input(GLFWwindow *window);
 // TODO use NanoGUI for gui
 
 float g_mixVal{};
+int main(int argc, const char *argv[]) {
+	std::string resPath{};
+	bool showHelp = false;
+	auto cli = lyra::opt(resPath, "res-path")["-r"]["--res"]["--path"]["-p"](
+			"The path of the res folder relative to the executable")
+			   | lyra::help(showHelp);
 
-int main()
-{
+	auto parsed = cli.parse({argc, argv});
+
+	if(!parsed) {
+		spdlog::error("CLI argument parsing error: {}", parsed.errorMessage());
+		return 1;
+	}
+
+	if(showHelp) {
+		std::cout << cli << '\n';
+		return 0;
+	}
+
 	stbi_set_flip_vertically_on_load(true);
 
 	// initialize OpenGL in the correct version (4.6)
@@ -125,10 +145,10 @@ int main()
 			0, 2, 3
 	};
 
-	Shader shader{"shaders/vert.glsl", "shaders/frag.glsl"};
+	Shader shader{resPath + "shaders/vert.glsl", resPath + "shaders/frag.glsl"};
 
-	Texture container{"img/container.jpg"};
-	Texture face{"img/face.png", Texture::Settings{.format = GL_RGBA}};
+	Texture container{resPath + "img/container.jpg"};
+	Texture face{resPath + "img/face.png", Texture::Settings{.format = GL_RGBA}};
 
 	glEnable(GL_DEPTH_TEST);
 

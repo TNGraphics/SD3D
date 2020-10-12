@@ -9,8 +9,7 @@
 #include "Shader.h"
 
 
-Shader::Shader(const char *vertexPath, const char *fragmentPath)
-{
+Shader::Shader(const char *vertexPath, const char *fragmentPath) {
 	auto vertexSource{read_file_contents(vertexPath)};
 	auto fragmentSource{read_file_contents(fragmentPath)};
 
@@ -39,48 +38,43 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath)
 	glDeleteShader(fragmentShader);
 }
 
-[[maybe_unused]] void Shader::use() const
-{
+Shader::Shader(std::string_view vertexPath, std::string_view fragmentPath) :
+		Shader(vertexPath.data(), fragmentPath.data()) {}
+
+[[maybe_unused]] void Shader::use() const {
 	glUseProgram(m_id);
 }
 
-std::string Shader::read_file_contents(const char *path)
-{
+std::string Shader::read_file_contents(const char *path) {
 	std::stringstream ret{};
 	std::ifstream shaderFile;
-	try
-	{
+	try {
 		shaderFile.open(path);
 		ret << shaderFile.rdbuf();
 		shaderFile.close();
 	}
-	catch (const std::ifstream::failure &e)
-	{
+	catch (const std::ifstream::failure &e) {
 		std::cout << "ERROR when opening file\n" << e.what() << '\n';
 	}
 	return ret.str();
 }
 
-int Shader::check_shader_error(GLuint shaderId)
-{
+int Shader::check_shader_error(GLuint shaderId) {
 	static char logBuffer[512];
 	int success;
 	glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
+	if (!success) {
 		glGetShaderInfoLog(shaderId, 512, nullptr, logBuffer);
 		std::cout << "SHADER STAGE ERROR!\n" << logBuffer << '\n';
 	}
 	return success;
 }
 
-int Shader::check_program_error(GLuint programId)
-{
+int Shader::check_program_error(GLuint programId) {
 	static char logBuffer[512];
 	int success;
 	glGetShaderiv(programId, GL_COMPILE_STATUS, &success);
-	if (!success)
-	{
+	if (!success) {
 		glGetProgramInfoLog(programId, 512, nullptr, logBuffer);
 		std::cout << "SHADER PROGRAM ERROR!\n" << logBuffer << '\n';
 	}

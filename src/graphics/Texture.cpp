@@ -24,11 +24,3 @@ Texture::Texture(const char *path, const Settings &settings)
 		std::cout << "Failed to load image data\n";
 	stbi_image_free(data);
 }
-
-Texture::Texture(const Texture &other)
-{
-	m_id = other.m_id;
-	m_width = other.m_width;
-	m_height = other.m_height;
-	m_nrChannels = other.m_nrChannels;
-}

@@ -7,11 +7,9 @@
 
 #include <glad/glad.h>
 
-class Texture
-{
+class Texture {
 public:
-	struct Settings
-	{
+	struct Settings {
 		GLenum format{GL_RGB};
 		GLint wrapS{GL_REPEAT};
 		GLint wrapT{GL_REPEAT};
@@ -31,28 +29,26 @@ public:
 	// TODO different modes for texture -> texture wrapping, etc.
 	[[maybe_unused]] Texture(const char *path, const Settings &settings);
 
-	[[maybe_unused]] explicit Texture(const char *path) : Texture(path, Settings{})
-	{}
+	[[maybe_unused]] Texture(std::string_view path, const Settings &settings) : Texture{path.data(), settings} {}
+
+	[[maybe_unused]] explicit Texture(const char *path) : Texture(path, Settings{}) {}
+	[[maybe_unused]] explicit Texture(std::string_view path) : Texture(path, Settings{}) {}
 
 	// TODO is this a good idea?
-	Texture(const Texture &other);
+	Texture(const Texture &other) = default;
 
-	Texture(Texture &&) = delete;
+	// TODO ???
+	Texture(Texture &&) = default;
 
-	[[maybe_unused]] void bind() const
-	{ glBindTexture(GL_TEXTURE_2D, m_id); }
+	[[maybe_unused]] void bind() const { glBindTexture(GL_TEXTURE_2D, m_id); }
 
-	[[nodiscard]] GLuint get_id() const
-	{ return m_id; }
+	[[nodiscard]] GLuint get_id() const { return m_id; }
 
-	[[nodiscard]] int get_width() const
-	{ return m_width; }
+	[[nodiscard]] int get_width() const { return m_width; }
 
-	[[nodiscard]] int get_height() const
-	{ return m_height; }
+	[[nodiscard]] int get_height() const { return m_height; }
 
-	[[nodiscard]] int get_nr_channels() const
-	{ return m_nrChannels; }
+	[[nodiscard]] int get_nr_channels() const { return m_nrChannels; }
 
 };
 

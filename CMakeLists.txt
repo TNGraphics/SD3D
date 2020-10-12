@@ -9,8 +9,12 @@ else ()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
 endif ()
 
+find_path(BFGROUP_LYRA_INCLUDE_DIRS "lyra/arg.hpp")
+
 include_directories(${GLFW_PATH}/include)
 link_directories(${GLFW_PATH}/lib)
+
+find_package(spdlog CONFIG REQUIRED)
 
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
@@ -28,3 +32,5 @@ add_executable(SD3D
 			   src/graphics/Texture.cpp
 			   src/graphics/Texture.h)
 target_link_libraries(SD3D glfw3.lib ${OPENGL_LIBRARIES})
+target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS})
+target_link_libraries(SD3D PRIVATE glfw3.lib ${OPENGL_LIBRARIES} spdlog::spdlog spdlog::spdlog_header_only)

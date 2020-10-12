@@ -6,16 +6,18 @@
 #define SD3D_SHADER_H
 
 #include <glad/glad.h>
+
 #pragma warning(push, 0)
+
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 #pragma warning(pop)
 
 #include <string>
 
 
-class Shader
-{
+class Shader {
 private:
 	GLuint m_id;
 
@@ -28,37 +30,37 @@ private:
 public:
 	// TODO maybe destructor with glDeleteShader ?+
 	Shader(const char *vertexPath, const char *fragmentPath);
+	Shader(std::string_view vertexPath, std::string_view fragmentPath);
 
-	Shader(const Shader &other)
-	{ m_id = other.m_id; }
+	Shader(const Shader &other) { m_id = other.m_id; }
 
 	Shader(Shader &&) = delete;
 
 	[[maybe_unused]] void use() const;
 
-	[[nodiscard]] GLuint get_id() const
-	{ return m_id; }
+	[[nodiscard]] GLuint get_id() const { return m_id; }
 
-	[[maybe_unused]] void set(const char *name, bool val) const
-	{ glUniform1i(glGetUniformLocation(m_id, name), val); }
+	[[maybe_unused]] void set(const char *name, bool val) const { glUniform1i(glGetUniformLocation(m_id, name), val); }
 
-	[[maybe_unused]] void set(const char *name, int val) const
-	{ glUniform1i(glGetUniformLocation(m_id, name), val); }
+	[[maybe_unused]] void set(const char *name, int val) const { glUniform1i(glGetUniformLocation(m_id, name), val); }
 
-	[[maybe_unused]] void set(const char *name, float val) const
-	{ glUniform1f(glGetUniformLocation(m_id, name), val); }
+	[[maybe_unused]] void set(const char *name, float val) const { glUniform1f(glGetUniformLocation(m_id, name), val); }
 
-	[[maybe_unused]] void set(const char *name, double val) const
-	{ glUniform1d(glGetUniformLocation(m_id, name), val); }
+	[[maybe_unused]] void set(const char *name, double val) const {
+		glUniform1d(glGetUniformLocation(m_id, name), val);
+	}
 
-	[[maybe_unused]] void set(const char *name, glm::mat2 val) const
-	{ glUniformMatrix2fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(val)); }
+	[[maybe_unused]] void set(const char *name, glm::mat2 val) const {
+		glUniformMatrix2fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(val));
+	}
 
-	[[maybe_unused]] void set(const char *name, glm::mat3 val) const
-	{ glUniformMatrix3fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(val)); }
+	[[maybe_unused]] void set(const char *name, glm::mat3 val) const {
+		glUniformMatrix3fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(val));
+	}
 
-	[[maybe_unused]] void set(const char *name, glm::mat4 val) const
-	{ glUniformMatrix4fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(val)); }
+	[[maybe_unused]] void set(const char *name, glm::mat4 val) const {
+		glUniformMatrix4fv(glGetUniformLocation(m_id, name), 1, GL_FALSE, glm::value_ptr(val));
+	}
 };
 
 
