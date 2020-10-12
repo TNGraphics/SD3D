@@ -11,17 +11,13 @@ struct GLFWwindow;
 class InputHandler {
 // This class only handles mouse input and the escape key, no other keys are needed
 private:
-	bool m_mousePressed{};
-
 	GLFWwindow *m_window;
 
 public:
 	explicit InputHandler(GLFWwindow *);
 	virtual ~InputHandler() = default;
 
-	void update();
-
-	[[nodiscard]] bool is_mouse_pressed() const { return m_mousePressed; }
+	virtual void update() {}
 
 // static callbacks
 private:
