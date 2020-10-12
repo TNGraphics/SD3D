@@ -26,10 +26,12 @@
 #include "graphics/Texture.h"
 
 #include "controls/OrbitCameraController.h"
+#include "controls/GeneralInputHandler.h"
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 
 void process_input(GLFWwindow *window);
+
 void process_mouse_input(GLFWwindow *, int button, int action, int mods);
 
 // TODO use NanoGUI for gui
@@ -150,6 +152,8 @@ int main(int argc, const char *argv[]) {
 			0, 1, 3,
 			0, 2, 3
 	};
+
+	GeneralInputHandler inputHandler{window};
 
 	Shader shader{resPath + "shaders/vert.glsl", resPath + "shaders/frag.glsl"};
 

@@ -19,6 +19,7 @@ find_package(spdlog CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
+# TODO get from vcpkg
 include_directories(${STBI_PATH})
 
 include_directories("${GLAD_PATH}/include")
@@ -31,6 +32,7 @@ add_executable(SD3D
 			   src/graphics/Texture.cpp
 			   src/controls/OrbitCameraController.cpp
 			   src/controls/InputHandler.cpp
+			   src/controls/GeneralInputHandler.cpp
 			   )
 
 target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS})
