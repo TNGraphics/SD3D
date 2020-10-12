@@ -30,10 +30,6 @@
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 
-void process_input(GLFWwindow *window);
-
-void process_mouse_input(GLFWwindow *, int button, int action, int mods);
-
 // TODO use NanoGUI for gui
 
 float g_mixVal{};
@@ -89,7 +85,6 @@ int main(int argc, const char *argv[]) {
 	// Set the viewport and the callback for resizing
 	glViewport(0, 0, 600, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetMouseButtonCallback(window, process_mouse_input);
 
 	// temp vertex data (2 cute lil triangles)
 	// no actually a cute lil cube
@@ -118,10 +113,7 @@ int main(int argc, const char *argv[]) {
 								 glm::vec3(1.5f, 0.2f, -1.5f), glm::vec3(-1.3f, 1.0f, -1.5f)};
 
 	// EBO index data
-	GLuint indices[] = {
-			0, 1, 3,
-			0, 2, 3
-	};
+	GLuint indices[] = {0, 1, 3, 0, 2, 3};
 
 	GeneralInputHandler inputHandler{window};
 
@@ -163,33 +155,11 @@ int main(int argc, const char *argv[]) {
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
 
-	double deltaX{};
-	double deltaY{};
-
-	double mX{};
-	double mY{};
-	double lastX{};
-	double lastY{};
-
 	bool first{true};
 	while (!glfwWindowShouldClose(window)) {
-		glfwGetCursorPos(window, &mX, &mY);
-		if (first) {
-			lastX = mX;
-			lastY = mY;
-			first = false;
-		}
-		deltaX = mX - lastX;
-		deltaY = mY - lastY;
-
-		lastX = mX;
-		lastY = mY;
-
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
-
-		process_input(window);
 
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -217,6 +187,7 @@ int main(int argc, const char *argv[]) {
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+		inputHandler.update();
 
 		if (g_mousePressed) {
 			cam.move(deltaX, deltaY);
@@ -230,26 +201,4 @@ int main(int argc, const char *argv[]) {
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height) {
 	glViewport(0, 0, width, height);
-}
-
-void process_input(GLFWwindow *window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		glfwSetWindowShouldClose(window, true);
-	}
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-		g_mixVal += 0.1f;
-		if (g_mixVal > 1.0f) g_mixVal = 1.0f;
-	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-		g_mixVal -= 0.1f;
-		if (g_mixVal < 0.0f) g_mixVal = 0.0f;
-	}
-}
-
-void process_mouse_input(GLFWwindow *, int button, int action, [[maybe_unused]] int mods) {
-	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-		g_mousePressed = true;
-	} else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-		g_mousePressed = false;
-	}
 }

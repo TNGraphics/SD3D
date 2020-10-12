@@ -8,6 +8,7 @@
 #include "InputHandler.h"
 
 InputHandler::InputHandler(GLFWwindow *win) : m_window{win} {
+	// TODO maybe create a containing object so that more than one thing
 	glfwSetWindowUserPointer(win, this);
 
 	glfwSetKeyCallback(win, s_process_keyboard_input);

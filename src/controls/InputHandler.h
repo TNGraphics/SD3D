@@ -30,7 +30,6 @@ private:
 	static void s_process_mouse_scroll_input(GLFWwindow *, double, double);
 
 // callbacks
-public:
 	virtual void process_keyboard_input(GLFWwindow *, int, int, int, int) = 0;
 
 	virtual void process_mouse_press_input(GLFWwindow *, int, int, int) = 0;
