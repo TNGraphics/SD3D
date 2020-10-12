@@ -48,12 +48,12 @@ int main(int argc, const char *argv[]) {
 
 	auto parsed = cli.parse({argc, argv});
 
-	if(!parsed) {
+	if (!parsed) {
 		spdlog::error("CLI argument parsing error: {}", parsed.errorMessage());
 		return 1;
 	}
 
-	if(showHelp) {
+	if (showHelp) {
 		std::cout << cli << '\n';
 		return 0;
 	}
@@ -76,6 +76,7 @@ int main(int argc, const char *argv[]) {
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
+//	glfwSetWindowAspectRatio(window, 16, 9);
 
 	// Try to load the OpenGL functions and fail if it didn't work
 	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -90,6 +91,7 @@ int main(int argc, const char *argv[]) {
 	glfwSetMouseButtonCallback(window, process_mouse_input);
 
 	// temp vertex data (2 cute lil triangles)
+	// no actually a cute lil cube
 	float vertices[] = {
 			-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
 			0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
@@ -248,7 +250,7 @@ int main(int argc, const char *argv[]) {
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
-		if(g_mousePressed) {
+		if (g_mousePressed) {
 			cam.move(deltaX, deltaY);
 		}
 		cam.update(static_cast<float>(deltaTime));
@@ -277,9 +279,9 @@ void process_input(GLFWwindow *window) {
 }
 
 void process_mouse_input(GLFWwindow *, int button, int action, [[maybe_unused]] int mods) {
-	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
 		g_mousePressed = true;
-	} else if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+	} else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
 		g_mousePressed = false;
 	}
 }
