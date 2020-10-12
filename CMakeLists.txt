@@ -28,9 +28,10 @@ add_executable(SD3D
 			   ${GLAD_PATH}/src/glad.c
 			   src/main.cpp
 			   src/graphics/Shader.cpp
-			   src/graphics/Shader.h
 			   src/graphics/Texture.cpp
-			   src/graphics/Texture.h)
-target_link_libraries(SD3D glfw3.lib ${OPENGL_LIBRARIES})
+			   src/controls/OrbitCameraController.cpp
+			   src/controls/InputHandler.cpp
+			   )
+
 target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS})
 target_link_libraries(SD3D PRIVATE glfw3.lib ${OPENGL_LIBRARIES} spdlog::spdlog spdlog::spdlog_header_only)

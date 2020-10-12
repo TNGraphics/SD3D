@@ -25,13 +25,18 @@
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
+#include "controls/OrbitCameraController.h"
+
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 
 void process_input(GLFWwindow *window);
+void process_mouse_input(GLFWwindow *, int button, int action, int mods);
 
 // TODO use NanoGUI for gui
 
 float g_mixVal{};
+bool g_mousePressed{};
+
 int main(int argc, const char *argv[]) {
 	std::string resPath{};
 	bool showHelp = false;
@@ -59,10 +64,11 @@ int main(int argc, const char *argv[]) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
 	// Create a window and check if it worked
 	GLFWwindow *window = glfwCreateWindow(600, 600, "First Window", nullptr, nullptr);
-	if (window == nullptr)
-	{
+	if (window == nullptr) {
 		std::cerr << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
@@ -70,8 +76,7 @@ int main(int argc, const char *argv[]) {
 	glfwMakeContextCurrent(window);
 
 	// Try to load the OpenGL functions and fail if it didn't work
-	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
-	{
+	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		glfwTerminate();
 		return -1;
@@ -80,6 +85,7 @@ int main(int argc, const char *argv[]) {
 	// Set the viewport and the callback for resizing
 	glViewport(0, 0, 600, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetMouseButtonCallback(window, process_mouse_input);
 
 	// temp vertex data (2 cute lil triangles)
 	float vertices[] = {
@@ -152,6 +158,8 @@ int main(int argc, const char *argv[]) {
 
 	glEnable(GL_DEPTH_TEST);
 
+	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
 	// Create and bind a VAO for vertex attributes
 	GLuint vao, vbo;
 	glGenVertexArrays(1, &vao);
@@ -172,6 +180,8 @@ int main(int argc, const char *argv[]) {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	OrbitCameraController cam{{70.0, 600.0 / 600.0, glm::vec3{0, 0, -10}}, glm::vec3{}, 10.0, 10};
+
 	shader.use();
 	shader.set("texture1", 0);
 	shader.set("texture2", 1);
@@ -179,8 +189,28 @@ int main(int argc, const char *argv[]) {
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
 
-	while (!glfwWindowShouldClose(window))
-	{
+	double deltaX{};
+	double deltaY{};
+
+	double mX{};
+	double mY{};
+	double lastX{};
+	double lastY{};
+
+	bool first{true};
+	while (!glfwWindowShouldClose(window)) {
+		glfwGetCursorPos(window, &mX, &mY);
+		if (first) {
+			lastX = mX;
+			lastY = mY;
+			first = false;
+		}
+		deltaX = mX - lastX;
+		deltaY = mY - lastY;
+
+		lastX = mX;
+		lastY = mY;
+
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -195,26 +225,16 @@ int main(int argc, const char *argv[]) {
 		glActiveTexture(GL_TEXTURE1);
 		face.bind();
 
-		auto projection{glm::perspective(glm::radians(45.0f), 600.0f / 600.0f, 0.1f, 100.0f)};
-
-		// camera
-		const auto radius = 10.0;
-		auto camX = sin(glfwGetTime()) * radius;
-		auto camZ = cos(glfwGetTime()) * radius;
-
-		glm::mat4 view{glm::lookAt(glm::vec3(camX, 0.0, camZ), glm::vec3(0.0, 0.0, 0.0), glm::vec3(0.0, 1.0, 0.0))};
-
 		shader.use();
 		shader.set("mixVal", g_mixVal);
-		shader.set("view", view);
-		shader.set("projection", projection);
+		shader.set("view", cam.cam().view());
+		shader.set("projection", cam.cam().projection());
 		glBindVertexArray(vao);
 
-		for (const auto &cubePosition : cubePositions)
-		{
+		for (const auto &cubePosition : cubePositions) {
 			glm::mat4 model{1.0};
 			model = glm::translate(model, cubePosition);
-			model = glm::rotate(model, (float) glfwGetTime(), glm::vec3{1.0, 0.3, 0.5});
+//			model = glm::rotate(model, (float) glfwGetTime(), glm::vec3{1.0, 0.3, 0.5});
 			shader.set("model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -223,29 +243,39 @@ int main(int argc, const char *argv[]) {
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		if(g_mousePressed) {
+			cam.move(deltaX, deltaY);
+		}
+		cam.update(static_cast<float>(deltaTime));
 	}
 
 	glfwTerminate();
 	return 0;
 }
 
-void framebuffer_size_callback(GLFWwindow *, int width, int height)
-{
+void framebuffer_size_callback(GLFWwindow *, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void process_input(GLFWwindow *window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+void process_input(GLFWwindow *window) {
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-	{
+	}
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
 		g_mixVal += 0.1f;
 		if (g_mixVal > 1.0f) g_mixVal = 1.0f;
 	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-	{
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
 		g_mixVal -= 0.1f;
 		if (g_mixVal < 0.0f) g_mixVal = 0.0f;
+	}
+}
+
+void process_mouse_input(GLFWwindow *, int button, int action, [[maybe_unused]] int mods) {
+	if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+		g_mousePressed = true;
+	} else if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+		g_mousePressed = false;
 	}
 }
