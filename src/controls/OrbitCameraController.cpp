@@ -23,16 +23,17 @@ void OrbitCameraController::update(float deltaTime) {
 	// choose value closest to 90/-90 using std::nextafter (from cmath)
 	// otherwise the camera flips at 90 degrees
 	m_pitch = std::clamp(m_pitch, std::nextafter(-90.0f, 0.0f), std::nextafter(90.0f, 0.0f));
-
 	m_moveVec *= m_deceleration;
 }
 
-void OrbitCameraController::move(double dX, double dY) {
+void OrbitCameraController::rotate(double dX, double dY) {
 	// TODO maybe swap
 	m_moveVec = glm::vec2{dX, -dY};
-//	spdlog::info("Before: {},{}", m_moveVec.x, m_moveVec.y);
-//	if(glm::length(m_moveVec)) {
-//		m_moveVec = glm::normalize(m_moveVec);
-//	}
-//	spdlog::info("After: {},{}", m_moveVec.x, m_moveVec.y);
+
+}
+
+void OrbitCameraController::zoom(double dScroll) {
+	// TODO make variable to flip zoom
+	m_dist -= static_cast<float>(dScroll) * m_scrollSpeed;
+	m_dist = std::clamp(m_dist, m_minDist, m_maxDist);
 }

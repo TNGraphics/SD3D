@@ -146,7 +146,8 @@ int main(int argc, const char *argv[]) {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	OrbitCameraController cam{{70.0, 600.0 / 600.0, glm::vec3{0, 0, -10}}, glm::vec3{}, 10.0, 10};
+	OrbitCameraController cam{{70.0,        600.0 / 600.0, glm::vec3{0, 0, -10}},
+							  {glm::vec3{}, 10.0f,         2.5f, 20.0f, 10.0f, 10}};
 
 	shader.use();
 	shader.set("texture1", 0);
@@ -189,9 +190,10 @@ int main(int argc, const char *argv[]) {
 		glfwPollEvents();
 		inputHandler.update();
 
-		if (g_mousePressed) {
-			cam.move(deltaX, deltaY);
+		if (inputHandler.is_mouse_pressed()) {
+			cam.rotate(inputHandler.d_x(), inputHandler.d_y());
 		}
+		cam.zoom(inputHandler.d_scroll() * deltaTime);
 		cam.update(static_cast<float>(deltaTime));
 	}
 
