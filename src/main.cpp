@@ -29,6 +29,8 @@
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
+#include "graphics/data/DataLayout.h"
+
 #include "controls/OrbitCameraController.h"
 #include "controls/GeneralInputHandler.h"
 
@@ -143,11 +145,10 @@ int main(int argc, const char *argv[]) {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	// Bind vertex attributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	// bind vertex attributes
+	DataLayout d{{3, DataLayout::GlType::FLOAT, GL_FALSE}};
+	d.push({2, DataLayout::GlType::FLOAT, GL_FALSE});
+	d.bind();
 
 	OrbitCameraController cam{{70.0,        600.0 / 600.0, glm::vec3{0, 0, -10}},
 							  {glm::vec3{}, 10.0f,         2.5f, 20.0f, 10.0f, 10}};
