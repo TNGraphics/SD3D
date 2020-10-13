@@ -18,6 +18,7 @@ public:
 		DOUBLE, FLOAT, INT, SHORT, BYTE, UINT, USHORT, UBYTE
 	};
 
+	// This struct doesnt allow for a different order of elements
 	struct VertexAttrib {
 		GLint size{};
 		GlType type{};

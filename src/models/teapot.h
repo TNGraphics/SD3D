@@ -1,6 +1,7 @@
 //
 // Created by Tobias on 10/13/2020.
 //
+// COORDINATES TAKEN FROM https://github.com/kretash/UtahTeapot
 
 #ifndef SD3D_TEAPOT_H
 #define SD3D_TEAPOT_H
