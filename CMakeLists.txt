@@ -11,8 +11,8 @@ endif ()
 
 find_path(BFGROUP_LYRA_INCLUDE_DIRS "lyra/arg.hpp")
 
-include_directories(${GLFW_PATH}/include)
-link_directories(${GLFW_PATH}/lib)
+
+find_package(glfw3 CONFIG REQUIRED)
 
 find_package(spdlog CONFIG REQUIRED)
 
@@ -36,4 +36,8 @@ add_executable(SD3D
 			   )
 
 target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS})
-target_link_libraries(SD3D PRIVATE glfw3.lib ${OPENGL_LIBRARIES} spdlog::spdlog spdlog::spdlog_header_only)
+target_link_libraries(SD3D PRIVATE
+					  glfw
+					  ${OPENGL_LIBRARIES}
+					  spdlog::spdlog spdlog::spdlog_header_only
+					  )
