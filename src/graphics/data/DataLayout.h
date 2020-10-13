@@ -29,14 +29,14 @@ private:
 
 	std::vector<VertexAttrib> m_attribs;
 
-	[[nodiscard]] GLsizei accumulate_size();
+	[[nodiscard]] GLsizei accumulate_size() const;
 
 public:
 	DataLayout();
 	DataLayout(std::initializer_list<VertexAttrib> attribs);
 
 	// bind all the contained VertexAttribs
-	void bind();
+	void bind() const;
 
 	DataLayout &operator<<(const VertexAttrib &other);
 	void push(const VertexAttrib &other);

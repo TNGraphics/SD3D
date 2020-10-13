@@ -11,7 +11,7 @@ DataLayout::DataLayout() : m_attribs{} {}
 
 DataLayout::DataLayout(std::initializer_list<VertexAttrib> attribs) : m_attribs{attribs} {}
 
-void DataLayout::bind() {
+void DataLayout::bind() const {
 	auto stride = accumulate_size();
 	size_t pos{};
 	for (unsigned int index{}; const auto &val : m_attribs) {
@@ -31,7 +31,7 @@ void DataLayout::push(const DataLayout::VertexAttrib &other) {
 	m_attribs.push_back(other);
 }
 
-GLsizei DataLayout::accumulate_size() {
+GLsizei DataLayout::accumulate_size() const {
 	GLsizei size{};
 	for (const auto &val : m_attribs) {
 		size += val.size * type_size(val.type);
