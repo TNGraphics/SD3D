@@ -12,6 +12,7 @@
 
 
 class DataLayout {
+	// TODO somehow make this constexpr enabled
 public:
 	enum class GlType {
 		DOUBLE, FLOAT, INT, SHORT, BYTE, UINT, USHORT, UBYTE

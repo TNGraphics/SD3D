@@ -31,7 +31,7 @@
 
 #include "graphics/data/Model.h"
 
-#include "misc/teapot.h"
+#include "models/primitives.h"
 
 #include "controls/OrbitCameraController.h"
 #include "controls/GeneralInputHandler.h"
@@ -95,26 +95,6 @@ int main(int argc, const char *argv[]) {
 
 	gui::setup_imgui(window);
 
-	// temp vertex data (2 cute lil triangles)
-	// no actually a cute lil cube
-	float vertices[] = {-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-						0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-
-						-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-						0.5f, 0.5f, 0.5f, 1.0f, 1.0f, -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-
-						-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-						-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-						0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-						0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-						-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-						0.5f, -0.5f, 0.5f, 1.0f, 0.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-
-						-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-						0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, -0.5f, 0.5f, -0.5f, 0.0f, 1.0f};
-
 	glm::vec3 cubePositions[] = {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(2.0f, 5.0f, -15.0f),
 								 glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
 								 glm::vec3(2.4f, -0.4f, -3.5f), glm::vec3(-1.7f, 3.0f, -7.5f),
@@ -132,11 +112,8 @@ int main(int argc, const char *argv[]) {
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	DataLayout cubeLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE},
-						  {2, DataLayout::GlType::FLOAT, GL_FALSE}};
-	auto cube{Model::from_data(cubeLayout, vertices, sizeof(vertices))};
-	DataLayout teapotLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE}};
-	auto teapot{Model::from_data(teapotLayout, models::g_teapot, sizeof(models::g_teapot))};
+	auto cube{Model::from_data(models::g_cubeLayout, models::g_cube, sizeof(models::g_cube))};
+	auto teapot{Model::from_data(models::g_teapotLayout, models::g_teapot, sizeof(models::g_teapot))};
 
 	OrbitCameraController cam{{70.0,        600.0 / 600.0, glm::vec3{0, 0, -10}},
 							  {glm::vec3{}, 10.0f,         2.5f, 20.0f, 10.0f, 10}};
