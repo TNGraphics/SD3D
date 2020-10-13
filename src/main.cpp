@@ -22,6 +22,10 @@
 
 #include <spdlog/spdlog.h>
 
+#include <imgui.h>
+
+#include "graphics/ImGuiHandler.h"
+
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
@@ -30,10 +34,7 @@
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 
-// TODO use NanoGUI for gui
-
 float g_mixVal{};
-bool g_mousePressed{};
 
 int main(int argc, const char *argv[]) {
 	spdlog::set_level(spdlog::level::debug);
@@ -85,6 +86,8 @@ int main(int argc, const char *argv[]) {
 	// Set the viewport and the callback for resizing
 	glViewport(0, 0, 600, 600);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+	gui::setup_imgui(window);
 
 	// temp vertex data (2 cute lil triangles)
 	// no actually a cute lil cube
@@ -156,7 +159,6 @@ int main(int argc, const char *argv[]) {
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
 
-	bool first{true};
 	while (!glfwWindowShouldClose(window)) {
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
@@ -186,10 +188,18 @@ int main(int argc, const char *argv[]) {
 		}
 //		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
+		gui::new_frame();
+
+		// Do IMGUI stuff here
+
+		gui::render();
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		inputHandler.update();
 
+		// TODO WantCaptureMouse doesn't work without UI
+//		if (gui::get_io().WantCaptureMouse && inputHandler.is_mouse_pressed()) {
 		if (inputHandler.is_mouse_pressed()) {
 			cam.rotate(inputHandler.d_x(), inputHandler.d_y());
 		}
@@ -197,6 +207,9 @@ int main(int argc, const char *argv[]) {
 		cam.update(static_cast<float>(deltaTime));
 	}
 
+	gui::shutdown();
+
+	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
 }

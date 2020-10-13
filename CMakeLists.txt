@@ -11,6 +11,7 @@ endif ()
 
 find_path(BFGROUP_LYRA_INCLUDE_DIRS "lyra/arg.hpp")
 
+find_package(imgui CONFIG REQUIRED)
 
 find_package(glfw3 CONFIG REQUIRED)
 
@@ -33,6 +34,7 @@ add_executable(SD3D
 			   src/controls/OrbitCameraController.cpp
 			   src/controls/InputHandler.cpp
 			   src/controls/GeneralInputHandler.cpp
+			   src/graphics/ImGuiHandler.cpp
 			   )
 
 target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS})
@@ -40,4 +42,5 @@ target_link_libraries(SD3D PRIVATE
 					  glfw
 					  ${OPENGL_LIBRARIES}
 					  spdlog::spdlog spdlog::spdlog_header_only
+					  imgui::imgui
 					  )
