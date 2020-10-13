@@ -29,12 +29,16 @@
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
-#include "graphics/data/DataLayout.h"
+#include "graphics/data/Model.h"
+
+#include "misc/teapot.h"
 
 #include "controls/OrbitCameraController.h"
 #include "controls/GeneralInputHandler.h"
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
+
+void fps_gui();
 
 float g_mixVal{};
 
@@ -117,9 +121,6 @@ int main(int argc, const char *argv[]) {
 								 glm::vec3(1.3f, -2.0f, -2.5f), glm::vec3(1.5f, 2.0f, -2.5f),
 								 glm::vec3(1.5f, 0.2f, -1.5f), glm::vec3(-1.3f, 1.0f, -1.5f)};
 
-	// EBO index data
-	GLuint indices[] = {0, 1, 3, 0, 2, 3};
-
 	GeneralInputHandler inputHandler{window};
 
 	Shader shader{resPath + "shaders/vert.glsl", resPath + "shaders/frag.glsl"};
@@ -131,24 +132,11 @@ int main(int argc, const char *argv[]) {
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	// Create and bind a VAO for vertex attributes
-	GLuint vao, vbo;
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-	glBindVertexArray(vao);
-
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	GLuint ebo;
-	glGenBuffers(1, &ebo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	// bind vertex attributes
-	DataLayout d{{3, DataLayout::GlType::FLOAT, GL_FALSE}};
-	d.push({2, DataLayout::GlType::FLOAT, GL_FALSE});
-	d.bind();
+	DataLayout cubeLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE},
+						  {2, DataLayout::GlType::FLOAT, GL_FALSE}};
+	auto cube{Model::from_data(cubeLayout, vertices, sizeof(vertices))};
+	DataLayout teapotLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE}};
+	auto teapot{Model::from_data(teapotLayout, models::g_teapot, sizeof(models::g_teapot))};
 
 	OrbitCameraController cam{{70.0,        600.0 / 600.0, glm::vec3{0, 0, -10}},
 							  {glm::vec3{}, 10.0f,         2.5f, 20.0f, 10.0f, 10}};
@@ -177,21 +165,26 @@ int main(int argc, const char *argv[]) {
 		shader.set("mixVal", g_mixVal);
 		shader.set("view", cam.cam().view());
 		shader.set("projection", cam.cam().projection());
-		glBindVertexArray(vao);
 
-		for (const auto &cubePosition : cubePositions) {
+		for (unsigned int i = 0; const auto &cubePosition : cubePositions) {
 			glm::mat4 model{1.0};
 			model = glm::translate(model, cubePosition);
 //			model = glm::rotate(model, (float) glfwGetTime(), glm::vec3{1.0, 0.3, 0.5});
 			shader.set("model", model);
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+			if (i % 2 == 0) {
+				cube.draw();
+			} else {
+				teapot.draw();
+			}
+			++i;
 		}
 //		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		gui::new_frame();
 
 		// Do IMGUI stuff here
+		fps_gui();
 
 		gui::render();
 
@@ -200,8 +193,8 @@ int main(int argc, const char *argv[]) {
 		inputHandler.update();
 
 		// TODO WantCaptureMouse doesn't work without UI
-//		if (gui::get_io().WantCaptureMouse && inputHandler.is_mouse_pressed()) {
-		if (inputHandler.is_mouse_pressed()) {
+		if (!gui::get_io().WantCaptureMouse && inputHandler.is_mouse_pressed()) {
+//		if (inputHandler.is_mouse_pressed()) {
 			cam.rotate(inputHandler.d_x(), inputHandler.d_y());
 		}
 		cam.zoom(inputHandler.d_scroll() * deltaTime);
@@ -217,4 +210,10 @@ int main(int argc, const char *argv[]) {
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height) {
 	glViewport(0, 0, width, height);
+}
+
+void fps_gui() {
+	ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoResize);
+	ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
+	ImGui::End();
 }
