@@ -17,6 +17,8 @@ find_package(glfw3 CONFIG REQUIRED)
 
 find_package(spdlog CONFIG REQUIRED)
 
+find_package(Assimp CONFIG REQUIRED)
+
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
@@ -37,6 +39,7 @@ add_executable(SD3D
 			   src/graphics/ImGuiHandler.cpp
 			   src/graphics/data/GlMesh.cpp
 			   src/graphics/data/DataLayout.cpp
+			   src/graphics/data/Model.cpp
 			   )
 
 target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS})
@@ -45,4 +48,5 @@ target_link_libraries(SD3D PRIVATE
 					  ${OPENGL_LIBRARIES}
 					  spdlog::spdlog spdlog::spdlog_header_only
 					  imgui::imgui
+					  assimp::assimp
 					  )
