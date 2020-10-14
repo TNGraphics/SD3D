@@ -22,26 +22,45 @@
 
 #include <spdlog/spdlog.h>
 
+#include <imgui.h>
+
+#include "graphics/ImGuiHandler.h"
+
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
+
+#include "graphics/data/GlMesh.h"
+#include "graphics/data/Model.h"
+
+#include "models/primitives.h"
 
 #include "controls/OrbitCameraController.h"
 #include "controls/GeneralInputHandler.h"
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 
-// TODO use NanoGUI for gui
+void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
+
+void fps_gui();
 
 float g_mixVal{};
-bool g_mousePressed{};
 
 int main(int argc, const char *argv[]) {
 	spdlog::set_level(spdlog::level::debug);
 
 	std::string resPath{};
 	bool showHelp = false;
+	int width{600};
+	int height{600};
+	bool noVsync{};
+	std::string file{};
 	auto cli = lyra::opt(resPath, "res-path")["-r"]["--res"]["--path"]["-p"](
-			"The path of the res folder relative to the executable") | lyra::help(showHelp);
+			"The path of the res folder relative to the executable")
+			   | lyra::opt(width, "width")["-w"]["--width"]("The window width")
+			   | lyra::opt(height, "height")["-h"]["--height"]("The window height")
+			   | lyra::opt(noVsync)["--disable-vsync"]("Force VSYNC to be disabled")
+			   | lyra::opt(file, "file")["-f"]["--file"]("File to open")
+			   | lyra::help(showHelp);
 
 	auto parsed = cli.parse({argc, argv});
 
@@ -55,6 +74,14 @@ int main(int argc, const char *argv[]) {
 		return 0;
 	}
 
+	const double aspect{static_cast<double>(width) / static_cast<double>(height)};
+
+	if (noVsync) {
+		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
+	} else {
+		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
+	}
+
 	stbi_set_flip_vertically_on_load(true);
 
 	// initialize OpenGL in the correct version (4.6)
@@ -66,7 +93,7 @@ int main(int argc, const char *argv[]) {
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	// Create a window and check if it worked
-	GLFWwindow *window = glfwCreateWindow(600, 600, "First Window", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(width, height, "First Window", nullptr, nullptr);
 	if (window == nullptr) {
 		std::cerr << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -83,28 +110,16 @@ int main(int argc, const char *argv[]) {
 	}
 
 	// Set the viewport and the callback for resizing
-	glViewport(0, 0, 600, 600);
+	glViewport(0, 0, width, height);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-	// temp vertex data (2 cute lil triangles)
-	// no actually a cute lil cube
-	float vertices[] = {-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f,
-						0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+	if (noVsync) {
+		glfwSwapInterval(0);
+	} else {
+		glfwSwapInterval(1);
+	}
 
-						-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 1.0f,
-						0.5f, 0.5f, 0.5f, 1.0f, 1.0f, -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
-
-						-0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -0.5f, 0.5f, -0.5f, 1.0f, 1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-						-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-						0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-						0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-
-						-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-						0.5f, -0.5f, 0.5f, 1.0f, 0.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
-
-						-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f,
-						0.5f, 0.5f, 0.5f, 1.0f, 0.0f, -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, -0.5f, 0.5f, -0.5f, 0.0f, 1.0f};
+	gui::setup_imgui(window);
 
 	glm::vec3 cubePositions[] = {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(2.0f, 5.0f, -15.0f),
 								 glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
@@ -112,51 +127,31 @@ int main(int argc, const char *argv[]) {
 								 glm::vec3(1.3f, -2.0f, -2.5f), glm::vec3(1.5f, 2.0f, -2.5f),
 								 glm::vec3(1.5f, 0.2f, -1.5f), glm::vec3(-1.3f, 1.0f, -1.5f)};
 
-	// EBO index data
-	GLuint indices[] = {0, 1, 3, 0, 2, 3};
-
 	GeneralInputHandler inputHandler{window};
 
-	Shader shader{resPath + "shaders/vert.glsl", resPath + "shaders/frag.glsl"};
+	glEnable(GL_DEBUG_OUTPUT);
+	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+	glDebugMessageCallback(MessageCallback, nullptr);
+
+	Shader shader{resPath + "shaders/builtin/generic.vert", resPath + "shaders/builtin/generic.frag"};
 
 	Texture container{resPath + "img/container.jpg"};
-	Texture face{resPath + "img/face.png", Texture::Settings{.format = GL_RGBA}};
 
 	glEnable(GL_DEPTH_TEST);
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	// Create and bind a VAO for vertex attributes
-	GLuint vao, vbo;
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-	glBindVertexArray(vao);
+	auto monkey{Model::from_path(resPath + (file.empty() ? "/models/cube.fbx" : file))};
 
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-	GLuint ebo;
-	glGenBuffers(1, &ebo);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-	// Bind vertex attributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), nullptr);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void *) (3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-
-	OrbitCameraController cam{{70.0,        600.0 / 600.0, glm::vec3{0, 0, -10}},
-							  {glm::vec3{}, 10.0f,         2.5f, 20.0f, 10.0f, 10}};
+	OrbitCameraController cam{{70.0,        aspect, glm::vec3{0, 0, -10}},
+							  {glm::vec3{}, 10.0f,  2.5f, 20.0f, 1.f, 0.25f, 3.f}};
 
 	shader.use();
 	shader.set("texture1", 0);
-	shader.set("texture2", 1);
 
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
 
-	bool first{true};
 	while (!glfwWindowShouldClose(window)) {
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
@@ -167,40 +162,64 @@ int main(int argc, const char *argv[]) {
 
 		glActiveTexture(GL_TEXTURE0);
 		container.bind();
-		glActiveTexture(GL_TEXTURE1);
-		face.bind();
 
 		shader.use();
 		shader.set("mixVal", g_mixVal);
 		shader.set("view", cam.cam().view());
 		shader.set("projection", cam.cam().projection());
-		glBindVertexArray(vao);
 
-		for (const auto &cubePosition : cubePositions) {
-			glm::mat4 model{1.0};
-			model = glm::translate(model, cubePosition);
-//			model = glm::rotate(model, (float) glfwGetTime(), glm::vec3{1.0, 0.3, 0.5});
-			shader.set("model", model);
+		glm::mat4 model{1.0};
+		shader.set("model", model);
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-//		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		monkey.draw();
+
+		gui::new_frame();
+
+		// Do IMGUI stuff here
+		fps_gui();
+
+		gui::render();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 		inputHandler.update();
 
-		if (inputHandler.is_mouse_pressed()) {
+		// TODO WantCaptureMouse doesn't work without UI
+		if (!gui::get_io().WantCaptureMouse && inputHandler.is_mouse_pressed()) {
+//		if (inputHandler.is_mouse_pressed()) {
 			cam.rotate(inputHandler.d_x(), inputHandler.d_y());
 		}
-		cam.zoom(inputHandler.d_scroll() * deltaTime);
+		cam.zoom(inputHandler.d_scroll());
 		cam.update(static_cast<float>(deltaTime));
 	}
 
+	gui::shutdown();
+
+	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
 }
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height) {
 	glViewport(0, 0, width, height);
+}
+
+void fps_gui() {
+	ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoResize);
+	ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
+	ImGui::End();
+}
+
+void GLAPIENTRY MessageCallback([[maybe_unused]] GLenum source,
+								GLenum type,
+								[[maybe_unused]] GLuint id,
+								GLenum severity,
+								[[maybe_unused]] GLsizei length,
+								const GLchar *message,
+								[[maybe_unused]] const void *userParam) {
+	if(severity == GL_DEBUG_SEVERITY_HIGH) {
+		spdlog::error("GL ERROR: type {} message: {}", type, message);
+	} else if(severity == GL_DEBUG_SEVERITY_MEDIUM) {
+		spdlog::warn("GL WARNING: type {} message: {}", type, message);
+	}
 }

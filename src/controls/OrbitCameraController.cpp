@@ -18,18 +18,18 @@ void OrbitCameraController::update(float deltaTime) {
 	m_cam.set_pos(m_target - (dir * m_dist));
 	m_cam.set_forward(dir);
 
-	m_yaw += static_cast<float>(m_moveVec.x) * deltaTime * m_speed;
-	m_pitch += static_cast<float>(m_moveVec.y) * deltaTime * m_speed;
-	// choose value closest to 90/-90 using std::nextafter (from cmath)
+	// delta time isn't needed because mouse input is not coming every frame
+	m_yaw += static_cast<float>(m_moveVec.x) * m_speed;
+	m_pitch += static_cast<float>(m_moveVec.y) * m_speed;
+
 	// otherwise the camera flips at 90 degrees
 	m_pitch = std::clamp(m_pitch, std::nextafter(-90.0f, 0.0f), std::nextafter(90.0f, 0.0f));
-	m_moveVec *= m_deceleration;
+	m_moveVec *= std::max(0.0f, 1.0f - (m_deceleration * deltaTime));
 }
 
 void OrbitCameraController::rotate(double dX, double dY) {
 	// TODO maybe swap
 	m_moveVec = glm::vec2{dX, -dY};
-
 }
 
 void OrbitCameraController::zoom(double dScroll) {

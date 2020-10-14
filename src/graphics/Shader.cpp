@@ -6,6 +6,8 @@
 #include <sstream>
 #include <fstream>
 
+#include <spdlog/spdlog.h>
+
 #include "Shader.h"
 
 
@@ -73,7 +75,7 @@ int Shader::check_shader_error(GLuint shaderId) {
 int Shader::check_program_error(GLuint programId) {
 	static char logBuffer[512];
 	int success;
-	glGetShaderiv(programId, GL_COMPILE_STATUS, &success);
+	glGetProgramiv(programId, GL_LINK_STATUS, &success);
 	if (!success) {
 		glGetProgramInfoLog(programId, 512, nullptr, logBuffer);
 		std::cout << "SHADER PROGRAM ERROR!\n" << logBuffer << '\n';

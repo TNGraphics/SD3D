@@ -32,6 +32,7 @@ public:
 	[[maybe_unused]] Texture(std::string_view path, const Settings &settings) : Texture{path.data(), settings} {}
 
 	[[maybe_unused]] explicit Texture(const char *path) : Texture(path, Settings{}) {}
+
 	[[maybe_unused]] explicit Texture(std::string_view path) : Texture(path, Settings{}) {}
 
 	// TODO is this a good idea?
@@ -40,7 +41,11 @@ public:
 	// TODO ???
 	Texture(Texture &&) = default;
 
-	[[maybe_unused]] void bind() const { glBindTexture(GL_TEXTURE_2D, m_id); }
+	[[maybe_unused]] void bind() const { bind(m_id); }
+
+	static void unbind() { bind(0); }
+
+	static void bind(GLuint textureId) { glBindTexture(GL_TEXTURE_2D, textureId); }
 
 	[[nodiscard]] GLuint get_id() const { return m_id; }
 
