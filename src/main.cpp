@@ -47,8 +47,15 @@ int main(int argc, const char *argv[]) {
 
 	std::string resPath{};
 	bool showHelp = false;
+	int width{600};
+	int height{600};
+	bool noVsync{};
 	auto cli = lyra::opt(resPath, "res-path")["-r"]["--res"]["--path"]["-p"](
-			"The path of the res folder relative to the executable") | lyra::help(showHelp);
+			"The path of the res folder relative to the executable")
+			   | lyra::opt(width, "width")["-w"]["--width"]("The window width")
+			   | lyra::opt(height, "height")["-h"]["--height"]("The window height")
+			   | lyra::opt(noVsync)["--disable-vsync"]("Force VSYNC to be disabled")
+			   | lyra::help(showHelp);
 
 	auto parsed = cli.parse({argc, argv});
 
@@ -62,6 +69,14 @@ int main(int argc, const char *argv[]) {
 		return 0;
 	}
 
+	const double aspect{static_cast<double>(width) / static_cast<double>(height)};
+
+	if(noVsync) {
+		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
+	} else {
+		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
+	}
+
 	stbi_set_flip_vertically_on_load(true);
 
 	// initialize OpenGL in the correct version (4.6)
@@ -73,7 +88,7 @@ int main(int argc, const char *argv[]) {
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	// Create a window and check if it worked
-	GLFWwindow *window = glfwCreateWindow(600, 600, "First Window", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(width, height, "First Window", nullptr, nullptr);
 	if (window == nullptr) {
 		std::cerr << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -90,8 +105,14 @@ int main(int argc, const char *argv[]) {
 	}
 
 	// Set the viewport and the callback for resizing
-	glViewport(0, 0, 600, 600);
+	glViewport(0, 0, width, height);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+	if(noVsync) {
+		glfwSwapInterval(0);
+	} else {
+		glfwSwapInterval(1);
+	}
 
 	gui::setup_imgui(window);
 
@@ -115,8 +136,8 @@ int main(int argc, const char *argv[]) {
 	auto cube{Mesh::from_data(models::g_cubeLayout, models::g_cube, sizeof(models::g_cube))};
 	auto teapot{Mesh::from_data(models::g_teapotLayout, models::g_teapot, sizeof(models::g_teapot))};
 
-	OrbitCameraController cam{{70.0,        600.0 / 600.0, glm::vec3{0, 0, -10}},
-							  {glm::vec3{}, 10.0f,         2.5f, 20.0f, 10.0f, 10}};
+	OrbitCameraController cam{{70.0,        aspect, glm::vec3{0, 0, -10}},
+							  {glm::vec3{}, 10.0f,          2.5f, 20.0f, 10.0f, 0.25f, 3.f}};
 
 	shader.use();
 	shader.set("texture1", 0);
@@ -144,12 +165,12 @@ int main(int argc, const char *argv[]) {
 		shader.set("projection", cam.cam().projection());
 
 		for (unsigned int i = 0; const auto &cubePosition : cubePositions) {
+
 			glm::mat4 model{1.0};
 			model = glm::translate(model, cubePosition);
-//			model = glm::rotate(model, (float) glfwGetTime(), glm::vec3{1.0, 0.3, 0.5});
 			shader.set("model", model);
 
-			if (i % 2 == 0) {
+			if (i % 2 != 0) {
 				cube.draw();
 			} else {
 				teapot.draw();
