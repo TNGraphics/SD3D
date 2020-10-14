@@ -29,11 +29,11 @@ public:
 		float speed{};
 		float deceleration{};
 
-		OrbitCamSettings(const glm::vec3 &target, float dist, float speed, float deceleration = 0.95f) :
+		OrbitCamSettings(const glm::vec3 &target, float dist, float speed, float deceleration = 0.05f) :
 				OrbitCamSettings{target, dist, dist, dist, 0.0f, speed, deceleration} {}
 
 		OrbitCamSettings(const glm::vec3 &target, float dist, float minDist, float maxDist, float scrollSpeed, float speed,
-						 float deceleration = 0.95f) :
+						 float deceleration = 0.05f) :
 				target{target},
 				dist{dist},
 				minDist{minDist},
@@ -61,7 +61,7 @@ private:
 	glm::vec2 m_moveVec{};
 
 	// TODO get from constructor
-	const float m_deceleration{0.95f};
+	const float m_deceleration{0.05f};
 	const float m_speed{};
 
 	Camera m_cam;
