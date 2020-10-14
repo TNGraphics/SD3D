@@ -4,11 +4,9 @@
 
 #include <glad/glad.h>
 
-#include <utility>
+#include "GlMesh.h"
 
-#include "Mesh.h"
-
-Mesh Mesh::from_data(const DataLayout &dataLayout, const float *data, GLuint amount) {
+GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data, GLuint amount) {
 	GLuint vao, vbo;
 	// Generate a Vertex Array Object (for now without data)
 	glGenVertexArrays(1, &vao);
@@ -31,12 +29,12 @@ Mesh Mesh::from_data(const DataLayout &dataLayout, const float *data, GLuint amo
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	// TODO unbind dataLayout as well somehow
 
-	return Mesh(vao, amount);
+	return GlMesh(vao, amount);
 }
 
-Mesh::Mesh(GLuint vao, GLuint vertexCount) : m_vao{vao}, m_vertexCount{vertexCount} {}
+GlMesh::GlMesh(GLuint vao, GLuint vertexCount) : m_vao{vao}, m_vertexCount{vertexCount} {}
 
-void Mesh::draw() const {
+void GlMesh::draw() const {
 	glBindVertexArray(m_vao);
 	glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
 	glBindVertexArray(0);

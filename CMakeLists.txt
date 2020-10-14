@@ -35,7 +35,7 @@ add_executable(SD3D
 			   src/controls/InputHandler.cpp
 			   src/controls/GeneralInputHandler.cpp
 			   src/graphics/ImGuiHandler.cpp
-			   src/graphics/data/Mesh.cpp
+			   src/graphics/data/GlMesh.cpp
 			   src/graphics/data/DataLayout.cpp
 			   )
 

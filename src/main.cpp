@@ -29,7 +29,7 @@
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
-#include "graphics/data/Mesh.h"
+#include "graphics/data/GlMesh.h"
 
 #include "models/primitives.h"
 
@@ -133,8 +133,8 @@ int main(int argc, const char *argv[]) {
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	auto cube{Mesh::from_data(models::g_cubeLayout, models::g_cube, sizeof(models::g_cube))};
-	auto teapot{Mesh::from_data(models::g_teapotLayout, models::g_teapot, sizeof(models::g_teapot))};
+	auto cube{GlMesh::from_data(models::g_cubeLayout, models::g_cube, sizeof(models::g_cube))};
+	auto teapot{GlMesh::from_data(models::g_teapotLayout, models::g_teapot, sizeof(models::g_teapot))};
 
 	OrbitCameraController cam{{70.0,        aspect, glm::vec3{0, 0, -10}},
 							  {glm::vec3{}, 10.0f,          2.5f, 20.0f, 10.0f, 0.25f, 3.f}};
