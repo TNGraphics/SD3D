@@ -46,6 +46,7 @@ void fps_gui();
 float g_mixVal{};
 
 int main(int argc, const char *argv[]) {
+	using namespace sd3d;
 	spdlog::set_level(spdlog::level::debug);
 
 	std::string resPath{};

@@ -7,7 +7,7 @@
 
 #include "../graphics/data/DataLayout.h"
 
-namespace models {
+namespace sd3d::models {
 
 // The data layout of the cube with uv coordinates g_cube
 static const DataLayout g_cubeLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE},

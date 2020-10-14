@@ -10,7 +10,7 @@
 #include <imgui_impl_opengl3.h>
 #include <imgui.h>
 
-namespace gui {
+namespace sd3d::gui {
 
 void setup_imgui(GLFWwindow *window) {
 	IMGUI_CHECKVERSION();

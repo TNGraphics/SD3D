@@ -6,7 +6,7 @@
 #ifndef SD3D_TEAPOT_H
 #define SD3D_TEAPOT_H
 
-namespace models {
+namespace sd3d::models {
 
 // The data layout for the Utah Teapot model g_teapot
 static const DataLayout g_teapotLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE}};
