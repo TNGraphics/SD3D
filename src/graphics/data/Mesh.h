@@ -2,13 +2,13 @@
 // Created by Tobias on 10/13/2020.
 //
 
-#ifndef SD3D_MODEL_H
-#define SD3D_MODEL_H
+#ifndef SD3D_MESH_H
+#define SD3D_MESH_H
 
 #include <GLFW/glfw3.h>
 #include "DataLayout.h"
 
-class Model {
+class Mesh {
 	// TODO data structure for data layout
 private:
 	// Vertex Array Object
@@ -26,15 +26,15 @@ private:
 //	//   specifying the indices into the VBO that are used
 //	GLuint m_ebo;
 
-	explicit Model(GLuint vao, GLuint vertexCount);
+	explicit Mesh(GLuint vao, GLuint vertexCount);
 
 public:
 	void draw() const;
 
 	// for now only float
-	static Model from_data(const DataLayout &dataLayout, const float *data, GLuint amount);
+	static Mesh from_data(const DataLayout &dataLayout, const float *data, GLuint amount);
 
 };
 
 
-#endif //SD3D_MODEL_H
+#endif //SD3D_MESH_H

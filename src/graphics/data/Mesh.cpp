@@ -6,9 +6,9 @@
 
 #include <utility>
 
-#include "Model.h"
+#include "Mesh.h"
 
-Model Model::from_data(const DataLayout &dataLayout, const float *data, GLuint amount) {
+Mesh Mesh::from_data(const DataLayout &dataLayout, const float *data, GLuint amount) {
 	GLuint vao, vbo;
 	// Generate a Vertex Array Object (for now without data)
 	glGenVertexArrays(1, &vao);
@@ -31,12 +31,12 @@ Model Model::from_data(const DataLayout &dataLayout, const float *data, GLuint a
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	// TODO unbind dataLayout as well somehow
 
-	return Model(vao, amount);
+	return Mesh(vao, amount);
 }
 
-Model::Model(GLuint vao, GLuint vertexCount) : m_vao{vao}, m_vertexCount{vertexCount} {}
+Mesh::Mesh(GLuint vao, GLuint vertexCount) : m_vao{vao}, m_vertexCount{vertexCount} {}
 
-void Model::draw() const {
+void Mesh::draw() const {
 	glBindVertexArray(m_vao);
 	glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
 	glBindVertexArray(0);
