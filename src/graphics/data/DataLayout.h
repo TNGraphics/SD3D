@@ -13,7 +13,6 @@
 
 class DataLayout {
 	// TODO somehow make this constexpr enabled
-	// TODO add dummy VertexAttrib so specific attributes can be skipped
 public:
 	enum class GlType {
 		DOUBLE, FLOAT, INT, SHORT, BYTE, UINT, USHORT, UBYTE

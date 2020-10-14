@@ -18,7 +18,6 @@ GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data, GLuint
 
 	// Bind the VBO to fill it with data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	// TODO different modes apart from GL_STATIC_DRAW
 	// Fill the VBO with data
 	glBufferData(GL_ARRAY_BUFFER, amount, data, GL_STATIC_DRAW);
 
@@ -46,7 +45,6 @@ GlMesh GlMesh::from_data(const std::vector<Model::Vertex> &data, const std::vect
 
 	// Bind the VBO to fill it with data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-	// TODO different modes apart from GL_STATIC_DRAW
 	// Fill the VBO with data
 	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Model::Vertex), data.data(), GL_STATIC_DRAW);
 
@@ -56,7 +54,6 @@ GlMesh GlMesh::from_data(const std::vector<Model::Vertex> &data, const std::vect
 
 	// Bind the DataLayout (basically multiple glVertexAttribPointers enabled)
 	Model::vertex_layout().bind();
-	// TODO maybe DataLayout.bind doesn't work
 
 	// properly unbind all buffers, arrays, etc. to prevent collisions
 	glBindVertexArray(0);

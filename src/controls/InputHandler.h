@@ -7,7 +7,6 @@
 
 struct GLFWwindow;
 
-// TODO maybe make it virtual/abstract so you can implement functions as you want
 class InputHandler {
 // This class only handles mouse input and the escape key, no other keys are needed
 private:

@@ -51,7 +51,6 @@ public:
 
 	[[nodiscard]] size_t mesh_count() const;
 
-	// TODO avoid raw char pointer
 	static Model from_path(const std::string &path);
 };
 

@@ -49,7 +49,6 @@ GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *) {
 																	 mesh->mTextureCoords[0][i].y} : glm::vec2{
 									  0}));
 	}
-	// TODO use mesh->mFaces and face->mIndices for EBO
 	// We are only dealing with triangles so the size will likely be num faces * 3
 	std::vector<unsigned int> indices{};
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {

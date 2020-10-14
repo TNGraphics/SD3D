@@ -60,7 +60,6 @@ private:
 
 	glm::vec2 m_moveVec{};
 
-	// TODO get from constructor
 	const float m_deceleration{0.05f};
 	const float m_speed{};
 

@@ -184,7 +184,6 @@ int main(int argc, const char *argv[]) {
 		glfwPollEvents();
 		inputHandler.update();
 
-		// TODO WantCaptureMouse doesn't work without UI
 		if (!gui::get_io().WantCaptureMouse && inputHandler.is_mouse_pressed()) {
 //		if (inputHandler.is_mouse_pressed()) {
 			cam.rotate(inputHandler.d_x(), inputHandler.d_y());

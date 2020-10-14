@@ -28,12 +28,10 @@ void OrbitCameraController::update(float deltaTime) {
 }
 
 void OrbitCameraController::rotate(double dX, double dY) {
-	// TODO maybe swap
 	m_moveVec = glm::vec2{dX, -dY};
 }
 
 void OrbitCameraController::zoom(double dScroll) {
-	// TODO make variable to flip zoom
 	m_dist -= static_cast<float>(dScroll) * m_scrollSpeed;
 	m_dist = std::clamp(m_dist, m_minDist, m_maxDist);
 }

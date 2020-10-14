@@ -28,7 +28,7 @@ private:
 	static int check_program_error(GLuint programId);
 
 public:
-	// TODO maybe destructor with glDeleteShader ?+
+	// TODO maybe destructor with glDeleteShader ?
 	Shader(const char *vertexPath, const char *fragmentPath);
 	Shader(std::string_view vertexPath, std::string_view fragmentPath);
 

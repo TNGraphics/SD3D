@@ -26,7 +26,6 @@ private:
 	int m_nrChannels{};
 
 public:
-	// TODO different modes for texture -> texture wrapping, etc.
 	[[maybe_unused]] Texture(const char *path, const Settings &settings);
 
 	[[maybe_unused]] Texture(std::string_view path, const Settings &settings) : Texture{path.data(), settings} {}
@@ -35,10 +34,8 @@ public:
 
 	[[maybe_unused]] explicit Texture(std::string_view path) : Texture(path, Settings{}) {}
 
-	// TODO is this a good idea?
 	Texture(const Texture &other) = default;
 
-	// TODO ???
 	Texture(Texture &&) = default;
 
 	[[maybe_unused]] void bind() const { bind(m_id); }

@@ -34,7 +34,6 @@ public:
 	// for now only float
 	static GlMesh from_data(const DataLayout &dataLayout, const float *data, GLuint amount);
 
-	// TODO maybe make one without indices
 	static GlMesh from_data(const std::vector<Model::Vertex> &data, const std::vector<GLuint> &indices);
 
 };
