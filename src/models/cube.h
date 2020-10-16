@@ -9,9 +9,12 @@
 
 namespace sd3d::models {
 
-// The data layout of the cube with uv coordinates g_cube
-static const DataLayout g_cubeLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE},
-										 {2, DataLayout::GlType::FLOAT, GL_FALSE}};
+const DataLayout &cube_layout() {
+	static DataLayout cubeLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE},
+								 {3, DataLayout::GlType::FILLER},
+								  {2, DataLayout::GlType::FLOAT}};
+	return cubeLayout;
+}
 
 // A cube with uv coordinates
 static constexpr float g_cube[] = {

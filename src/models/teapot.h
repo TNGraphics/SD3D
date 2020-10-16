@@ -9,9 +9,14 @@
 namespace sd3d::models {
 
 // The data layout for the Utah Teapot model g_teapot
-static const DataLayout g_teapotLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE}};
+const DataLayout &teapot_layout() {
+	static DataLayout teapotLayout{{3, DataLayout::GlType::FLOAT, GL_FALSE},
+								   {3, DataLayout::GlType::FILLER},
+								   {2, DataLayout::GlType::FILLER}};
+	return teapotLayout;
+}
 
-constexpr float g_teapot[] = {0.700000f, -1.200000f, 0.000000f, 0.605600f, -1.200000f, -0.355700f, 0.598800f,
+static constexpr float g_teapot[] = {0.700000f, -1.200000f, 0.000000f, 0.605600f, -1.200000f, -0.355700f, 0.598800f,
 							  -1.243700f, -0.351700f, 0.598800f, -1.243700f, -0.351700f, 0.692100f, -1.243700f,
 							  0.000000f, 0.700000f, -1.200000f, 0.000000f, 0.692100f, -1.243700f, 0.000000f, 0.598800f,
 							  -1.243700f, -0.351700f, 0.619600f, -1.243700f, -0.363900f, 0.619600f, -1.243700f,
