@@ -5,6 +5,8 @@
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 
+#include "DataLayout.h"
+
 #include "GlMesh.h"
 
 GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data, GLuint amount) {

@@ -6,8 +6,11 @@
 #define SD3D_GLMESH_H
 
 #include <GLFW/glfw3.h>
-#include "DataLayout.h"
+
+// TODO i don't like to include this
 #include "Model.h"
+
+class DataLayout;
 
 // TODO maybe template on useEbo?
 class GlMesh {

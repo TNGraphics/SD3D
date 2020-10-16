@@ -4,8 +4,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include <spdlog/spdlog.h>
-
 #include "GeneralInputHandler.h"
 
 void GeneralInputHandler::process_mouse_scroll_input(GLFWwindow *, [[maybe_unused]] double x, double y) {
