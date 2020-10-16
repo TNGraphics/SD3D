@@ -14,10 +14,12 @@ DataLayout::DataLayout(std::initializer_list<VertexAttrib> attribs) : m_attribs{
 void DataLayout::bind() const {
 	auto stride = accumulate_size();
 	size_t pos{};
-	for (unsigned int index{}; const auto &val : m_attribs) {
-		glVertexAttribPointer(index, val.size, type_to_opengl(val.type), val.normalized, stride, (void *) pos);
-		glEnableVertexAttribArray(index);
-		pos += val.size * type_size(val.type);
+	for (unsigned int index{}; const auto &attrib : m_attribs) {
+		if(attrib.type != GlType::FILLER) {
+			glVertexAttribPointer(index, attrib.size, type_to_opengl(attrib.type), attrib.normalized, stride, (void *) pos);
+			glEnableVertexAttribArray(index);
+		}
+		pos += attrib.size * type_size(attrib.type);
 		++index;
 	}
 }
@@ -57,8 +59,10 @@ constexpr GLenum DataLayout::type_to_opengl(DataLayout::GlType type) {
 			return GL_UNSIGNED_SHORT;
 		case GlType::UBYTE:
 			return GL_UNSIGNED_BYTE;
+		case GlType::FILLER:
+			return GL_INVALID_ENUM;
 	}
-	return GL_DOUBLE;
+	return GL_INVALID_ENUM;
 }
 
 constexpr GLsizei DataLayout::type_size(DataLayout::GlType type) {
@@ -79,7 +83,8 @@ constexpr GLsizei DataLayout::type_size(DataLayout::GlType type) {
 			return sizeof(unsigned short);
 		case GlType::UBYTE:
 			return sizeof(unsigned char);
+		case GlType::FILLER:
+			return 0;
 	}
 	return 0;
 }
-
