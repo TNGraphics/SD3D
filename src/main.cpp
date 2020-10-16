@@ -38,7 +38,8 @@
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 
-void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam);
+void GLAPIENTRY opengl_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
+										const GLchar *message, const void *userParam);
 
 void fps_gui();
 
@@ -131,7 +132,7 @@ int main(int argc, const char *argv[]) {
 
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(MessageCallback, nullptr);
+	glDebugMessageCallback(opengl_message_callback, nullptr);
 
 	Shader shader{resPath + "shaders/builtin/generic.vert", resPath + "shaders/builtin/generic.frag"};
 
@@ -209,16 +210,16 @@ void fps_gui() {
 	ImGui::End();
 }
 
-void GLAPIENTRY MessageCallback([[maybe_unused]] GLenum source,
-								GLenum type,
-								[[maybe_unused]] GLuint id,
-								GLenum severity,
-								[[maybe_unused]] GLsizei length,
-								const GLchar *message,
-								[[maybe_unused]] const void *userParam) {
-	if(severity == GL_DEBUG_SEVERITY_HIGH) {
+void GLAPIENTRY opengl_message_callback([[maybe_unused]] GLenum source,
+										GLenum type,
+										[[maybe_unused]] GLuint id,
+										GLenum severity,
+										[[maybe_unused]] GLsizei length,
+										const GLchar *message,
+										[[maybe_unused]] const void *userParam) {
+	if (severity == GL_DEBUG_SEVERITY_HIGH) {
 		spdlog::error("GL ERROR: type {} message: {}", type, message);
-	} else if(severity == GL_DEBUG_SEVERITY_MEDIUM) {
+	} else if (severity == GL_DEBUG_SEVERITY_MEDIUM) {
 		spdlog::warn("GL WARNING: type {} message: {}", type, message);
 	}
 }
