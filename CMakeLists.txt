@@ -40,6 +40,7 @@ add_executable(SD3D
 			   src/graphics/data/GlMesh.cpp
 			   src/graphics/data/DataLayout.cpp
 			   src/graphics/data/Model.cpp
+			   src/io/FileOpenDialog.cpp
 			   )
 
 target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS})
