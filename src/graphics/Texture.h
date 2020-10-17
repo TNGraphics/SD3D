@@ -28,11 +28,14 @@ private:
 public:
 	[[maybe_unused]] Texture(const char *path, const Settings &settings);
 
-	[[maybe_unused]] Texture(std::string_view path, const Settings &settings) : Texture{path.data(), settings} {}
+	[[maybe_unused]] Texture(std::string_view path, const Settings &settings) :
+		Texture{path.data(), settings} {}
 
-	[[maybe_unused]] explicit Texture(const char *path) : Texture(path, Settings{}) {}
+	[[maybe_unused]] explicit Texture(const char *path) :
+		Texture(path, Settings{}) {}
 
-	[[maybe_unused]] explicit Texture(std::string_view path) : Texture(path, Settings{}) {}
+	[[maybe_unused]] explicit Texture(std::string_view path) :
+		Texture(path, Settings{}) {}
 
 	Texture(const Texture &other) = default;
 
@@ -42,7 +45,9 @@ public:
 
 	static void unbind() { bind(0); }
 
-	static void bind(GLuint textureId) { glBindTexture(GL_TEXTURE_2D, textureId); }
+	static void bind(GLuint textureId) {
+		glBindTexture(GL_TEXTURE_2D, textureId);
+	}
 
 	[[nodiscard]] GLuint get_id() const { return m_id; }
 
@@ -51,8 +56,6 @@ public:
 	[[nodiscard]] int get_height() const { return m_height; }
 
 	[[nodiscard]] int get_nr_channels() const { return m_nrChannels; }
-
 };
 
-
-#endif //SD3D_TEXTURE_H
+#endif // SD3D_TEXTURE_H

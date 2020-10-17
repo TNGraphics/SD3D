@@ -16,12 +16,14 @@ class DataLayout;
 class GlMesh {
 private:
 	// Vertex Array Object
-	// - This object holds info about data layout, the VBO the data is coming from
+	// - This object holds info about data layout, the VBO the data is coming
+	// from
 	//   and the linked EBO (if applicable)
 	GLuint m_vao;
 	GLuint m_drawCount;
 
-	// TODO save references to textures here, because they are per model (i think)
+	// TODO save references to textures here, because they are per model (i
+	// think)
 
 	// The VBO is implicitly saved in the VAO
 
@@ -35,11 +37,11 @@ public:
 	void draw() const;
 
 	// for now only float
-	static GlMesh from_data(const DataLayout &dataLayout, const float *data, GLuint amount);
+	static GlMesh from_data(const DataLayout &dataLayout, const float *data,
+							GLuint amount);
 
-	static GlMesh from_data(const std::vector<Model::Vertex> &data, const std::vector<GLuint> &indices);
-
+	static GlMesh from_data(const std::vector<Model::Vertex> &data,
+							const std::vector<GLuint> &indices);
 };
 
-
-#endif //SD3D_GLMESH_H
+#endif // SD3D_GLMESH_H

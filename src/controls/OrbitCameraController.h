@@ -29,18 +29,21 @@ public:
 		float speed{};
 		float deceleration{};
 
-		OrbitCamSettings(const glm::vec3 &target, float dist, float speed, float deceleration = 0.05f) :
-				OrbitCamSettings{target, dist, dist, dist, 0.0f, speed, deceleration} {}
-
-		OrbitCamSettings(const glm::vec3 &target, float dist, float minDist, float maxDist, float scrollSpeed, float speed,
+		OrbitCamSettings(const glm::vec3 &target, float dist, float speed,
 						 float deceleration = 0.05f) :
-				target{target},
-				dist{dist},
-				minDist{minDist},
-				maxDist{maxDist},
-				scrollSpeed{scrollSpeed},
-				speed{speed},
-				deceleration{deceleration} {}
+			OrbitCamSettings{target, dist,  dist,        dist,
+							 0.0f,   speed, deceleration} {}
+
+		OrbitCamSettings(const glm::vec3 &target, float dist, float minDist,
+						 float maxDist, float scrollSpeed, float speed,
+						 float deceleration = 0.05f) :
+			target{target},
+			dist{dist},
+			minDist{minDist},
+			maxDist{maxDist},
+			scrollSpeed{scrollSpeed},
+			speed{speed},
+			deceleration{deceleration} {}
 	};
 
 private:
@@ -67,14 +70,14 @@ private:
 
 public:
 	OrbitCameraController(Camera &&cam, const OrbitCamSettings &settings) :
-			m_target{settings.target},
-			m_dist{settings.dist},
-			m_minDist{settings.minDist},
-			m_maxDist{settings.maxDist},
-			m_scrollSpeed{settings.scrollSpeed},
-			m_cam{cam},
-			m_speed{settings.speed},
-			m_deceleration{settings.deceleration} {}
+		m_target{settings.target},
+		m_dist{settings.dist},
+		m_minDist{settings.minDist},
+		m_maxDist{settings.maxDist},
+		m_scrollSpeed{settings.scrollSpeed},
+		m_cam{cam},
+		m_speed{settings.speed},
+		m_deceleration{settings.deceleration} {}
 
 	void update(float deltaTime);
 
@@ -83,8 +86,6 @@ public:
 	void rotate(double dX, double dY);
 
 	void zoom(double dScroll);
-
 };
 
-
-#endif //SD3D_ORBITCAMERACONTROLLER_H
+#endif // SD3D_ORBITCAMERACONTROLLER_H

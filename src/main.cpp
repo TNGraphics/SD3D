@@ -5,8 +5,8 @@
 
 #include <iostream>
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
 #pragma warning(push, 0)
 
@@ -35,13 +35,15 @@
 
 #include "models/primitives.h"
 
-#include "controls/OrbitCameraController.h"
 #include "controls/GeneralInputHandler.h"
+#include "controls/OrbitCameraController.h"
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
 
-void GLAPIENTRY opengl_message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
-										const GLchar *message, const void *userParam);
+void GLAPIENTRY opengl_message_callback(GLenum source, GLenum type, GLuint id,
+										GLenum severity, GLsizei length,
+										const GLchar *message,
+										const void *userParam);
 
 void fps_gui();
 
@@ -57,13 +59,14 @@ int main(int argc, const char *argv[]) {
 	int height{600};
 	bool noVsync{};
 	std::string file{};
-	auto cli = lyra::opt(resPath, "res-path")["-r"]["--res"]["--path"]["-p"](
-			"The path of the res folder relative to the executable")
-			   | lyra::opt(width, "width")["-w"]["--width"]("The window width")
-			   | lyra::opt(height, "height")["-h"]["--height"]("The window height")
-			   | lyra::opt(noVsync)["--disable-vsync"]("Force VSYNC to be disabled")
-			   | lyra::opt(file, "file")["-f"]["--file"]("File to open")
-			   | lyra::help(showHelp);
+	auto cli =
+		lyra::opt(resPath, "res-path")["-r"]["--res"]["--path"]["-p"](
+			"The path of the res folder relative to the executable") |
+		lyra::opt(width, "width")["-w"]["--width"]("The window width") |
+		lyra::opt(height, "height")["-h"]["--height"]("The window height") |
+		lyra::opt(noVsync)["--disable-vsync"]("Force VSYNC to be disabled") |
+		lyra::opt(file, "file")["-f"]["--file"]("File to open") |
+		lyra::help(showHelp);
 
 	auto parsed = cli.parse({argc, argv});
 
@@ -77,7 +80,8 @@ int main(int argc, const char *argv[]) {
 		return 0;
 	}
 
-	const double aspect{static_cast<double>(width) / static_cast<double>(height)};
+	const double aspect{static_cast<double>(width) /
+						static_cast<double>(height)};
 
 	if (noVsync) {
 		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
@@ -96,17 +100,18 @@ int main(int argc, const char *argv[]) {
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
 	// Create a window and check if it worked
-	GLFWwindow *window = glfwCreateWindow(width, height, "First Window", nullptr, nullptr);
+	GLFWwindow *window =
+		glfwCreateWindow(width, height, "First Window", nullptr, nullptr);
 	if (window == nullptr) {
 		std::cerr << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
-//	glfwSetWindowAspectRatio(window, 16, 9);
+	//	glfwSetWindowAspectRatio(window, 16, 9);
 
 	// Try to load the OpenGL functions and fail if it didn't work
-	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		std::cout << "Failed to initialize GLAD" << std::endl;
 		glfwTerminate();
 		return -1;
@@ -124,11 +129,12 @@ int main(int argc, const char *argv[]) {
 
 	gui::setup_imgui(window);
 
-	glm::vec3 cubePositions[] = {glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(2.0f, 5.0f, -15.0f),
-								 glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
-								 glm::vec3(2.4f, -0.4f, -3.5f), glm::vec3(-1.7f, 3.0f, -7.5f),
-								 glm::vec3(1.3f, -2.0f, -2.5f), glm::vec3(1.5f, 2.0f, -2.5f),
-								 glm::vec3(1.5f, 0.2f, -1.5f), glm::vec3(-1.3f, 1.0f, -1.5f)};
+	glm::vec3 cubePositions[] = {
+		glm::vec3(0.0f, 0.0f, 0.0f),    glm::vec3(2.0f, 5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),  glm::vec3(-1.7f, 3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
+		glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
 
 	GeneralInputHandler inputHandler{window};
 
@@ -140,14 +146,17 @@ int main(int argc, const char *argv[]) {
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	Shader shader{resPath + "shaders/builtin/generic.vert", resPath + "shaders/builtin/generic.frag"};
+	Shader shader{resPath + "shaders/builtin/generic.vert",
+				  resPath + "shaders/builtin/generic.frag"};
 
 	Texture container{resPath + "img/container.jpg"};
 
-	auto monkey{Model::from_path(resPath + (file.empty() ? "/models/cube.fbx" : file))};
+	auto monkey{
+		Model::from_path(resPath + (file.empty() ? "/models/cube.fbx" : file))};
 
-	OrbitCameraController cam{{70.0,        aspect, glm::vec3{0, 0, -10}},
-							  {glm::vec3{}, 10.0f,  2.5f, 20.0f, 1.f, 0.25f, 3.f}};
+	OrbitCameraController cam{
+		{70.0, aspect, glm::vec3{0, 0, -10}},
+		{glm::vec3{}, 10.0f, 2.5f, 20.0f, 1.f, 0.25f, 3.f}};
 
 	shader.use();
 	shader.set("texture1", 0);
@@ -187,7 +196,8 @@ int main(int argc, const char *argv[]) {
 		glfwPollEvents();
 		inputHandler.update();
 
-		if (!gui::get_io().WantCaptureMouse && inputHandler.is_mouse_pressed()) {
+		if (!gui::get_io().WantCaptureMouse &&
+			inputHandler.is_mouse_pressed()) {
 			cam.rotate(inputHandler.d_x(), inputHandler.d_y());
 		}
 		cam.zoom(inputHandler.d_scroll());
@@ -211,13 +221,10 @@ void fps_gui() {
 	ImGui::End();
 }
 
-void GLAPIENTRY opengl_message_callback([[maybe_unused]] GLenum source,
-										GLenum type,
-										[[maybe_unused]] GLuint id,
-										GLenum severity,
-										[[maybe_unused]] GLsizei length,
-										const GLchar *message,
-										[[maybe_unused]] const void *userParam) {
+void GLAPIENTRY opengl_message_callback(
+	[[maybe_unused]] GLenum source, GLenum type, [[maybe_unused]] GLuint id,
+	GLenum severity, [[maybe_unused]] GLsizei length, const GLchar *message,
+	[[maybe_unused]] const void *userParam) {
 	if (severity == GL_DEBUG_SEVERITY_HIGH) {
 		spdlog::error("GL ERROR: type {} message: {}", type, message);
 	} else if (severity == GL_DEBUG_SEVERITY_MEDIUM) {

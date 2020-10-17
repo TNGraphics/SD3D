@@ -2,14 +2,13 @@
 // Created by Tobias on 9/22/2020.
 //
 
+#include <fstream>
 #include <iostream>
 #include <sstream>
-#include <fstream>
 
 #include <spdlog/spdlog.h>
 
 #include "Shader.h"
-
 
 Shader::Shader(const char *vertexPath, const char *fragmentPath) {
 	auto vertexSource{read_file_contents(vertexPath)};
@@ -41,7 +40,7 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath) {
 }
 
 Shader::Shader(std::string_view vertexPath, std::string_view fragmentPath) :
-		Shader(vertexPath.data(), fragmentPath.data()) {}
+	Shader(vertexPath.data(), fragmentPath.data()) {}
 
 [[maybe_unused]] void Shader::use() const {
 	glUseProgram(m_id);
@@ -54,8 +53,7 @@ std::string Shader::read_file_contents(const char *path) {
 		shaderFile.open(path);
 		ret << shaderFile.rdbuf();
 		shaderFile.close();
-	}
-	catch (const std::ifstream::failure &e) {
+	} catch (const std::ifstream::failure &e) {
 		std::cout << "ERROR when opening file\n" << e.what() << '\n';
 	}
 	return ret.str();

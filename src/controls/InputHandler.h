@@ -8,7 +8,8 @@
 struct GLFWwindow;
 
 class InputHandler {
-// This class only handles mouse input and the escape key, no other keys are needed
+	// This class only handles mouse input and the escape key, no other keys are
+	// needed
 private:
 	GLFWwindow *m_window;
 
@@ -18,7 +19,7 @@ public:
 
 	virtual void update() {}
 
-// static callbacks
+	// static callbacks
 private:
 	static void s_process_keyboard_input(GLFWwindow *, int, int, int, int);
 
@@ -28,7 +29,7 @@ private:
 
 	static void s_process_mouse_scroll_input(GLFWwindow *, double, double);
 
-// callbacks
+	// callbacks
 	virtual void process_keyboard_input(GLFWwindow *, int, int, int, int) = 0;
 
 	virtual void process_mouse_press_input(GLFWwindow *, int, int, int) = 0;
@@ -38,5 +39,4 @@ private:
 	virtual void process_mouse_scroll_input(GLFWwindow *, double, double) = 0;
 };
 
-
-#endif //SD3D_INPUTHANDLER_H
+#endif // SD3D_INPUTHANDLER_H

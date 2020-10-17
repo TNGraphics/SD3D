@@ -6,11 +6,15 @@
 
 #include "GeneralInputHandler.h"
 
-void GeneralInputHandler::process_mouse_scroll_input(GLFWwindow *, [[maybe_unused]] double x, double y) {
+void GeneralInputHandler::process_mouse_scroll_input(GLFWwindow *,
+													 [[maybe_unused]] double x,
+													 double y) {
 	m_dScroll = y;
 }
 
-void GeneralInputHandler::process_mouse_press_input(GLFWwindow *, int button, int action, [[maybe_unused]] int mods) {
+void GeneralInputHandler::process_mouse_press_input(GLFWwindow *, int button,
+													int action,
+													[[maybe_unused]] int mods) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
 		if (action == GLFW_PRESS) {
 			m_mousePressed = true;
@@ -20,12 +24,14 @@ void GeneralInputHandler::process_mouse_press_input(GLFWwindow *, int button, in
 	}
 }
 
-void GeneralInputHandler::process_mouse_pos_input(GLFWwindow *, double x, double y) {
+void GeneralInputHandler::process_mouse_pos_input(GLFWwindow *, double x,
+												  double y) {
 	m_x = x;
 	m_y = y;
 }
 
-void GeneralInputHandler::process_keyboard_input(GLFWwindow *win, int key, int, int action, int) {
+void GeneralInputHandler::process_keyboard_input(GLFWwindow *win, int key, int,
+												 int action, int) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		glfwWindowShouldClose(win);
 	}

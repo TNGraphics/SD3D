@@ -54,5 +54,4 @@ public:
 	static Model from_path(const std::string &path);
 };
 
-
-#endif //SD3D_MODEL_H
+#endif // SD3D_MODEL_H

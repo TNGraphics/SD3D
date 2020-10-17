@@ -26,28 +26,36 @@ private:
 	double m_aspect{};
 
 public:
-	Camera(double fov, const glm::vec2 &aspect, glm::vec3 pos = glm::vec3{}, glm::vec3 forward = glm::vec3{0, 0, 1},
+	Camera(double fov, const glm::vec2 &aspect, glm::vec3 pos = glm::vec3{},
+		   glm::vec3 forward = glm::vec3{0, 0, 1},
 		   glm::vec3 up = glm::vec3{0, 1, 0}) :
-			Camera{fov, aspect.x / aspect.y, pos, forward, up} {}
+		Camera{fov, aspect.x / aspect.y, pos, forward, up} {}
 
-	Camera(double fov, double aspect, glm::vec3 pos = glm::vec3{}, glm::vec3 forward = glm::vec3{0, 0, 1},
+	Camera(double fov, double aspect, glm::vec3 pos = glm::vec3{},
+		   glm::vec3 forward = glm::vec3{0, 0, 1},
 		   glm::vec3 up = glm::vec3{0, 1, 0}) :
-			m_fov{fov},
-			m_aspect{aspect},
-			m_pos{pos},
-			m_forward{forward},
-			m_up{up},
-			m_right{glm::cross(m_forward, s_worldUp)} {}
+		m_fov{fov},
+		m_aspect{aspect},
+		m_pos{pos},
+		m_forward{forward},
+		m_up{up},
+		m_right{glm::cross(m_forward, s_worldUp)} {}
 
-	[[maybe_unused]] [[nodiscard]] const glm::vec3 &get_pos() const { return m_pos; }
+	[[maybe_unused]] [[nodiscard]] const glm::vec3 &get_pos() const {
+		return m_pos;
+	}
 
 	[[maybe_unused]] void set_pos(const glm::vec3 &pos) { m_pos = pos; }
 
 	[[maybe_unused]] void move(const glm::vec3 &amount) { m_pos += amount; }
 
-	[[maybe_unused]] void move(const glm::vec3 &axis, float amount) { move(axis * amount); }
+	[[maybe_unused]] void move(const glm::vec3 &axis, float amount) {
+		move(axis * amount);
+	}
 
-	[[maybe_unused]] [[nodiscard]] glm::mat4 view() const { return glm::lookAt(m_pos, m_forward, m_up); }
+	[[maybe_unused]] [[nodiscard]] glm::mat4 view() const {
+		return glm::lookAt(m_pos, m_forward, m_up);
+	}
 
 	[[maybe_unused]] [[nodiscard]] glm::mat4 projection() const {
 		return glm::perspective(glm::radians(m_fov), m_aspect, 0.1, 100.0);
@@ -58,8 +66,6 @@ public:
 		m_right = glm::normalize(glm::cross(m_forward, s_worldUp));
 		m_up = glm::normalize(glm::cross(m_right, m_forward));
 	}
-
 };
 
-
-#endif //SD3D_CAMERA_H
+#endif // SD3D_CAMERA_H

@@ -2,9 +2,9 @@
 // Created by Tobias on 10/14/2020.
 //
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/Importer.hpp>
 
 #include <spdlog/spdlog.h>
 
@@ -41,15 +41,21 @@ GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *) {
 
 	vertices.reserve(mesh->mNumVertices);
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-		vertices.emplace_back((mesh->HasPositions() ? glm::vec3{mesh->mVertices[i].x, mesh->mVertices[i].y,
-																mesh->mVertices[i].z} : glm::vec3{0}),
-							  (mesh->HasNormals() ? glm::vec3{mesh->mNormals[i].x, mesh->mNormals[i].y,
-															  mesh->mNormals[i].z} : glm::vec3{std::sqrt(1.f)}),
-							  (mesh->HasTextureCoords(0) ? glm::vec2{mesh->mTextureCoords[0][i].x,
-																	 mesh->mTextureCoords[0][i].y} : glm::vec2{
-									  0}));
+		vertices.emplace_back(
+			(mesh->HasPositions()
+				 ? glm::vec3{mesh->mVertices[i].x, mesh->mVertices[i].y,
+							 mesh->mVertices[i].z}
+				 : glm::vec3{0}),
+			(mesh->HasNormals()
+				 ? glm::vec3{mesh->mNormals[i].x, mesh->mNormals[i].y,
+							 mesh->mNormals[i].z}
+				 : glm::vec3{std::sqrt(1.f)}),
+			(mesh->HasTextureCoords(0) ? glm::vec2{mesh->mTextureCoords[0][i].x,
+												   mesh->mTextureCoords[0][i].y}
+									   : glm::vec2{0}));
 	}
-	// We are only dealing with triangles so the size will likely be num faces * 3
+	// We are only dealing with triangles so the size will likely be num faces *
+	// 3
 	std::vector<unsigned int> indices{};
 	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
 		auto face = mesh->mFaces[i];
@@ -63,9 +69,11 @@ GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *) {
 
 Model Model::from_path(const std::string &path) {
 	Assimp::Importer importer;
-	const auto *scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+	const auto *scene =
+		importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
 
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
+		!scene->mRootNode) {
 		spdlog::error("Assimp error: {}", importer.GetErrorString());
 		return {};
 	}
@@ -79,7 +87,10 @@ size_t Model::mesh_count() const {
 	return m_meshes.size();
 }
 
-Model::Vertex::Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 texCoords) :
-		position{position}, normal{normal}, texCoords{texCoords} {}
+Model::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
+					  glm::vec2 texCoords) :
+	position{position},
+	normal{normal},
+	texCoords{texCoords} {}
 
 Model::Vertex::Vertex() : position{}, normal{}, texCoords{} {}

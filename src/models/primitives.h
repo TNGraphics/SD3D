@@ -5,7 +5,7 @@
 #ifndef SD3D_PRIMITIVES_H
 #define SD3D_PRIMITIVES_H
 
-#include "teapot.h"
 #include "cube.h"
+#include "teapot.h"
 
 #endif //SD3D_PRIMITIVES_H

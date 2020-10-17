@@ -2,12 +2,11 @@
 // Created by Tobias on 9/28/2020.
 //
 
+#include "Texture.h"
 #include <stb_image.h>
 #include <iostream>
-#include "Texture.h"
 
-Texture::Texture(const char *path, const Settings &settings)
-{
+Texture::Texture(const char *path, const Settings &settings) {
 	glGenTextures(1, &m_id);
 	glBindTexture(GL_TEXTURE_2D, m_id);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, settings.wrapS);
@@ -15,10 +14,11 @@ Texture::Texture(const char *path, const Settings &settings)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, settings.minFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, settings.magFilter);
 
-	unsigned char *data = stbi_load(path, &m_width, &m_height, &m_nrChannels, 0);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, settings.format, m_width, m_height, 0, settings.format, GL_UNSIGNED_BYTE, data);
+	unsigned char *data =
+		stbi_load(path, &m_width, &m_height, &m_nrChannels, 0);
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0, settings.format, m_width, m_height, 0,
+					 settings.format, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	} else
 		std::cout << "Failed to load image data\n";

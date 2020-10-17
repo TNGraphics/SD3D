@@ -8,7 +8,8 @@
 
 #include "FileOpenDialog.h"
 
-static constexpr const char *g_filterStr = "obj files (*.obj)\0*.obj\0fbx files (*.fbx)\0*.fbx";
+static constexpr const char *g_filterStr =
+	"obj files (*.obj)\0*.obj\0fbx files (*.fbx)\0*.fbx";
 
 namespace sd3d::io {
 
@@ -25,10 +26,10 @@ std::string request_file_dialog(const char *filter) {
 	ofn.nMaxFile = MAX_PATH;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST;
 	ofn.lpstrDefExt = "";
-	if(GetOpenFileName(&ofn)) {
+	if (GetOpenFileName(&ofn)) {
 		return fileName;
 	} else {
 		return "";
 	}
 }
-}
+} // namespace sd3d::io
