@@ -191,7 +191,7 @@ int main(int argc, const char *argv[]) {
 			cam.rotate(inputHandler.d_x(), inputHandler.d_y());
 		}
 		cam.zoom(inputHandler.d_scroll());
-		cam.update(gsl::narrow<float>(deltaTime));
+		cam.update(gsl::narrow_cast<float>(deltaTime));
 	}
 
 	gui::shutdown();
