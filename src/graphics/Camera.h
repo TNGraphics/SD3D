@@ -34,12 +34,12 @@ public:
 	Camera(double fov, double aspect, glm::vec3 pos = glm::vec3{},
 		   glm::vec3 forward = glm::vec3{0, 0, 1},
 		   glm::vec3 up = glm::vec3{0, 1, 0}) :
-		m_fov{fov},
-		m_aspect{aspect},
 		m_pos{pos},
 		m_forward{forward},
 		m_up{up},
-		m_right{glm::cross(m_forward, s_worldUp)} {}
+		m_right{glm::cross(m_forward, s_worldUp)},
+		m_fov{fov},
+		m_aspect{aspect} {}
 
 	[[maybe_unused]] [[nodiscard]] const glm::vec3 &get_pos() const {
 		return m_pos;

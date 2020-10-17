@@ -75,9 +75,9 @@ public:
 		m_minDist{settings.minDist},
 		m_maxDist{settings.maxDist},
 		m_scrollSpeed{settings.scrollSpeed},
-		m_cam{cam},
+		m_deceleration{settings.deceleration},
 		m_speed{settings.speed},
-		m_deceleration{settings.deceleration} {}
+		m_cam{cam} {}
 
 	void update(float deltaTime);
 
