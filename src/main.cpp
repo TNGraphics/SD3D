@@ -23,6 +23,8 @@
 
 #include <imgui.h>
 
+#include <gsl-lite/gsl-lite.hpp>
+
 #include "graphics/ImGuiHandler.h"
 
 #include "graphics/Shader.h"
@@ -186,11 +188,10 @@ int main(int argc, const char *argv[]) {
 		inputHandler.update();
 
 		if (!gui::get_io().WantCaptureMouse && inputHandler.is_mouse_pressed()) {
-//		if (inputHandler.is_mouse_pressed()) {
 			cam.rotate(inputHandler.d_x(), inputHandler.d_y());
 		}
 		cam.zoom(inputHandler.d_scroll());
-		cam.update(static_cast<float>(deltaTime));
+		cam.update(gsl::narrow<float>(deltaTime));
 	}
 
 	gui::shutdown();

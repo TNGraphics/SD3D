@@ -19,6 +19,8 @@ find_package(spdlog CONFIG REQUIRED)
 
 find_package(Assimp CONFIG REQUIRED)
 
+find_package(gsl-lite CONFIG REQUIRED)
+
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
@@ -50,4 +52,5 @@ target_link_libraries(SD3D PRIVATE
 					  spdlog::spdlog spdlog::spdlog_header_only
 					  imgui::imgui
 					  assimp::assimp
+					  gsl::gsl-lite-v1
 					  )
