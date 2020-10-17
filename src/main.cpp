@@ -134,13 +134,13 @@ int main(int argc, const char *argv[]) {
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(opengl_message_callback, nullptr);
 
-	Shader shader{resPath + "shaders/builtin/generic.vert", resPath + "shaders/builtin/generic.frag"};
-
-	Texture container{resPath + "img/container.jpg"};
-
 	glEnable(GL_DEPTH_TEST);
 
 	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+
+	Shader shader{resPath + "shaders/builtin/generic.vert", resPath + "shaders/builtin/generic.frag"};
+
+	Texture container{resPath + "img/container.jpg"};
 
 	auto monkey{Model::from_path(resPath + (file.empty() ? "/models/cube.fbx" : file))};
 
