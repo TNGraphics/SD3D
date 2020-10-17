@@ -45,6 +45,10 @@ add_executable(SD3D
 			   src/io/FileOpenDialog.cpp
 			   )
 
+if (CMAKE_BUILD_TYPE MATCHES Debug)
+	target_compile_definitions(SD3D PUBLIC -DDEBUG=1)
+endif()
+
 target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS})
 target_link_libraries(SD3D PRIVATE
 					  glfw
