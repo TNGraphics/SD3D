@@ -33,12 +33,15 @@ void GeneralInputHandler::process_mouse_pos_input(GLFWwindow *, double x,
 void GeneralInputHandler::process_keyboard_input(GLFWwindow *win, int key, int,
 												 int action, int) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-		glfwWindowShouldClose(win);
+		glfwSetWindowShouldClose(win, true);
 	}
 	// no other keys in this application :)
 }
 
 void GeneralInputHandler::update() {
+	// poll events here, because we are handling updates
+	glfwPollEvents();
+
 	if (!m_firstUpdate) {
 		m_dX = m_x - m_lastX;
 		m_dY = m_y - m_lastY;

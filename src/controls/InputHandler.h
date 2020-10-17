@@ -19,8 +19,8 @@ public:
 
 	virtual void update() {}
 
-	// static callbacks
 private:
+	// static callbacks
 	static void s_process_keyboard_input(GLFWwindow *, int, int, int, int);
 
 	static void s_process_mouse_press_input(GLFWwindow *, int, int, int);
