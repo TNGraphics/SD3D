@@ -28,6 +28,7 @@
 
 #include "graphics/ImGuiHandler.h"
 
+#include "graphics/GlContext.h"
 #include "graphics/Shader.h"
 #include "graphics/Texture.h"
 
@@ -40,11 +41,6 @@
 #include "controls/OrbitCameraController.h"
 
 void framebuffer_size_callback(GLFWwindow *, int width, int height);
-
-void GLAPIENTRY opengl_message_callback(GLenum source, GLenum type, GLuint id,
-										GLenum severity, GLsizei length,
-										const GLchar *message,
-										const void *userParam);
 
 void fps_gui();
 
@@ -81,54 +77,16 @@ int main(int argc, const char *argv[]) {
 		return 0;
 	}
 
-	const double aspect{static_cast<double>(width) /
-						static_cast<double>(height)};
-
-	if (noVsync) {
-		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_FALSE);
-	} else {
-		glfwWindowHint(GLFW_DOUBLEBUFFER, GL_TRUE);
-	}
-
 	stbi_set_flip_vertically_on_load(true);
 
-	// initialize OpenGL in the correct version (4.6)
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-
-	// Create a window and check if it worked
-	GLFWwindow *window =
-		glfwCreateWindow(width, height, "First Window", nullptr, nullptr);
-	if (window == nullptr) {
-		std::cerr << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
-	//	glfwSetWindowAspectRatio(window, 16, 9);
-
-	// Try to load the OpenGL functions and fail if it didn't work
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		glfwTerminate();
+	GlContext glContext{GlContext::Settings{.width = width,
+											.height = height}};
+	if (!glContext) {
+		spdlog::error("Error setting up GL Context!");
 		return -1;
 	}
 
-	// Set the viewport and the callback for resizing
-	glViewport(0, 0, width, height);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-	if (noVsync) {
-		glfwSwapInterval(0);
-	} else {
-		glfwSwapInterval(1);
-	}
-
-	gui::setup_imgui(window);
+	gui::setup_imgui(glContext.win());
 
 	glm::vec3 cubePositions[] = {
 		glm::vec3(0.0f, 0.0f, 0.0f),    glm::vec3(2.0f, 5.0f, -15.0f),
@@ -137,15 +95,7 @@ int main(int argc, const char *argv[]) {
 		glm::vec3(1.3f, -2.0f, -2.5f),  glm::vec3(1.5f, 2.0f, -2.5f),
 		glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
 
-	GeneralInputHandler inputHandler{window};
-
-	glEnable(GL_DEBUG_OUTPUT);
-	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-	glDebugMessageCallback(opengl_message_callback, nullptr);
-
-	glEnable(GL_DEPTH_TEST);
-
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+	GeneralInputHandler inputHandler{glContext.win()};
 
 	Shader shader{resPath + "shaders/builtin/generic.vert",
 				  resPath + "shaders/builtin/generic.frag"};
@@ -156,7 +106,7 @@ int main(int argc, const char *argv[]) {
 		Model::from_path(resPath + (file.empty() ? "/models/cube.fbx" : file))};
 
 	OrbitCameraController cam{
-		{70.0, aspect, glm::vec3{0, 0, -10}},
+		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
 		{glm::vec3{}, 10.0f, 2.5f, 20.0f, 1.f, 0.25f, 3.f}};
 
 	shader.use();
@@ -165,7 +115,7 @@ int main(int argc, const char *argv[]) {
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
 
-	while (!glfwWindowShouldClose(window)) {
+	while (glContext.is_open()) {
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -193,8 +143,7 @@ int main(int argc, const char *argv[]) {
 
 		gui::render();
 
-		glfwSwapBuffers(window);
-		glfwPollEvents();
+		glContext.swap_buffer();
 		inputHandler.update();
 
 		if (!gui::get_io().WantCaptureMouse &&
@@ -207,28 +156,11 @@ int main(int argc, const char *argv[]) {
 
 	gui::shutdown();
 
-	glfwDestroyWindow(window);
-	glfwTerminate();
 	return 0;
-}
-
-void framebuffer_size_callback(GLFWwindow *, int width, int height) {
-	glViewport(0, 0, width, height);
 }
 
 void fps_gui() {
 	ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoResize);
 	ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
 	ImGui::End();
-}
-
-void GLAPIENTRY opengl_message_callback(
-	[[maybe_unused]] GLenum source, GLenum type, [[maybe_unused]] GLuint id,
-	GLenum severity, [[maybe_unused]] GLsizei length, const GLchar *message,
-	[[maybe_unused]] const void *userParam) {
-	if (severity == GL_DEBUG_SEVERITY_HIGH) {
-		spdlog::error("GL ERROR: type {} message: {}", type, message);
-	} else if (severity == GL_DEBUG_SEVERITY_MEDIUM) {
-		spdlog::warn("GL WARNING: type {} message: {}", type, message);
-	}
 }

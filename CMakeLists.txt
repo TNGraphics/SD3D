@@ -43,6 +43,7 @@ add_executable(SD3D
 			   src/graphics/data/DataLayout.cpp
 			   src/graphics/data/Model.cpp
 			   src/io/FileOpenDialog.cpp
+			   src/graphics/GlContext.cpp
 			   )
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
