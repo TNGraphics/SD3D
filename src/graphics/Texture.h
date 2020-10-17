@@ -5,6 +5,8 @@
 #ifndef SD3D_TEXTURE_H
 #define SD3D_TEXTURE_H
 
+#include <string_view>
+
 #include <glad/glad.h>
 
 class Texture {
