@@ -127,8 +127,9 @@ int main(int argc, const char *argv[]) {
 		// Do IMGUI stuff here
 		debug_gui(fileBrowser);
 
-		if(fileBrowser.HasSelected()) {
-			spdlog::info("Opening model: {}", fileBrowser.GetSelected().string());
+		if (fileBrowser.HasSelected()) {
+			spdlog::info("Opening model: {}",
+						 fileBrowser.GetSelected().string());
 			monkey = Model::from_path(fileBrowser.GetSelected().string());
 			fileBrowser.Close();
 		}
@@ -157,7 +158,7 @@ int main(int argc, const char *argv[]) {
 void debug_gui(ImGui::FileBrowser &fileBrowser) {
 	ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_NoResize);
 	ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
-	if(ImGui::Button("Open file browser")) {
+	if (ImGui::Button("Open file browser")) {
 		fileBrowser.Open();
 	}
 	ImGui::End();
