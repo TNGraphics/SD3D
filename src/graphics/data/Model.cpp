@@ -114,3 +114,6 @@ Model::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
 	texCoords{texCoords} {}
 
 Model::Vertex::Vertex() : position{}, normal{}, texCoords{} {}
+Model::Model(Model &&other) noexcept :
+	m_meshes{std::move(other.m_meshes)},
+	m_directory{std::move(other.m_directory)} {}

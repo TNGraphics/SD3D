@@ -43,7 +43,7 @@ private:
 	// for later for textures ;)
 	std::string m_directory{};
 
-	Model(Model &&) = default;
+	Model(Model &&) noexcept;
 
 	void process_node(aiNode *node, const aiScene *scene);
 	static GlMesh process_mesh(aiMesh *mesh, const aiScene *scene);
