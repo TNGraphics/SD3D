@@ -40,6 +40,13 @@ private:
 	GlMesh(GLuint vao, GLuint drawCount, GLuint vbo, GLuint ebo, bool useEbo);
 
 public:
+	GlMesh(GlMesh &&) noexcept;
+	GlMesh &operator=(GlMesh &&) noexcept;
+	// delete all constructors because they can have a bad effect on memory in GPU
+	GlMesh() = delete;
+	GlMesh(const GlMesh &) = delete;
+	GlMesh &operator=(const GlMesh &) = delete;
+
 	void draw() const;
 
 	void release_data();

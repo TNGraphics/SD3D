@@ -79,6 +79,37 @@ GlMesh::GlMesh(GLuint vao, GLuint drawCount, GLuint vbo, GLuint ebo,
 	m_usesEbo{useEbo},
 	m_initialized{true} {}
 
+GlMesh::GlMesh(GlMesh &&other) noexcept :
+	m_vao{other.m_vao},
+	m_drawCount{other.m_drawCount},
+	m_vbo{other.m_vbo},
+	m_ebo{other.m_ebo},
+	m_usesEbo{other.m_usesEbo},
+	m_initialized{other.m_initialized} {
+	other.m_vao = 0;
+	other.m_drawCount = 0;
+	other.m_vbo = 0;
+	other.m_ebo = 0;
+	other.m_usesEbo = false;
+	other.m_initialized = false;
+}
+
+GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
+	m_vao = other.m_vao;
+	m_drawCount = other.m_drawCount;
+	m_vbo = other.m_vbo;
+	m_ebo = other.m_ebo;
+	m_usesEbo = other.m_usesEbo;
+	m_initialized = other.m_initialized;
+
+	other.m_vao = 0;
+	other.m_drawCount = 0;
+	other.m_vbo = 0;
+	other.m_ebo = 0;
+	other.m_usesEbo = false;
+	other.m_initialized = false;
+	return *this;
+}
 
 void GlMesh::draw() const {
 	if (!m_initialized) return;

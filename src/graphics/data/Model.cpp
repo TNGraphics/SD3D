@@ -26,7 +26,11 @@ void Model::draw() const {
 }
 
 void Model::process_node(aiNode *node, const aiScene *scene) {
+	// Some models don't load correctly, probably because there are some
+	// properties I don't read, maybe something like scale and position of a
+	// mesh
 	for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
+		// TODO use node->mTransformation
 		auto *mesh = scene->mMeshes[node->mMeshes[i]];
 		m_meshes.push_back(process_mesh(mesh, scene));
 	}
@@ -36,6 +40,7 @@ void Model::process_node(aiNode *node, const aiScene *scene) {
 }
 
 // TODO use scene
+// TODO move to GlMesh
 GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *) {
 	std::vector<Vertex> vertices{};
 
@@ -49,7 +54,7 @@ GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *) {
 			(mesh->HasNormals()
 				 ? glm::vec3{mesh->mNormals[i].x, mesh->mNormals[i].y,
 							 mesh->mNormals[i].z}
-				 : glm::vec3{std::sqrt(1.f)}),
+				 : glm::vec3{0.0f, 1.0f, 0.0f}),
 			(mesh->HasTextureCoords(0) ? glm::vec2{mesh->mTextureCoords[0][i].x,
 												   mesh->mTextureCoords[0][i].y}
 									   : glm::vec2{0}));
@@ -93,6 +98,15 @@ void Model::clear() {
 	}
 	m_meshes.clear();
 }
+
+Model &Model::operator=(Model &&other) noexcept {
+	clear();
+	// move data
+	m_meshes = std::move(other.m_meshes);
+	m_directory = std::move(other.m_directory);
+	return *this;
+}
+
 Model::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
 					  glm::vec2 texCoords) :
 	position{position},
