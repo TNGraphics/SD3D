@@ -10,7 +10,7 @@ struct ImGuiIO;
 
 namespace sd3d::gui {
 
-void setup_imgui(GLFWwindow *);
+void setup_imgui(GLFWwindow *, bool useIni);
 
 void new_frame();
 

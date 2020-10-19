@@ -14,11 +14,15 @@
 
 namespace sd3d::gui {
 
-void setup_imgui(GLFWwindow *window) {
+void setup_imgui(GLFWwindow *window, bool useIni = true) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO &io = ImGui::GetIO();
 	(void)io;
+
+	if(!useIni) {
+		ImGui::GetIO().IniFilename = nullptr;
+	}
 
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
