@@ -10,13 +10,19 @@
 
 #include <GLFW/glfw3.h>
 
-
 class DataLayout {
 	// TODO somehow make this constexpr enabled
-	// TODO add dummy VertexAttrib so specific attributes can be skipped
 public:
 	enum class GlType {
-		DOUBLE, FLOAT, INT, SHORT, BYTE, UINT, USHORT, UBYTE
+		DOUBLE,
+		FLOAT,
+		INT,
+		SHORT,
+		BYTE,
+		UINT,
+		USHORT,
+		UBYTE,
+		FILLER
 	};
 
 	// This struct doesnt allow for a different order of elements
@@ -45,5 +51,4 @@ public:
 	void push(const VertexAttrib &other);
 };
 
-
-#endif //SD3D_DATALAYOUT_H
+#endif // SD3D_DATALAYOUT_H

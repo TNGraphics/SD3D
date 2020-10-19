@@ -24,6 +24,7 @@ struct aiMesh;
 
 class Model {
 public:
+	// TODO maybe move to GlMesh class because this one doesn't really use it
 	struct Vertex {
 		glm::vec3 position{};
 		glm::vec3 normal{};
@@ -39,21 +40,27 @@ private:
 	// TODO handle textures in some way
 
 	std::vector<GlMesh> m_meshes{};
+	// for later for textures ;)
 	std::string m_directory{};
 
-	Model() = default;
+	Model(Model &&) = default;
 
 	void process_node(aiNode *node, const aiScene *scene);
 	static GlMesh process_mesh(aiMesh *mesh, const aiScene *scene);
 
 public:
+	Model() = default;
+	Model(const Model &) = delete;
+	Model &operator=(const Model &) = delete;
+	Model &operator=(Model &&) noexcept;
+
 	void draw() const;
+
+	void clear();
 
 	[[nodiscard]] size_t mesh_count() const;
 
-	// TODO avoid raw char pointer
 	static Model from_path(const std::string &path);
 };
 
-
-#endif //SD3D_MODEL_H
+#endif // SD3D_MODEL_H

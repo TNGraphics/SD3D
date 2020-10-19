@@ -6,17 +6,19 @@
 
 #include <GLFW/glfw3.h>
 
+#include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
-#include <imgui.h>
 
-namespace gui {
+#include "../external/imgui-filebrowser/imfilebrowser.h"
+
+namespace sd3d::gui {
 
 void setup_imgui(GLFWwindow *window) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO &io = ImGui::GetIO();
-	(void) io;
+	(void)io;
 
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -44,4 +46,4 @@ void shutdown() {
 	ImGui::DestroyContext();
 }
 
-}
+} // namespace sd3d::gui

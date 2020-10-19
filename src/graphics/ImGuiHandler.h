@@ -8,7 +8,7 @@
 struct GLFWwindow;
 struct ImGuiIO;
 
-namespace gui {
+namespace sd3d::gui {
 
 void setup_imgui(GLFWwindow *);
 
@@ -20,6 +20,6 @@ void shutdown();
 
 ImGuiIO &get_io();
 
-}
+} // namespace sd3d::gui
 
-#endif //SD3D_IMGUIHANDLER_H
+#endif // SD3D_IMGUIHANDLER_H

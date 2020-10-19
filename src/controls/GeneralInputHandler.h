@@ -34,7 +34,9 @@ private:
 	void process_keyboard_input(GLFWwindow *, int, int, int, int) override;
 
 public:
-	explicit GeneralInputHandler(GLFWwindow *win) : InputHandler{win}, m_firstUpdate{true} {}
+	explicit GeneralInputHandler(GLFWwindow *win) :
+		InputHandler{win},
+		m_firstUpdate{true} {}
 
 	void update() override;
 
@@ -45,8 +47,6 @@ public:
 	[[nodiscard]] double d_y() const { return m_dY; }
 
 	[[nodiscard]] double d_scroll() const { return m_lastDScroll; }
-
 };
 
-
-#endif //SD3D_GENERALINPUTHANDLER_H
+#endif // SD3D_GENERALINPUTHANDLER_H
