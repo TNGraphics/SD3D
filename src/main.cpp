@@ -72,7 +72,8 @@ int main(int argc, const char *argv[]) {
 
 	stbi_set_flip_vertically_on_load(true);
 
-	GlContext glContext{GlContext::Settings{.width = width, .height = height}};
+	GlContext glContext{
+		GlContext::Settings{.width = width, .height = height, .title = "SD3D"}};
 	if (!glContext) {
 		spdlog::error("Error setting up GL Context!");
 		return -1;
