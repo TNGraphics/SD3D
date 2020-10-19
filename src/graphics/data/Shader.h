@@ -55,10 +55,6 @@ public:
 		glUniform1f(glGetUniformLocation(m_id, name), val);
 	}
 
-	[[maybe_unused]] void set(const char *name, double val) const {
-		glUniform1d(glGetUniformLocation(m_id, name), val);
-	}
-
 	[[maybe_unused]] void set(const char *name, const glm::vec1 &val) const {
 		glUniform1fv(glGetUniformLocation(m_id, name), 1, glm::value_ptr(val));
 	}
@@ -71,10 +67,6 @@ public:
 		glUniform2f(glGetUniformLocation(m_id, name), x, y);
 	}
 
-	[[maybe_unused]] void set(const char *name, double x, double y) const {
-		glUniform2d(glGetUniformLocation(m_id, name), x, y);
-	}
-
 	[[maybe_unused]] void set(const char *name, const glm::vec3 &val) const {
 		glUniform3fv(glGetUniformLocation(m_id, name), 1, glm::value_ptr(val));
 	}
@@ -83,20 +75,12 @@ public:
 		glUniform3f(glGetUniformLocation(m_id, name), x, y, z);
 	}
 
-	[[maybe_unused]] void set(const char *name, double x, double y, double z) const {
-		glUniform3d(glGetUniformLocation(m_id, name), x, y, z);
-	}
-
 	[[maybe_unused]] void set(const char *name, const glm::vec4 &val) const {
 		glUniform4fv(glGetUniformLocation(m_id, name), 1, glm::value_ptr(val));
 	}
 
 	[[maybe_unused]] void set(const char *name, float x, float y, float z, float w) const {
 		glUniform4f(glGetUniformLocation(m_id, name), x, y, z, w);
-	}
-
-	[[maybe_unused]] void set(const char *name, double x, double y, double z, double w) const {
-		glUniform4d(glGetUniformLocation(m_id, name), x, y, z, w);
 	}
 
 	[[maybe_unused]] void set(const char *name, const glm::mat2 &val) const {

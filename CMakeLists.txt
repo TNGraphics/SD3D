@@ -34,8 +34,8 @@ include_directories("${GLM_PATH}")
 add_executable(SD3D
 			   ${GLAD_PATH}/src/glad.c
 			   src/main.cpp
-			   src/graphics/Shader.cpp
-			   src/graphics/Texture.cpp
+			   src/graphics/data/Shader.cpp
+			   src/graphics/data/Texture.cpp
 			   src/controls/OrbitCameraController.cpp
 			   src/controls/InputHandler.cpp
 			   src/controls/GeneralInputHandler.cpp

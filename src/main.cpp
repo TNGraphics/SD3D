@@ -30,8 +30,8 @@
 #include "graphics/ImGuiHandler.h"
 
 #include "graphics/GlContext.h"
-#include "graphics/Shader.h"
-#include "graphics/Texture.h"
+#include "graphics/data/Shader.h"
+#include "graphics/data/Texture.h"
 
 #include "graphics/data/GlMesh.h"
 #include "graphics/data/Model.h"
