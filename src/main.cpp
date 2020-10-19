@@ -100,8 +100,8 @@ int main(int argc, const char *argv[]) {
 
 	GeneralInputHandler inputHandler{glContext.win()};
 
-	Texture diffuseTex{texturePath + "container_diffuse.png", Texture::png_settings(), GL_TEXTURE0};
-	Texture specularTex{texturePath + "container_specular.png", Texture::png_settings(), GL_TEXTURE1};
+	Texture diffuseTex{texturePath + "container_diffuse.png", GL_TEXTURE0};
+	Texture specularTex{texturePath + "container_specular.png", GL_TEXTURE1};
 
 	Shader litShader{shaderPath + "lit.vert", shaderPath + "lit.frag"};
 
