@@ -45,6 +45,10 @@ public:
 		return m_pos;
 	}
 
+	[[maybe_unused]] [[nodiscard]] const glm::vec3 &get_forward() const {
+		return m_forward;
+	}
+
 	[[maybe_unused]] void set_pos(const glm::vec3 &pos) { m_pos = pos; }
 
 	[[maybe_unused]] void move(const glm::vec3 &amount) { m_pos += amount; }
