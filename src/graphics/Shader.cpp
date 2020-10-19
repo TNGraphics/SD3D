@@ -39,6 +39,19 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath) {
 	glDeleteShader(fragmentShader);
 }
 
+Shader::~Shader() {
+	glDeleteProgram(m_id);
+}
+
+Shader::Shader(Shader &&other) noexcept : m_id{other.m_id} {
+	other.m_id = 0;
+}
+
+Shader &Shader::operator=(Shader &&other) noexcept {
+	m_id = other.m_id;
+	other.m_id = 0;
+	return *this;
+}
 Shader::Shader(std::string_view vertexPath, std::string_view fragmentPath) :
 	Shader(vertexPath.data(), fragmentPath.data()) {}
 

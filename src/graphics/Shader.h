@@ -27,13 +27,16 @@ private:
 	static int check_program_error(GLuint programId);
 
 public:
-	// TODO maybe destructor with glDeleteShader ?
+	Shader();
 	Shader(const char *vertexPath, const char *fragmentPath);
 	Shader(std::string_view vertexPath, std::string_view fragmentPath);
+	~Shader();
 
-	Shader(const Shader &other) { m_id = other.m_id; }
+	Shader(const Shader &) = delete;
+	Shader &operator=(const Shader &) = delete;
 
-	Shader(Shader &&) = delete;
+	Shader(Shader &&) noexcept;
+	Shader &operator=(Shader &&) noexcept;
 
 	[[maybe_unused]] void use() const;
 
