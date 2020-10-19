@@ -36,8 +36,6 @@
 #include "graphics/data/GlMesh.h"
 #include "graphics/data/Model.h"
 
-#include "models/primitives.h"
-
 #include "controls/GeneralInputHandler.h"
 #include "controls/OrbitCameraController.h"
 
@@ -50,14 +48,11 @@ int main(int argc, const char *argv[]) {
 #else
 	spdlog::set_level(spdlog::level::err);
 #endif
-	std::string resPath{};
 	bool showHelp = false;
 	int width{1200};
 	int height{800};
 	bool noVsync{};
 	auto cli =
-		lyra::opt(resPath, "res-path")["-r"]["--res"]["--path"]["-p"](
-			"The path of the res folder relative to the executable") |
 		lyra::opt(width, "width")["-w"]["--width"]("The window width") |
 		lyra::opt(height, "height")["-h"]["--height"]("The window height") |
 		lyra::opt(noVsync)["--disable-vsync"]("Force VSYNC to be disabled") |
