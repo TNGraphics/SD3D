@@ -26,12 +26,18 @@ private:
 	// think)
 
 	// The VBO is implicitly saved in the VAO
+	// We still need it to delete it later
+	GLuint m_vbo;
+	// Same with EBO
+	GLuint m_ebo;
 
 	// Notify if an EBO was created and bound to the VAO
 	// If yes, glDrawElements has to be used.
 	bool m_usesEbo;
 
-	GlMesh(GLuint vao, GLuint drawCount, bool useEbo);
+	bool m_initialized{false};
+
+	GlMesh(GLuint vao, GLuint drawCount, GLuint vbo, GLuint ebo, bool useEbo);
 
 public:
 	void draw() const;

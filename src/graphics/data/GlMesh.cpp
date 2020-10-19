@@ -32,7 +32,7 @@ GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data,
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	// TODO unbind dataLayout as well somehow
 
-	return GlMesh(vao, amount, false);
+	return GlMesh(vao, amount, vbo, 0, false);
 }
 
 GlMesh GlMesh::from_data(const std::vector<Model::Vertex> &data,
@@ -67,15 +67,21 @@ GlMesh GlMesh::from_data(const std::vector<Model::Vertex> &data,
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	// TODO unbind dataLayout as well somehow
 
-	return GlMesh(vao, static_cast<GLuint>(indices.size()), true);
+	return GlMesh(vao, static_cast<GLuint>(indices.size()), vbo, ebo, true);
 }
 
-GlMesh::GlMesh(GLuint vao, GLuint drawCount, bool useEbo) :
+GlMesh::GlMesh(GLuint vao, GLuint drawCount, GLuint vbo, GLuint ebo,
+			   bool useEbo) :
 	m_vao{vao},
 	m_drawCount{drawCount},
-	m_usesEbo{useEbo} {}
+	m_vbo{vbo},
+	m_ebo{ebo},
+	m_usesEbo{useEbo},
+	m_initialized{true} {}
+
 
 void GlMesh::draw() const {
+	if (!m_initialized) return;
 	glBindVertexArray(m_vao);
 	if (m_usesEbo) {
 		glDrawElements(GL_TRIANGLES, m_drawCount, GL_UNSIGNED_INT, nullptr);
