@@ -4,11 +4,13 @@
 
 #include <GLFW/glfw3.h>
 
+#include <imgui_impl_glfw.h>
+
 #include "GeneralInputHandler.h"
 
-void GeneralInputHandler::process_mouse_scroll_input(GLFWwindow *,
-													 [[maybe_unused]] double x,
+void GeneralInputHandler::process_mouse_scroll_input(GLFWwindow *win, double x,
 													 double y) {
+	ImGui_ImplGlfw_ScrollCallback(win, x, y);
 	m_dScroll = y;
 }
 

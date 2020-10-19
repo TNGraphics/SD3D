@@ -136,11 +136,12 @@ int main(int argc, const char *argv[]) {
 		glContext.swap_buffer();
 		inputHandler.update();
 
-		if (!gui::get_io().WantCaptureMouse &&
-			inputHandler.is_mouse_pressed()) {
-			cam.rotate(inputHandler.d_x(), inputHandler.d_y());
+		if (!gui::get_io().WantCaptureMouse) {
+			if (inputHandler.is_mouse_pressed()) {
+				cam.rotate(inputHandler.d_x(), inputHandler.d_y());
+			}
+			cam.zoom(inputHandler.d_scroll());
 		}
-		cam.zoom(inputHandler.d_scroll());
 		cam.update(gsl::narrow_cast<float>(deltaTime));
 	}
 
