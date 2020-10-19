@@ -95,8 +95,6 @@ int main(int argc, const char *argv[]) {
 	Shader shader{resPath + "shaders/builtin/generic.vert",
 				  resPath + "shaders/builtin/generic.frag"};
 
-	Texture container{resPath + "img/container.jpg"};
-
 	Model monkey{};
 
 	OrbitCameraController cam{
@@ -120,7 +118,6 @@ int main(int argc, const char *argv[]) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
-		container.bind();
 
 		shader.use();
 		shader.set("view", cam.cam().view());
