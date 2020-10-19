@@ -49,6 +49,8 @@ private:
 public:
 	void draw() const;
 
+	void clear();
+
 	[[nodiscard]] size_t mesh_count() const;
 
 	static Model from_path(const std::string &path);

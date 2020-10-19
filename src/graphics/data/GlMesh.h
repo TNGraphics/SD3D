@@ -42,6 +42,8 @@ private:
 public:
 	void draw() const;
 
+	void release_data();
+
 	// for now only float
 	static GlMesh from_data(const DataLayout &dataLayout, const float *data,
 							GLuint amount);

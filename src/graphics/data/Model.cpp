@@ -87,6 +87,12 @@ size_t Model::mesh_count() const {
 	return m_meshes.size();
 }
 
+void Model::clear() {
+	for (auto &mesh : m_meshes) {
+		mesh.release_data();
+	}
+	m_meshes.clear();
+}
 Model::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
 					  glm::vec2 texCoords) :
 	position{position},

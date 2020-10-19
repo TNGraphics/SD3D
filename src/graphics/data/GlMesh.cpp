@@ -90,3 +90,15 @@ void GlMesh::draw() const {
 	}
 	glBindVertexArray(0);
 }
+
+void GlMesh::release_data() {
+	if (!m_initialized) return;
+	glDeleteVertexArrays(1, &m_vao);
+	glDeleteBuffers(1, &m_vbo);
+	if (m_usesEbo) {
+		glDeleteBuffers(1, &m_ebo);
+		m_usesEbo = false;
+	}
+	m_drawCount = 0;
+	m_initialized = false;
+}
