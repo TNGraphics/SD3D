@@ -92,8 +92,7 @@ int main(int argc, const char *argv[]) {
 
 	GeneralInputHandler inputHandler{glContext.win()};
 
-	Shader shader{resPath + "shaders/builtin/generic.vert",
-				  resPath + "shaders/builtin/generic.frag"};
+	Shader shader;
 
 	Model monkey{};
 

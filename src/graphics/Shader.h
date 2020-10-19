@@ -15,12 +15,13 @@
 #pragma warning(pop)
 
 #include <string>
+#include <optional>
 
 class Shader {
 private:
 	GLuint m_id;
 
-	static std::string read_file_contents(const char *path);
+	static std::optional<std::string> read_file_contents(const char *path);
 
 	static int check_shader_error(GLuint shaderId);
 
