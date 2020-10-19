@@ -10,6 +10,7 @@
 #include <glad/glad.h>
 
 class Texture {
+	// TODO some way to delete the texture from GPU memory
 public:
 	struct Settings {
 		GLenum format{GL_RGB};

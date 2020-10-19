@@ -51,7 +51,6 @@ void GlContext::init(const GlContext::Settings &s) {
 	setup_debug_output();
 
 	glViewport(0, 0, m_width, m_height);
-	// TODO handle frame buffer resize
 
 	set_vsync(s.vsync);
 
@@ -131,7 +130,8 @@ int GlContext::bool_to_gl(bool b) {
 }
 
 void GlContext::framebuffer_resize_cb(GLFWwindow *, int width, int height) {
-	// FIXME needs to update current GlContext -> not static
+	// FIXED needs to update current GlContext -> not static
+	// 		 fixed, because the context this is called on is always current
 	// Use same system as InputHandler -> GetUserAttribPointer
 	glViewport(0, 0, width, height);
 }

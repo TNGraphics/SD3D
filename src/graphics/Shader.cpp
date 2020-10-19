@@ -47,6 +47,7 @@ Shader::Shader(std::string_view vertexPath, std::string_view fragmentPath) :
 }
 
 std::string Shader::read_file_contents(const char *path) {
+	// TODO when file could not be opened, return default shader
 	std::stringstream ret{};
 	std::ifstream shaderFile;
 	try {
