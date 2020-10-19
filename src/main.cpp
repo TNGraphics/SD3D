@@ -41,14 +41,15 @@
 #include "controls/GeneralInputHandler.h"
 #include "controls/OrbitCameraController.h"
 
-
-float g_mixVal{};
 void debug_gui(ImGui::FileBrowser &);
 
 int main(int argc, const char *argv[]) {
 	using namespace sd3d;
+#if DEBUG
 	spdlog::set_level(spdlog::level::debug);
-
+#else
+	spdlog::set_level(spdlog::level::err);
+#endif
 	std::string resPath{};
 	bool showHelp = false;
 	int width{1200};
@@ -122,7 +123,6 @@ int main(int argc, const char *argv[]) {
 		container.bind();
 
 		shader.use();
-		shader.set("mixVal", g_mixVal);
 		shader.set("view", cam.cam().view());
 		shader.set("projection", cam.cam().projection());
 
