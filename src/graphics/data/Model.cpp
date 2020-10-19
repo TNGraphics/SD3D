@@ -12,13 +12,6 @@
 
 #include "GlMesh.h"
 
-const DataLayout &Model::vertex_layout() {
-	static DataLayout d{{3, DataLayout::GlType::FLOAT, GL_FALSE},
-						{3, DataLayout::GlType::FLOAT, GL_FALSE},
-						{2, DataLayout::GlType::FLOAT, GL_FALSE}};
-	return d;
-}
-
 void Model::draw() const {
 	for (const auto &mesh : m_meshes) {
 		mesh.draw();
@@ -42,7 +35,7 @@ void Model::process_node(aiNode *node, const aiScene *scene) {
 // TODO use scene
 // TODO move to GlMesh
 GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *) {
-	std::vector<Vertex> vertices{};
+	std::vector<GlMesh::Vertex> vertices{};
 
 	vertices.reserve(mesh->mNumVertices);
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -107,13 +100,6 @@ Model &Model::operator=(Model &&other) noexcept {
 	return *this;
 }
 
-Model::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
-					  glm::vec2 texCoords) :
-	position{position},
-	normal{normal},
-	texCoords{texCoords} {}
-
-Model::Vertex::Vertex() : position{}, normal{}, texCoords{} {}
 Model::Model(Model &&other) noexcept :
 	m_meshes{std::move(other.m_meshes)},
 	m_directory{std::move(other.m_directory)} {}

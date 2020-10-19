@@ -9,6 +9,14 @@
 
 #include "GlMesh.h"
 
+
+const DataLayout &GlMesh::vertex_layout() {
+	static DataLayout d{{3, DataLayout::GlType::FLOAT, GL_FALSE},
+						{3, DataLayout::GlType::FLOAT, GL_FALSE},
+						{2, DataLayout::GlType::FLOAT, GL_FALSE}};
+	return d;
+}
+
 GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data,
 						 GLuint amount) {
 	GLuint vao, vbo;
@@ -35,7 +43,7 @@ GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data,
 	return GlMesh(vao, amount, vbo, 0, false);
 }
 
-GlMesh GlMesh::from_data(const std::vector<Model::Vertex> &data,
+GlMesh GlMesh::from_data(const std::vector<Vertex> &data,
 						 const std::vector<GLuint> &indices) {
 	GLuint vao, vbo, ebo;
 	// Generate a Vertex Array Object (for now without data)
@@ -50,7 +58,7 @@ GlMesh GlMesh::from_data(const std::vector<Model::Vertex> &data,
 	// Bind the VBO to fill it with data
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	// Fill the VBO with data
-	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Model::Vertex),
+	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Vertex),
 				 data.data(), GL_STATIC_DRAW);
 
 	// Bind and fill EBO with data
@@ -59,7 +67,7 @@ GlMesh GlMesh::from_data(const std::vector<Model::Vertex> &data,
 				 indices.data(), GL_STATIC_DRAW);
 
 	// Bind the DataLayout (basically multiple glVertexAttribPointers enabled)
-	Model::vertex_layout().bind();
+	vertex_layout().bind();
 
 	// properly unbind all buffers, arrays, etc. to prevent collisions
 	glBindVertexArray(0);
@@ -133,3 +141,11 @@ void GlMesh::release_data() {
 	m_drawCount = 0;
 	m_initialized = false;
 }
+
+GlMesh::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
+					  glm::vec2 texCoords) :
+	position{position},
+	normal{normal},
+	texCoords{texCoords} {}
+
+GlMesh::Vertex::Vertex() : position{}, normal{}, texCoords{} {}

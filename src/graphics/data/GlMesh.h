@@ -7,13 +7,23 @@
 
 #include <GLFW/glfw3.h>
 
-// TODO i don't like to include this
-#include "Model.h"
 
 class DataLayout;
 
 // TODO maybe template on useEbo?
 class GlMesh {
+public:
+	struct Vertex {
+		[[maybe_unused]] glm::vec3 position{};
+		[[maybe_unused]] glm::vec3 normal{};
+		[[maybe_unused]] glm::vec2 texCoords{};
+
+		Vertex();
+		Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 texCoords);
+	};
+
+	static const DataLayout &vertex_layout();
+
 private:
 	// Vertex Array Object
 	// - This object holds info about data layout, the VBO the data is coming
@@ -55,7 +65,7 @@ public:
 	static GlMesh from_data(const DataLayout &dataLayout, const float *data,
 							GLuint amount);
 
-	static GlMesh from_data(const std::vector<Model::Vertex> &data,
+	static GlMesh from_data(const std::vector<Vertex> &data,
 							const std::vector<GLuint> &indices);
 };
 

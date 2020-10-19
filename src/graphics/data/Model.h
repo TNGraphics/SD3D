@@ -23,19 +23,6 @@ struct aiScene;
 struct aiMesh;
 
 class Model {
-public:
-	// TODO maybe move to GlMesh class because this one doesn't really use it
-	struct Vertex {
-		glm::vec3 position{};
-		glm::vec3 normal{};
-		glm::vec2 texCoords{};
-
-		Vertex();
-		Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 texCoords);
-	};
-
-	static const DataLayout &vertex_layout();
-
 private:
 	// TODO handle textures in some way
 
