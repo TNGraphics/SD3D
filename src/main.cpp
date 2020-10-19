@@ -26,6 +26,7 @@
 
 #include <gsl-lite/gsl-lite.hpp>
 
+#include "external/imgui-filebrowser/imfilebrowser.h"
 #include "graphics/ImGuiHandler.h"
 
 #include "graphics/GlContext.h"
@@ -40,9 +41,9 @@
 #include "controls/GeneralInputHandler.h"
 #include "controls/OrbitCameraController.h"
 
-void fps_gui();
 
 float g_mixVal{};
+void debug_gui(ImGui::FileBrowser &);
 
 int main(int argc, const char *argv[]) {
 	using namespace sd3d;
@@ -50,17 +51,15 @@ int main(int argc, const char *argv[]) {
 
 	std::string resPath{};
 	bool showHelp = false;
-	int width{600};
-	int height{600};
+	int width{1200};
+	int height{800};
 	bool noVsync{};
-	std::string file{};
 	auto cli =
 		lyra::opt(resPath, "res-path")["-r"]["--res"]["--path"]["-p"](
 			"The path of the res folder relative to the executable") |
 		lyra::opt(width, "width")["-w"]["--width"]("The window width") |
 		lyra::opt(height, "height")["-h"]["--height"]("The window height") |
 		lyra::opt(noVsync)["--disable-vsync"]("Force VSYNC to be disabled") |
-		lyra::opt(file, "file")["-f"]["--file"]("File to open") |
 		lyra::help(showHelp);
 
 	auto parsed = cli.parse({argc, argv});
@@ -84,6 +83,11 @@ int main(int argc, const char *argv[]) {
 	}
 
 	gui::setup_imgui(glContext.win());
+	ImGui::FileBrowser fileBrowser;
+	fileBrowser.SetTitle("Select a model");
+	fileBrowser.SetTypeFilters({".obj", ".fbx", ".dae", ".gltf", ".glb", ".3ds",
+								".ase", ".ifc", ".xgl", ".zgl", ".ply", ".lwo",
+								".lws", ".lxo", ".stl", ".x", ".ac", ".ms3d"});
 
 	GeneralInputHandler inputHandler{glContext.win()};
 
@@ -92,8 +96,7 @@ int main(int argc, const char *argv[]) {
 
 	Texture container{resPath + "img/container.jpg"};
 
-	auto monkey{
-		Model::from_path(resPath + (file.empty() ? "/models/cube.fbx" : file))};
+	Model monkey{};
 
 	OrbitCameraController cam{
 		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
@@ -104,6 +107,8 @@ int main(int argc, const char *argv[]) {
 
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
+
+	fileBrowser.Open();
 
 	while (glContext.is_open()) {
 		auto currentFrame{glfwGetTime()};
@@ -129,7 +134,15 @@ int main(int argc, const char *argv[]) {
 		gui::new_frame();
 
 		// Do IMGUI stuff here
-		fps_gui();
+		debug_gui(fileBrowser);
+
+		if(fileBrowser.HasSelected()) {
+			spdlog::info("Opening model: {}", fileBrowser.GetSelected().string());
+			monkey = Model::from_path(fileBrowser.GetSelected().string());
+			fileBrowser.Close();
+		}
+
+		fileBrowser.Display();
 
 		gui::render();
 
@@ -150,8 +163,11 @@ int main(int argc, const char *argv[]) {
 	return 0;
 }
 
-void fps_gui() {
-	ImGui::Begin("FPS", nullptr, ImGuiWindowFlags_NoResize);
+void debug_gui(ImGui::FileBrowser &fileBrowser) {
+	ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_NoResize);
 	ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
+	if(ImGui::Button("Open file browser")) {
+		fileBrowser.Open();
+	}
 	ImGui::End();
 }

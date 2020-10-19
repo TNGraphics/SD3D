@@ -10,6 +10,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include "../external/imgui-filebrowser/imfilebrowser.h"
+
 namespace sd3d::gui {
 
 void setup_imgui(GLFWwindow *window) {

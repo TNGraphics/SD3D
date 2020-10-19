@@ -44,6 +44,7 @@ add_executable(SD3D
 			   src/graphics/data/Model.cpp
 			   src/io/FileOpenDialog.cpp
 			   src/graphics/GlContext.cpp
+			   src/external/imgui-filebrowser/imfilebrowser.cpp
 			   )
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
