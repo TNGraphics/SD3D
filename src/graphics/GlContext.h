@@ -5,6 +5,14 @@
 #ifndef SD3D_GLCONTEXT_H
 #define SD3D_GLCONTEXT_H
 
+#pragma warning(push, 0)
+
+#include <glm/glm.hpp>
+
+#pragma warning(pop)
+
+#include <imgui.h>
+
 struct GLFWwindow;
 
 namespace sd3d {
@@ -53,6 +61,22 @@ public:
 	[[nodiscard]] int width() const { return m_width; }
 	[[nodiscard]] int height() const { return m_height; }
 	[[nodiscard]] float aspect() const;
+
+	[[nodiscard]] bool is_current_context() const;
+
+	void clear() const {
+		clear(0, 0, 0);
+	}
+	void clear(const glm::vec3 &col) const {
+		clear(col.x, col.y, col.z);
+	}
+	void clear(const glm::vec4 &col) const {
+		clear(col.x, col.y, col.z, col.w);
+	}
+	void clear(const ImVec4 &col) const {
+		clear(col.x, col.y, col.z, col.w);
+	}
+	void clear(float r, float g, float b, float a = 1.0f) const;
 
 	// TODO more functions for resizing, minimizing, etc.
 	// TODO somehow handle resize callback

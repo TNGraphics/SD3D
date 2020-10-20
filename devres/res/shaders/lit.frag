@@ -40,6 +40,8 @@ in vec3 fragPos;
 in vec3 normal;
 in vec2 texCoord;
 
+uniform vec3 color;
+
 uniform Material material;
 
 uniform DirLight dirLight;
@@ -107,6 +109,7 @@ ColorInfo sample_colors() {
     vec3 diff = vec3(texture(material.texture_diffuse1, texCoord));
     diff += vec3(texture(material.texture_diffuse2, texCoord));
     diff += vec3(texture(material.texture_diffuse3, texCoord));
+    diff *= color;
 
     vec3 spec = vec3(texture(material.texture_specular1, texCoord));
     spec += vec3(texture(material.texture_specular2, texCoord));

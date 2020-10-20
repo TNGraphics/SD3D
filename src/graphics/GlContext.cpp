@@ -55,6 +55,10 @@ void GlContext::init(const GlContext::Settings &s) {
 	set_vsync(s.vsync);
 
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_STENCIL_TEST);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	// at the end (when creation was successful) set m_initialized to true
 	m_initialized = true;
@@ -151,6 +155,16 @@ void GlContext::setup_debug_output() {
 	glEnable(GL_DEBUG_OUTPUT);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glDebugMessageCallback(opengl_message_callback, nullptr);
+}
+
+void GlContext::clear(float r, float g, float b, float a) const {
+	if(!is_current_context()) return;
+	glClearColor(r, g, b, a);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+}
+
+bool GlContext::is_current_context() const {
+	return glfwGetCurrentContext() == win();
 }
 
 void GLAPIENTRY opengl_message_callback(

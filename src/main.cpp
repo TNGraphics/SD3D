@@ -13,6 +13,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <lyra/lyra.hpp>
 
@@ -57,16 +58,13 @@ int main(int argc, const char *argv[]) {
 	int width{1200};
 	int height{800};
 	bool noVsync{};
-	std::string shaderPath{};
-	std::string texturePath{};
+	std::string resourcePath{};
 	auto cli =
 		lyra::opt(width, "width")["-w"]["--width"]("The window width") |
 		lyra::opt(height, "height")["-h"]["--height"]("The window height") |
 		lyra::opt(noVsync)["--disable-vsync"]("Force VSYNC to be disabled") |
-		lyra::opt(shaderPath, "shader path")["-s"]["--shader"](
-			"The shader path for developing shaders you might use") |
-		lyra::opt(texturePath,
-				  "texture path")["-t"]["--texture"]("The texture path") |
+		lyra::opt(resourcePath, "resource path")["-r"]["--res"](
+			"The path to the resource folder, relative to the .exe. Leave empty if next to it.") |
 		lyra::help(showHelp);
 
 	auto parsed = cli.parse({argc, argv});
@@ -94,7 +92,8 @@ int main(int argc, const char *argv[]) {
 		return -1;
 	}
 
-	gui::setup_imgui(glContext.win(), false);
+	gui::setup_imgui(glContext.win());
+
 	ImGui::FileBrowser fileBrowser;
 	fileBrowser.SetTitle("Select a model");
 	fileBrowser.SetTypeFilters({".obj", ".fbx", ".dae", ".gltf", ".glb", ".3ds",
@@ -103,9 +102,12 @@ int main(int argc, const char *argv[]) {
 
 	GeneralInputHandler inputHandler{glContext.win()};
 
-	Shader litShader{shaderPath + "lit.vert", shaderPath + "lit.frag"};
+	gui::load_font(resourcePath + "/res/fonts/roboto.ttf", 15.0f);
 
-	Shader lightShader{shaderPath + "light.vert", shaderPath + "light.frag"};
+	Shader litShader{resourcePath + "/res/shaders/lit.vert", resourcePath + "/res/shaders/lit.frag"};
+
+	Shader lightShader{resourcePath + "/res/shaders/light.vert",
+					   resourcePath + "/res/shaders/light.frag"};
 
 	Model monkey{};
 
@@ -142,17 +144,17 @@ int main(int argc, const char *argv[]) {
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
 
-	fileBrowser.Open();
-
 	float modelScale{1.0f};
+
+	ImVec4 clearCol{0, 0, 0, 1.0f};
+	glm::vec3 modelTint{1.0f};
 
 	while (glContext.is_open()) {
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glContext.clear(clearCol);
 
 		lightPos.x = gsl::narrow_cast<float>(sin(glfwGetTime()) * 5.0);
 		lightPos.z = gsl::narrow_cast<float>(cos(glfwGetTime()) * 15.0);
@@ -171,6 +173,8 @@ int main(int argc, const char *argv[]) {
 		litShader.set("normalMatrix", normalMatrix);
 
 		litShader.set("pointLights[0].position", lightPos);
+
+		litShader.set("color", modelTint);
 
 		monkey.draw(litShader);
 
@@ -191,6 +195,16 @@ int main(int argc, const char *argv[]) {
 		ImGui::Begin("Model Settings", nullptr, ImGuiWindowFlags_NoResize);
 		ImGui::Text("Scale");
 		ImGui::SliderFloat("Scale", &modelScale, 0.01f, 100.f);
+		if(ImGui::CollapsingHeader("Colors")) {
+			if(ImGui::TreeNode("Clear Color")) {
+				ImGui::ColorPicker3("Clear Color", (float *)&clearCol);
+				ImGui::TreePop();
+			}
+			if (ImGui::TreeNode("Model Tint")) {
+				ImGui::ColorPicker3("Model Tint", glm::value_ptr(modelTint));
+				ImGui::TreePop();
+			}
+		}
 		ImGui::End();
 
 		// Do IMGUI stuff here
@@ -225,6 +239,7 @@ int main(int argc, const char *argv[]) {
 }
 
 void debug_gui(ImGui::FileBrowser &fileBrowser) {
+	ImGui::SetNextWindowSize({-1, -1});
 	ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_NoResize);
 	ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
 	if (ImGui::Button("Open file browser")) {
