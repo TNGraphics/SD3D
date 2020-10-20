@@ -49,6 +49,8 @@ public:
 
 	[[maybe_unused]] void set(const char *name, int val) const;
 
+	[[maybe_unused]] void set_int(const char *name, int val) const;
+
 	[[maybe_unused]] void set(const char *name, unsigned int val) const;
 
 	[[maybe_unused]] void set(const char *name, float val) const;

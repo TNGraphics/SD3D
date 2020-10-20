@@ -17,10 +17,13 @@
 #include "DataLayout.h"
 
 class GlMesh;
+class Shader;
 
 struct aiNode;
 struct aiScene;
 struct aiMesh;
+struct aiMaterial;
+enum aiTextureType;
 
 class Model {
 private:
@@ -33,7 +36,9 @@ private:
 	Model(Model &&) noexcept;
 
 	void process_node(aiNode *node, const aiScene *scene);
-	static GlMesh process_mesh(aiMesh *mesh, const aiScene *scene);
+	GlMesh process_mesh(aiMesh *mesh, const aiScene *scene);
+	void process_material(aiMaterial *mat, GlMesh &mesh);
+	void process_material_textures_of_type(aiMaterial *, aiTextureType, GlMesh &);
 
 public:
 	Model() = default;
@@ -42,6 +47,7 @@ public:
 	Model &operator=(Model &&) noexcept;
 
 	void draw() const;
+	void draw(Shader &) const;
 
 	void clear();
 

@@ -5,6 +5,8 @@
 #ifndef SD3D_GLMESH_H
 #define SD3D_GLMESH_H
 
+#include <vector>
+
 #include <GLFW/glfw3.h>
 
 #pragma warning(push, 0)
@@ -15,7 +17,10 @@
 
 #include "../memory/gl_memory.h"
 
+#include "Texture.h"
+
 class DataLayout;
+class Shader;
 
 class GlMesh {
 public:
@@ -53,6 +58,10 @@ private:
 
 	bool m_initialized{false};
 
+	std::vector<Texture> m_textures{};
+
+	static const Texture &placeholder_tex();
+
 	GlMesh(sd3d::memory::shared_vao_t vao, GLuint drawCount,
 		   sd3d::memory::shared_vbo_t vbo, sd3d::memory::shared_ebo_t ebo,
 		   bool useEbo);
@@ -67,6 +76,7 @@ public:
 	GlMesh &operator=(const GlMesh &);
 
 	void draw() const;
+	void draw(Shader &) const;
 
 	// for now only float
 	static GlMesh from_data(const DataLayout &dataLayout, const float *data,
@@ -74,6 +84,17 @@ public:
 
 	static GlMesh from_data(const std::vector<Vertex> &data,
 							const std::vector<GLuint> &indices);
+
+	void add_texture(const char *path, Texture::Type type, GLenum slot,
+					 const Texture::Settings &settings = Texture::Settings{});
+	void add_texture(std::string_view path, Texture::Type type, GLenum slot,
+					 const Texture::Settings &settings = Texture::Settings{});
+	void add_texture(const char *path, Texture::Type type,
+					 const Texture::Settings &settings = Texture::Settings{});
+	void add_texture(std::string_view path, Texture::Type type,
+					 const Texture::Settings &settings = Texture::Settings{});
+
+	void finish_setup();
 };
 
 #endif // SD3D_GLMESH_H

@@ -5,7 +5,12 @@
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 
+#include <utility>
+
+#include <gsl/gsl-lite.hpp>
+
 #include "DataLayout.h"
+#include "Shader.h"
 
 #include "GlMesh.h"
 
@@ -87,14 +92,15 @@ GlMesh::GlMesh(GlMesh &&other) noexcept :
 	m_vbo{std::move(other.m_vbo)},
 	m_ebo{std::move(other.m_ebo)},
 	m_usesEbo{other.m_usesEbo},
-	m_initialized{other.m_initialized}
-{
+	m_initialized{other.m_initialized},
+	m_textures{std::move(other.m_textures)} {
 	other.m_vao = nullptr;
 	other.m_drawCount = 0;
 	other.m_vbo = nullptr;
 	other.m_ebo = nullptr;
 	other.m_usesEbo = false;
 	other.m_initialized = false;
+	other.m_textures.clear();
 }
 
 GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
@@ -104,6 +110,7 @@ GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
 	m_ebo = std::move(other.m_ebo);
 	m_usesEbo = other.m_usesEbo;
 	m_initialized = other.m_initialized;
+	m_textures = std::move(other.m_textures);
 
 	other.m_vao = nullptr;
 	other.m_drawCount = 0;
@@ -111,6 +118,7 @@ GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
 	other.m_ebo = nullptr;
 	other.m_usesEbo = false;
 	other.m_initialized = false;
+	other.m_textures.clear();
 	return *this;
 }
 
@@ -122,14 +130,57 @@ GlMesh &GlMesh::operator=(const GlMesh &other) {
 		m_ebo = other.m_ebo;
 		m_usesEbo = other.m_usesEbo;
 		m_initialized = other.m_initialized;
+		m_textures = other.m_textures;
 	}
 	return *this;
 }
 
 void GlMesh::draw() const {
 	if (!m_initialized) return;
+	// bind all textures
+	for (const auto &tex : m_textures) {
+		tex.bind();
+	}
+
 	draw_mesh();
+
+	// unbind all textures
+	for (const auto &tex : m_textures) {
+		tex.unbind();
+	}
+	Texture::reset();
 }
+
+void GlMesh::draw(Shader &shader) const {
+	if (!m_initialized) return;
+
+	placeholder_tex().bind_to_num(0);
+
+	int diffuseNr = 0;
+	int specularNr = 0;
+	for(unsigned int i = 1; const auto &tex : m_textures) {
+		std::string property{};
+		if(tex.get_type() == Texture::Type::DIFFUSE) {
+			property = "material.texture_diffuse" + std::to_string(++diffuseNr);
+		} else if(tex.get_type() == Texture::Type::SPECULAR) {
+			property = "material.texture_specular" + std::to_string(++specularNr);
+		}
+		shader.set_int(property.c_str(), gsl::narrow<int>(i));
+		// bin the texture to that slot
+		tex.bind_to_num(i);
+		++i;
+	}
+
+	draw_mesh();
+
+	for(unsigned int i = 1; const auto &tex : m_textures) {
+		Texture::unbind_num(i);
+		++i;
+	}
+	Texture::unbind_num(0);
+	Texture::reset();
+}
+
 void GlMesh::draw_mesh() const {
 	glBindVertexArray(*m_vao);
 	if (m_usesEbo) {
@@ -140,7 +191,37 @@ void GlMesh::draw_mesh() const {
 	glBindVertexArray(0);
 }
 
+void GlMesh::add_texture(const char *path, Texture::Type type, GLenum slot,
+						 const Texture::Settings &settings) {
+	m_textures.emplace_back(path, settings, slot, type);
+}
 
+void GlMesh::add_texture(std::string_view path, Texture::Type type, GLenum slot,
+						 const Texture::Settings &settings) {
+	m_textures.emplace_back(path, settings, slot, type);
+}
+
+void GlMesh::add_texture(const char *path, Texture::Type type,
+						 const Texture::Settings &settings) {
+	add_texture(path, type, GL_TEXTURE0, settings);
+}
+
+void GlMesh::add_texture(std::string_view path, Texture::Type type,
+						 const Texture::Settings &settings) {
+	add_texture(path, type, GL_TEXTURE0, settings);
+}
+
+void GlMesh::finish_setup() {
+	if(m_textures.empty()) {
+		// add white texture
+		m_textures.push_back(Texture::empty_white());
+	}
+}
+
+const Texture &GlMesh::placeholder_tex() {
+	static Texture tex{Texture::empty_black()};
+	return tex;
+}
 
 GlMesh::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
 					  glm::vec2 texCoords) :

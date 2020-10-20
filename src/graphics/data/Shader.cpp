@@ -168,6 +168,10 @@ void Shader::set(const char *name, int val) const {
 	glUniform1i(get_uniform_loc(name), val);
 }
 
+void Shader::set_int(const char *name, int val) const {
+	set(name, val);
+}
+
 void Shader::set(const char *name, unsigned int val) const {
 	glUniform1ui(get_uniform_loc(name), val);
 }

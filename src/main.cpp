@@ -103,9 +103,6 @@ int main(int argc, const char *argv[]) {
 
 	GeneralInputHandler inputHandler{glContext.win()};
 
-	Texture diffuseTex{texturePath + "container_diffuse.png", GL_TEXTURE0};
-	Texture specularTex{texturePath + "container_specular.png", GL_TEXTURE1};
-
 	Shader litShader{shaderPath + "lit.vert", shaderPath + "lit.frag"};
 
 	Shader lightShader{shaderPath + "light.vert", shaderPath + "light.frag"};
@@ -120,6 +117,7 @@ int main(int argc, const char *argv[]) {
 		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
 		{glm::vec3{}, 10.0f, 2.5f, 20.0f, 1.f, 0.25f, 3.f}};
 
+	// TODO abstract lights
 	litShader.bind();
 	litShader.set("material.shininess", 32.f);
 	litShader.set("material.diffuse", 0);
@@ -156,9 +154,6 @@ int main(int argc, const char *argv[]) {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		diffuseTex.bind();
-		specularTex.bind();
-
 		lightPos.x = gsl::narrow_cast<float>(sin(glfwGetTime()) * 5.0);
 		lightPos.z = gsl::narrow_cast<float>(cos(glfwGetTime()) * 15.0);
 
@@ -177,10 +172,7 @@ int main(int argc, const char *argv[]) {
 
 		litShader.set("pointLights[0].position", lightPos);
 
-		monkey.draw();
-
-		diffuseTex.unbind();
-		specularTex.unbind();
+		monkey.draw(litShader);
 
 		lightShader.bind();
 		lightShader.set("view", cam.cam().view());
