@@ -4,10 +4,14 @@
 #include <spdlog/spdlog.h>
 #include <stb_image.h>
 #include <algorithm>
+#include <unordered_map>
+#include <utility>
 
 #include <glad/glad.h>
 
 #include "Texture.h"
+
+static std::pair<bool, sd3d::memory::shared_tex_t> add_or_get(const char *path);
 
 Texture::Texture(Texture &&other) noexcept :
 	m_id{std::move(other.m_id)},
@@ -43,7 +47,10 @@ Texture::Texture(Texture::Type type) : Texture{Settings{}, type} {}
 
 Texture::Texture(const char *path, const Settings &settings, GLenum slot,
 				 Type type) : m_slot{validate_slot(slot)}, m_type{type} {
-	m_id = sd3d::memory::create_tex();
+	// TODO way to force reloading texture
+	bool isNewVal{false};
+	std::tie(isNewVal, m_id) = add_or_get(path);
+	if(isNewVal) {
 		spdlog::debug("Loading file {}", path);
 		glBindTexture(GL_TEXTURE_2D, *m_id);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, settings.wrapS);
@@ -66,6 +73,9 @@ Texture::Texture(const char *path, const Settings &settings, GLenum slot,
 			spdlog::error("Failed to load image data from file {}", path);
 		}
 		stbi_image_free(data);
+	} else {
+		spdlog::debug("File {} already loaded, using cached version", path);
+	}
 }
 
 // region additional constructors
@@ -187,4 +197,25 @@ Texture Texture::empty_black(Texture::Type type) {
 	GLubyte pixel[3] = {0x0, 0x0, 0x0};
 	return empty_from_pixel(pixel, type);
 }
+
+static std::pair<bool, sd3d::memory::shared_tex_t> add_or_get(const char *path) {
+	using lookup_t = std::unordered_map<std::string, sd3d::memory::weak_tex_t>;
+	static lookup_t lookup{};
+	if(lookup.contains(path)) {
+		auto temp = lookup.at(path);
+		if(!temp.expired()) {
+			spdlog::debug("Cached texture");
+			return std::make_pair(false, lookup.at(path).lock());
+		}
+		// TODO maybe don't do everytime a resource is requested
+		std::erase_if(lookup, [](const lookup_t::value_type &item) {
+			return item.second.expired();
+		});
+	}
+	spdlog::debug("New texture");
+	auto newTex = sd3d::memory::create_tex();
+
+	lookup.try_emplace(path, newTex);
+	spdlog::debug("Before return");
+	return std::make_pair(true, newTex);
 }

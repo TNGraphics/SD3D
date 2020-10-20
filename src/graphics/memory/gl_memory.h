@@ -12,9 +12,14 @@
 namespace sd3d::memory {
 
 using shared_vbo_t = std::shared_ptr<GLuint>;
+
 using shared_vao_t = std::shared_ptr<GLuint>;
+
 using shared_ebo_t = std::shared_ptr<GLuint>;
+
 using shared_tex_t = std::shared_ptr<GLuint>;
+using weak_tex_t = std::weak_ptr<GLuint>;
+
 using shared_prog_t = std::shared_ptr<GLuint>;
 
 [[maybe_unused]] shared_vbo_t create_vbo();
