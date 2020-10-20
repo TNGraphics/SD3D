@@ -82,4 +82,34 @@ shared_prog_t create_prog() {
 	return prog;
 }
 
+shared_fbo_t create_fbo() {
+	auto fbo = shared_fbo_t(new GLuint{glCreateProgram()}, [](const GLuint *ptr) {
+#ifdef MEM_DEBUG
+		spdlog::trace("Deleting FBO {}", *ptr);
+#endif
+		glDeleteFramebuffers(1, ptr);
+		delete ptr;
+	});
+	glGenFramebuffers(1, fbo.get());
+#ifdef MEM_DEBUG
+	spdlog::trace("Generating FBO {}", *prog);
+#endif
+	return fbo;
+}
+
+shared_rbo_t create_rbo() {
+	auto rbo = shared_rbo_t(new GLuint{glCreateProgram()}, [](const GLuint *ptr) {
+#ifdef MEM_DEBUG
+		spdlog::trace("Deleting RBO {}", *ptr);
+#endif
+		glDeleteRenderbuffers(1, ptr);
+		delete ptr;
+	});
+	glGenRenderbuffers(1, rbo.get());
+#ifdef MEM_DEBUG
+	spdlog::trace("Generating RBO {}", *prog);
+#endif
+	return rbo;
+}
+
 } // namespace sd3d::memory

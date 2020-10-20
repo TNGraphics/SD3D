@@ -22,6 +22,10 @@ using weak_tex_t = std::weak_ptr<GLuint>;
 
 using shared_prog_t = std::shared_ptr<GLuint>;
 
+using shared_fbo_t = std::shared_ptr<GLuint>;
+
+using shared_rbo_t = std::shared_ptr<GLuint>;
+
 [[maybe_unused]] shared_vbo_t create_vbo();
 
 [[maybe_unused]] shared_vao_t create_vao();
@@ -31,6 +35,10 @@ using shared_prog_t = std::shared_ptr<GLuint>;
 [[maybe_unused]] shared_tex_t create_tex();
 
 [[maybe_unused]] shared_prog_t create_prog();
+
+[[maybe_unused]] shared_fbo_t create_fbo();
+
+[[maybe_unused]] shared_rbo_t create_rbo();
 
 } // namespace sd3d::memory
 
