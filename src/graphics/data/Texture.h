@@ -12,7 +12,6 @@
 #include "../memory/gl_memory.h"
 
 class Texture {
-	// TODO some way to delete the texture from GPU memory
 public:
 	struct Settings {
 		GLint wrapS{GL_REPEAT};
@@ -24,11 +23,8 @@ public:
 	enum class Type { DIFFUSE, SPECULAR };
 
 private:
-	// TODO handle texture slots
 	sd3d::memory::shared_tex_t m_id{};
 
-	int m_width{};
-	int m_height{};
 	GLenum m_slot;
 
 	Type m_type{Type::DIFFUSE};
@@ -38,6 +34,11 @@ private:
 	static void bind_unchecked(GLenum slot, GLuint id);
 
 	static GLenum num_channels_to_format(int nrChannels);
+
+	explicit Texture(Type = Type::DIFFUSE);
+	explicit Texture(const Settings &, Type = Type::DIFFUSE);
+
+	static Texture empty_from_pixel(GLubyte *pixel, Type = Type::DIFFUSE);
 
 public:
 	[[maybe_unused]] Texture(const char *path, const Settings &settings,
@@ -70,6 +71,9 @@ public:
 	Texture(Texture &&) noexcept;
 	Texture &operator=(Texture &&) noexcept;
 
+	static Texture empty_white(Type = Type::DIFFUSE);
+	static Texture empty_black(Type = Type::DIFFUSE);
+
 	[[maybe_unused]] void bind() const;
 	[[maybe_unused]] void bind_to_num(unsigned int num) const;
 	[[maybe_unused]] void bind(GLenum slot) const;
@@ -84,11 +88,7 @@ public:
 
 	[[maybe_unused]] void change_slot(GLenum slot);
 
-	[[maybe_unused]] [[nodiscard]] int get_width() const;
-
-	[[maybe_unused]] [[nodiscard]] int get_height() const;
-
-	[[maybe_unused]] [[nodiscard]] Type get_type() const;
+	[[nodiscard]] Type get_type() const;
 
 };
 

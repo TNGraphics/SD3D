@@ -4,62 +4,68 @@
 #include <spdlog/spdlog.h>
 #include <stb_image.h>
 #include <algorithm>
-#include <iostream>
 
 #include <glad/glad.h>
 
 #include "Texture.h"
 
 Texture::Texture(Texture &&other) noexcept :
-	m_id{other.m_id},
-	m_width{other.m_width},
-	m_height{other.m_height},
+	m_id{std::move(other.m_id)},
 	m_slot{other.m_slot},
 	m_type{other.m_type} {
-	other.m_id = 0;
-	other.m_width = 0;
-	other.m_height = 0;
+	other.m_id = nullptr;
 	other.m_slot = GL_TEXTURE0;
 	other.m_type = Type::DIFFUSE;
 }
 
 Texture &Texture::operator=(Texture &&other) noexcept {
-	m_id = other.m_id;
-	m_width = other.m_width;
-	m_height = other.m_height;
+	m_id = std::move(other.m_id);
 	m_slot = other.m_slot;
 	m_type = other.m_type;
-	other.m_id = 0;
-	other.m_width = 0;
-	other.m_height = 0;
+	other.m_id = nullptr;
 	other.m_slot = GL_TEXTURE0;
 	other.m_type = Type::DIFFUSE;
 	return *this;
 }
 
-Texture::Texture(const char *path, const Settings &settings, GLenum slot,
-				 Type type) :
-	m_slot{validate_slot(slot)},
+Texture::Texture(const Texture::Settings &settings, Texture::Type type) :
+	m_slot{GL_TEXTURE0},
 	m_type{type},
 	m_id{sd3d::memory::create_tex()} {
-	spdlog::info("Loading image from path: {}", path);
 	glBindTexture(GL_TEXTURE_2D, *m_id);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, settings.wrapS);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, settings.wrapT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, settings.minFilter);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, settings.magFilter);
+}
 
-	int nrChannels{0};
+Texture::Texture(Texture::Type type) : Texture{Settings{}, type} {}
 
-	unsigned char *data = stbi_load(path, &m_width, &m_height, &nrChannels, 0);
-	if (data) {
-		auto format = num_channels_to_format(nrChannels);
-		glTexImage2D(GL_TEXTURE_2D, 0, format, m_width, m_height, 0, format,
-					 GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	} else
-		std::cout << "Failed to load image data\n";
-	stbi_image_free(data);
+Texture::Texture(const char *path, const Settings &settings, GLenum slot,
+				 Type type) : m_slot{validate_slot(slot)}, m_type{type} {
+	m_id = sd3d::memory::create_tex();
+		spdlog::debug("Loading file {}", path);
+		glBindTexture(GL_TEXTURE_2D, *m_id);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, settings.wrapS);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, settings.wrapT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+						settings.minFilter);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,
+						settings.magFilter);
+
+		int nrChannels{0};
+
+		int w{}, h{};
+		unsigned char *data = stbi_load(path, &w, &h, &nrChannels, 0);
+		if (data) {
+			auto format = num_channels_to_format(nrChannels);
+			glTexImage2D(GL_TEXTURE_2D, 0, format, w, h, 0, format,
+						 GL_UNSIGNED_BYTE, data);
+			glGenerateMipmap(GL_TEXTURE_2D);
+		} else {
+			spdlog::error("Failed to load image data from file {}", path);
+		}
+		stbi_image_free(data);
 }
 
 // region additional constructors
@@ -91,8 +97,6 @@ Texture::Texture(std::string_view path, GLenum slot, Texture::Type type) :
 Texture &Texture::operator=(const Texture &other) {
 	if (this != &other) {
 		m_id = other.m_id;
-		m_width = other.m_width;
-		m_height = other.m_height;
 		m_slot = other.m_slot;
 		m_type = other.m_type;
 	}
@@ -160,14 +164,27 @@ void Texture::change_slot(GLenum slot) {
 	m_slot = validate_slot(slot);
 }
 
-int Texture::get_width() const {
-	return m_width;
-}
-
-int Texture::get_height() const {
-	return m_height;
-}
-
 Texture::Type Texture::get_type() const {
 	return m_type;
+}
+
+Texture Texture::empty_from_pixel(GLubyte *pixel, Texture::Type type) {
+	Texture t(type);
+	t.bind();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1, 1, 0, GL_RGB,
+				 GL_UNSIGNED_BYTE, pixel);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	t.unbind();
+	return t;
+}
+
+Texture Texture::empty_white(Texture::Type type) {
+	GLubyte pixel[3] = {0xFF, 0xFF, 0xFF};
+	return empty_from_pixel(pixel, type);
+}
+
+Texture Texture::empty_black(Texture::Type type) {
+	GLubyte pixel[3] = {0x0, 0x0, 0x0};
+	return empty_from_pixel(pixel, type);
+}
 }
