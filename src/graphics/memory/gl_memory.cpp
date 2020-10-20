@@ -92,7 +92,7 @@ shared_fbo_t create_fbo() {
 	});
 	glGenFramebuffers(1, fbo.get());
 #ifdef MEM_DEBUG
-	spdlog::trace("Generating FBO {}", *prog);
+	spdlog::trace("Generating FBO {}", *fbo);
 #endif
 	return fbo;
 }
@@ -107,7 +107,7 @@ shared_rbo_t create_rbo() {
 	});
 	glGenRenderbuffers(1, rbo.get());
 #ifdef MEM_DEBUG
-	spdlog::trace("Generating RBO {}", *prog);
+	spdlog::trace("Generating RBO {}", *rbo);
 #endif
 	return rbo;
 }
