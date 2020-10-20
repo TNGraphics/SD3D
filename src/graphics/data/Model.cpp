@@ -86,9 +86,6 @@ size_t Model::mesh_count() const {
 }
 
 void Model::clear() {
-	for (auto &mesh : m_meshes) {
-		mesh.release_data();
-	}
 	m_meshes.clear();
 }
 
@@ -103,3 +100,11 @@ Model &Model::operator=(Model &&other) noexcept {
 Model::Model(Model &&other) noexcept :
 	m_meshes{std::move(other.m_meshes)},
 	m_directory{std::move(other.m_directory)} {}
+
+Model &Model::operator=(const Model &other) {
+	if (this != &other) {
+		m_meshes = other.m_meshes;
+		m_directory = other.m_directory;
+	}
+	return *this;
+}

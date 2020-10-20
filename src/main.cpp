@@ -45,7 +45,10 @@ void debug_gui(ImGui::FileBrowser &);
 
 int main(int argc, const char *argv[]) {
 	using namespace sd3d;
-#if DEBUG
+
+#ifdef MEM_DEBUG
+	spdlog::set_level(spdlog::level::trace);
+#elif DEBUG
 	spdlog::set_level(spdlog::level::debug);
 #else
 	spdlog::set_level(spdlog::level::err);
@@ -117,7 +120,7 @@ int main(int argc, const char *argv[]) {
 		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
 		{glm::vec3{}, 10.0f, 2.5f, 20.0f, 1.f, 0.25f, 3.f}};
 
-	litShader.use();
+	litShader.bind();
 	litShader.set("material.shininess", 32.f);
 	litShader.set("material.diffuse", 0);
 	litShader.set("material.specular", 1);
@@ -135,7 +138,7 @@ int main(int argc, const char *argv[]) {
 	litShader.set("pointLights[0].linear", 0.09f);
 	litShader.set("pointLights[0].quadratic", 0.032f);
 
-	lightShader.use();
+	lightShader.bind();
 	lightShader.set("color", glm::vec3(1.0f));
 
 	double deltaTime;
@@ -159,7 +162,7 @@ int main(int argc, const char *argv[]) {
 		lightPos.x = gsl::narrow_cast<float>(sin(glfwGetTime()) * 5.0);
 		lightPos.z = gsl::narrow_cast<float>(cos(glfwGetTime()) * 15.0);
 
-		litShader.use();
+		litShader.bind();
 
 		litShader.set("view", cam.cam().view());
 		litShader.set("projection", cam.cam().projection());
@@ -179,7 +182,7 @@ int main(int argc, const char *argv[]) {
 		diffuseTex.unbind();
 		specularTex.unbind();
 
-		lightShader.use();
+		lightShader.bind();
 		lightShader.set("view", cam.cam().view());
 		lightShader.set("projection", cam.cam().projection());
 

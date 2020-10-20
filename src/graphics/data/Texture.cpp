@@ -37,17 +37,13 @@ Texture &Texture::operator=(Texture &&other) noexcept {
 	return *this;
 }
 
-Texture::~Texture() {
-	glDeleteTextures(1, &m_id);
-}
-
 Texture::Texture(const char *path, const Settings &settings, GLenum slot,
 				 Type type) :
 	m_slot{validate_slot(slot)},
-	m_type{type} {
+	m_type{type},
+	m_id{sd3d::memory::create_tex()} {
 	spdlog::info("Loading image from path: {}", path);
-	glGenTextures(1, &m_id);
-	glBindTexture(GL_TEXTURE_2D, m_id);
+	glBindTexture(GL_TEXTURE_2D, *m_id);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, settings.wrapS);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, settings.wrapT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, settings.minFilter);
@@ -92,6 +88,17 @@ Texture::Texture(std::string_view path, GLenum slot, Texture::Type type) :
 	Texture(path, Settings{}, slot, type) {}
 // endregion additional constructors
 
+Texture &Texture::operator=(const Texture &other) {
+	if (this != &other) {
+		m_id = other.m_id;
+		m_width = other.m_width;
+		m_height = other.m_height;
+		m_slot = other.m_slot;
+		m_type = other.m_type;
+	}
+	return *this;
+}
+
 GLenum Texture::num_channels_to_format(int nrChannels) {
 	if (nrChannels == 3) {
 		return GL_RGB;
@@ -118,7 +125,7 @@ GLenum Texture::validate_slot(GLenum slot) {
 }
 
 void Texture::bind() const {
-	bind_unchecked(m_slot, m_id);
+	bind_unchecked(m_slot, *m_id);
 }
 
 void Texture::bind_to_num(unsigned int num) const {
@@ -126,7 +133,7 @@ void Texture::bind_to_num(unsigned int num) const {
 }
 
 void Texture::bind(GLenum slot) const {
-	bind(slot, m_id);
+	bind(slot, *m_id);
 }
 
 void Texture::bind(GLenum slot, GLuint textureId) {
@@ -151,10 +158,6 @@ void Texture::reset() {
 
 void Texture::change_slot(GLenum slot) {
 	m_slot = validate_slot(slot);
-}
-
-GLuint Texture::get_id() const {
-	return m_id;
 }
 
 int Texture::get_width() const {

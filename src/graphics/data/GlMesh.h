@@ -7,10 +7,16 @@
 
 #include <GLFW/glfw3.h>
 
+#pragma warning(push, 0)
+
+#include <glm/glm.hpp>
+
+#pragma warning(pop)
+
+#include "../memory/gl_memory.h"
 
 class DataLayout;
 
-// TODO maybe template on useEbo?
 class GlMesh {
 public:
 	struct Vertex {
@@ -29,7 +35,7 @@ private:
 	// - This object holds info about data layout, the VBO the data is coming
 	// from
 	//   and the linked EBO (if applicable)
-	GLuint m_vao;
+	sd3d::memory::shared_vao_t m_vao;
 	GLuint m_drawCount;
 
 	// TODO save references to textures here, because they are per model (i
@@ -37,9 +43,9 @@ private:
 
 	// The VBO is implicitly saved in the VAO
 	// We still need it to delete it later
-	GLuint m_vbo;
+	sd3d::memory::shared_vbo_t m_vbo;
 	// Same with EBO
-	GLuint m_ebo;
+	sd3d::memory::shared_ebo_t m_ebo;
 
 	// Notify if an EBO was created and bound to the VAO
 	// If yes, glDrawElements has to be used.
@@ -47,19 +53,20 @@ private:
 
 	bool m_initialized{false};
 
-	GlMesh(GLuint vao, GLuint drawCount, GLuint vbo, GLuint ebo, bool useEbo);
+	GlMesh(sd3d::memory::shared_vao_t vao, GLuint drawCount,
+		   sd3d::memory::shared_vbo_t vbo, sd3d::memory::shared_ebo_t ebo,
+		   bool useEbo);
+
+	void draw_mesh() const;
 
 public:
 	GlMesh(GlMesh &&) noexcept;
 	GlMesh &operator=(GlMesh &&) noexcept;
-	// delete all constructors because they can have a bad effect on memory in GPU
 	GlMesh() = delete;
-	GlMesh(const GlMesh &) = delete;
-	GlMesh &operator=(const GlMesh &) = delete;
+	GlMesh(const GlMesh &) = default;
+	GlMesh &operator=(const GlMesh &);
 
 	void draw() const;
-
-	void release_data();
 
 	// for now only float
 	static GlMesh from_data(const DataLayout &dataLayout, const float *data,

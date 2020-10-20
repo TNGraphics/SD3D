@@ -37,8 +37,8 @@ private:
 
 public:
 	Model() = default;
-	Model(const Model &) = delete;
-	Model &operator=(const Model &) = delete;
+	Model(const Model &) = default;
+	Model &operator=(const Model &);
 	Model &operator=(Model &&) noexcept;
 
 	void draw() const;

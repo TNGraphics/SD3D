@@ -9,6 +9,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "../memory/gl_memory.h"
+
 class Texture {
 	// TODO some way to delete the texture from GPU memory
 public:
@@ -23,7 +25,7 @@ public:
 
 private:
 	// TODO handle texture slots
-	GLuint m_id{};
+	sd3d::memory::shared_tex_t m_id{};
 
 	int m_width{};
 	int m_height{};
@@ -62,13 +64,11 @@ public:
 	[[maybe_unused]] Texture(std::string_view path, GLenum slot,
 									  Type type = Type::DIFFUSE);
 
-	Texture(const Texture &) = delete;
-	Texture &operator=(const Texture &) = delete;
+	Texture(const Texture &) = default;
+	Texture &operator=(const Texture &);
 
 	Texture(Texture &&) noexcept;
 	Texture &operator=(Texture &&) noexcept;
-
-	virtual ~Texture();
 
 	[[maybe_unused]] void bind() const;
 	[[maybe_unused]] void bind_to_num(unsigned int num) const;
@@ -83,8 +83,6 @@ public:
 	[[maybe_unused]] static void reset();
 
 	[[maybe_unused]] void change_slot(GLenum slot);
-
-	[[maybe_unused]] [[nodiscard]] GLuint get_id() const;
 
 	[[maybe_unused]] [[nodiscard]] int get_width() const;
 

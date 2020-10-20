@@ -16,9 +16,11 @@
 #include <string>
 #include <optional>
 
+#include "../memory/gl_memory.h"
+
 class Shader {
 private:
-	GLuint m_id;
+	sd3d::memory::shared_prog_t m_id;
 
 	static std::optional<std::string> read_file_contents(const char *path);
 
@@ -26,21 +28,22 @@ private:
 
 	static int check_program_error(GLuint programId);
 
+	GLint get_uniform_loc(const GLchar *name) const;
+
 public:
 	Shader();
 	Shader(const char *vertexPath, const char *fragmentPath);
 	Shader(std::string_view vertexPath, std::string_view fragmentPath);
-	~Shader();
+	~Shader() = default;
 
-	Shader(const Shader &) = delete;
-	Shader &operator=(const Shader &) = delete;
+	Shader(const Shader &) = default;
+	Shader &operator=(const Shader &);
 
 	Shader(Shader &&) noexcept;
 	Shader &operator=(Shader &&) noexcept;
 
-	[[maybe_unused]] void use() const;
-
-	[[maybe_unused]] [[nodiscard]] GLuint get_id() const { return m_id; }
+	[[maybe_unused]] void bind() const;
+	[[maybe_unused]] static void unbind();
 
 	[[maybe_unused]] void set(const char *name, bool val) const;
 

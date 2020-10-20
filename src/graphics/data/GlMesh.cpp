@@ -9,6 +9,7 @@
 
 #include "GlMesh.h"
 
+namespace mem = sd3d::memory;
 
 const DataLayout &GlMesh::vertex_layout() {
 	static DataLayout d{{3, DataLayout::GlType::FLOAT, GL_FALSE},
@@ -19,16 +20,12 @@ const DataLayout &GlMesh::vertex_layout() {
 
 GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data,
 						 GLuint amount) {
-	GLuint vao, vbo;
-	// Generate a Vertex Array Object (for now without data)
-	glGenVertexArrays(1, &vao);
-	// Generate a Vertex Buffer object (also without data)
-	glGenBuffers(1, &vbo);
-	// Bind the VAO so upcoming changes are saved here
-	glBindVertexArray(vao);
+	auto vao = mem::create_vao();
+	auto vbo = mem::create_vbo();
+	glBindVertexArray(*vao);
 
 	// Bind the VBO to fill it with data
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 	// Fill the VBO with data
 	glBufferData(GL_ARRAY_BUFFER, amount, data, GL_STATIC_DRAW);
 
@@ -40,29 +37,25 @@ GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data,
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	// TODO unbind dataLayout as well somehow
 
-	return GlMesh(vao, amount, vbo, 0, false);
+	return GlMesh(vao, amount, vbo, nullptr, false);
 }
 
 GlMesh GlMesh::from_data(const std::vector<Vertex> &data,
 						 const std::vector<GLuint> &indices) {
-	GLuint vao, vbo, ebo;
-	// Generate a Vertex Array Object (for now without data)
-	glGenVertexArrays(1, &vao);
-	// Generate a Vertex Buffer object (also without data)
-	glGenBuffers(1, &vbo);
-	// Generate an Element Buffer Object
-	glGenBuffers(1, &ebo);
+	auto vao = mem::create_vao();
+	auto vbo = mem::create_vbo();
+	auto ebo = mem::create_ebo();
 	// Bind the VAO so upcoming changes are saved here
-	glBindVertexArray(vao);
+	glBindVertexArray(*vao);
 
 	// Bind the VBO to fill it with data
-	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
 	// Fill the VBO with data
 	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Vertex),
 				 data.data(), GL_STATIC_DRAW);
 
 	// Bind and fill EBO with data
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
 				 indices.data(), GL_STATIC_DRAW);
 
@@ -78,50 +71,67 @@ GlMesh GlMesh::from_data(const std::vector<Vertex> &data,
 	return GlMesh(vao, static_cast<GLuint>(indices.size()), vbo, ebo, true);
 }
 
-GlMesh::GlMesh(GLuint vao, GLuint drawCount, GLuint vbo, GLuint ebo,
+GlMesh::GlMesh(mem::shared_vao_t vao, GLuint drawCount,
+			   mem::shared_vbo_t vbo, mem::shared_ebo_t ebo,
 			   bool useEbo) :
-	m_vao{vao},
+	m_vao{std::move(vao)},
 	m_drawCount{drawCount},
-	m_vbo{vbo},
-	m_ebo{ebo},
+	m_vbo{std::move(vbo)},
+	m_ebo{std::move(ebo)},
 	m_usesEbo{useEbo},
 	m_initialized{true} {}
 
 GlMesh::GlMesh(GlMesh &&other) noexcept :
-	m_vao{other.m_vao},
+	m_vao{std::move(other.m_vao)},
 	m_drawCount{other.m_drawCount},
-	m_vbo{other.m_vbo},
-	m_ebo{other.m_ebo},
+	m_vbo{std::move(other.m_vbo)},
+	m_ebo{std::move(other.m_ebo)},
 	m_usesEbo{other.m_usesEbo},
-	m_initialized{other.m_initialized} {
-	other.m_vao = 0;
+	m_initialized{other.m_initialized}
+{
+	other.m_vao = nullptr;
 	other.m_drawCount = 0;
-	other.m_vbo = 0;
-	other.m_ebo = 0;
+	other.m_vbo = nullptr;
+	other.m_ebo = nullptr;
 	other.m_usesEbo = false;
 	other.m_initialized = false;
 }
 
 GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
-	m_vao = other.m_vao;
+	m_vao = std::move(other.m_vao);
 	m_drawCount = other.m_drawCount;
-	m_vbo = other.m_vbo;
-	m_ebo = other.m_ebo;
+	m_vbo = std::move(other.m_vbo);
+	m_ebo = std::move(other.m_ebo);
 	m_usesEbo = other.m_usesEbo;
 	m_initialized = other.m_initialized;
 
-	other.m_vao = 0;
+	other.m_vao = nullptr;
 	other.m_drawCount = 0;
-	other.m_vbo = 0;
-	other.m_ebo = 0;
+	other.m_vbo = nullptr;
+	other.m_ebo = nullptr;
 	other.m_usesEbo = false;
 	other.m_initialized = false;
 	return *this;
 }
 
+GlMesh &GlMesh::operator=(const GlMesh &other) {
+	if(this != &other) {
+		m_vao = other.m_vao;
+		m_drawCount = other.m_drawCount;
+		m_vbo = other.m_vbo;
+		m_ebo = other.m_ebo;
+		m_usesEbo = other.m_usesEbo;
+		m_initialized = other.m_initialized;
+	}
+	return *this;
+}
+
 void GlMesh::draw() const {
 	if (!m_initialized) return;
-	glBindVertexArray(m_vao);
+	draw_mesh();
+}
+void GlMesh::draw_mesh() const {
+	glBindVertexArray(*m_vao);
 	if (m_usesEbo) {
 		glDrawElements(GL_TRIANGLES, m_drawCount, GL_UNSIGNED_INT, nullptr);
 	} else {
@@ -130,17 +140,7 @@ void GlMesh::draw() const {
 	glBindVertexArray(0);
 }
 
-void GlMesh::release_data() {
-	if (!m_initialized) return;
-	glDeleteVertexArrays(1, &m_vao);
-	glDeleteBuffers(1, &m_vbo);
-	if (m_usesEbo) {
-		glDeleteBuffers(1, &m_ebo);
-		m_usesEbo = false;
-	}
-	m_drawCount = 0;
-	m_initialized = false;
-}
+
 
 GlMesh::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
 					  glm::vec2 texCoords) :
