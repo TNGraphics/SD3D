@@ -116,9 +116,6 @@ int main(int argc, const char *argv[]) {
 		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
 		{glm::vec3{}, 10.0f, 2.5f, 20.0f, 1.f, 0.25f, 3.f}};
 
-	// TODO draw floor plane: https://stackoverflow.com/questions/12965161/rendering-infinitely-large-plane
-
-	// TODO abstract lights
 	litShader.bind();
 
 	litShader.set_dir_light_direction(glm::vec3(-0.2f, -1.0f, -0.3f));

@@ -128,7 +128,6 @@ GLenum Texture::num_channels_to_format(int nrChannels) {
 void Texture::bind_unchecked(GLenum slot, GLuint id) {
 	glActiveTexture(slot);
 	glBindTexture(GL_TEXTURE_2D, id);
-	// TODO check if unbind is needed
 }
 
 GLenum Texture::validate_slot(GLenum slot) {
@@ -204,18 +203,14 @@ static std::pair<bool, sd3d::memory::shared_tex_t> add_or_get(const char *path) 
 	if(lookup.contains(path)) {
 		auto temp = lookup.at(path);
 		if(!temp.expired()) {
-			spdlog::debug("Cached texture");
 			return std::make_pair(false, lookup.at(path).lock());
 		}
-		// TODO maybe don't do everytime a resource is requested
 		std::erase_if(lookup, [](const lookup_t::value_type &item) {
 			return item.second.expired();
 		});
 	}
-	spdlog::debug("New texture");
 	auto newTex = sd3d::memory::create_tex();
 
 	lookup.try_emplace(path, newTex);
-	spdlog::debug("Before return");
 	return std::make_pair(true, newTex);
 }

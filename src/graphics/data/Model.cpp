@@ -43,7 +43,6 @@ void Model::process_node(aiNode *node, const aiScene *scene) {
 	}
 }
 
-// TODO use scene
 // TODO move to GlMesh
 GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *scene) {
 	std::vector<GlMesh::Vertex> vertices{};

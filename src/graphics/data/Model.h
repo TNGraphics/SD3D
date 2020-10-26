@@ -27,8 +27,6 @@ enum aiTextureType;
 
 class Model {
 private:
-	// TODO handle textures in some way
-
 	std::vector<GlMesh> m_meshes{};
 	// for later for textures ;)
 	std::string m_directory{};

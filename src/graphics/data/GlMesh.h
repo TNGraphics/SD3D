@@ -43,9 +43,6 @@ private:
 	sd3d::memory::shared_vao_t m_vao;
 	GLuint m_drawCount;
 
-	// TODO save references to textures here, because they are per model (i
-	// think)
-
 	// The VBO is implicitly saved in the VAO
 	// We still need it to delete it later
 	sd3d::memory::shared_vbo_t m_vbo;

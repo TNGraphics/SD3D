@@ -40,7 +40,6 @@ GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data,
 	// properly unbind all buffers, arrays, etc. to prevent collisions
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	// TODO unbind dataLayout as well somehow
 
 	return GlMesh(vao, amount, vbo, nullptr, false);
 }
@@ -71,7 +70,6 @@ GlMesh GlMesh::from_data(const std::vector<Vertex> &data,
 	glBindVertexArray(0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	// TODO unbind dataLayout as well somehow
 
 	return GlMesh(vao, static_cast<GLuint>(indices.size()), vbo, ebo, true);
 }
