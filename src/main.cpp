@@ -42,7 +42,6 @@
 #include "controls/GeneralInputHandler.h"
 #include "controls/OrbitCameraController.h"
 
-void debug_gui(ImGui::FileBrowser &);
 void fps_window();
 
 void point_light_gui(unsigned int index, const LitShader &litShader,
@@ -87,11 +86,11 @@ int main(int argc, const char *argv[]) {
 
 	stbi_set_flip_vertically_on_load(true);
 
-	GlContext glContext{GlContext::Settings{
+	gl::GlContext glContext{gl::GlContext::Settings{
 		.width = width,
 		.height = height,
-		.vsync = noVsync ? GlContext::Settings::Vsync::NONE
-						 : GlContext::Settings::Vsync::SINGLE_BUFFERED,
+		.vsync = noVsync ? gl::GlContext::Settings::Vsync::NONE
+						 : gl::GlContext::Settings::Vsync::SINGLE_BUFFERED,
 		.title = "SD3D"}};
 	if (!glContext) {
 		spdlog::error("Error setting up GL Context!");
@@ -120,12 +119,16 @@ int main(int argc, const char *argv[]) {
 		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
 		{glm::vec3{}, 10.0f, 2.5f, 20.0f, 1.f, 0.25f, 3.f}};
 
+	glContext.set_framebuffer_cb([&c = cam.cam()](float aspect) mutable {
+		c.set_aspect(aspect);
+	});
+
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
 
 	float modelScale{1.0f};
 
-	ImVec4 clearCol{0, 0, 0, 1.0f};
+	glm::vec3 clearCol{0, 0, 0};
 	glm::vec3 modelTint{1.0f};
 
 	int shininessExp = 5;
@@ -153,7 +156,10 @@ int main(int argc, const char *argv[]) {
 	bool drawLights = true;
 	bool showFps = false;
 	bool showLightSettings = false;
-	bool showMiscSettings = false;
+	bool showModelSettings = false;
+	bool showCameraSettings = false;
+
+	float fov{gsl::narrow_cast<float>(cam.ccam().fov())};
 
 	while (glContext.is_open()) {
 		auto currentFrame{glfwGetTime()};
@@ -164,9 +170,9 @@ int main(int argc, const char *argv[]) {
 
 		litShader.bind();
 
-		litShader.view(cam.cam().view());
-		litShader.projection(cam.cam().projection());
-		litShader.set_cam_pos(cam.cam().get_pos());
+		litShader.view(cam.ccam().view());
+		litShader.projection(cam.ccam().projection());
+		litShader.set_cam_pos(cam.ccam().get_pos());
 
 		glm::mat4 model{1.0};
 		model = glm::scale(model, glm::vec3(modelScale));
@@ -175,14 +181,13 @@ int main(int argc, const char *argv[]) {
 		litShader.normal_mat(normalMatrix);
 
 		litShader.set_color(modelTint);
-		litShader.set("material.shininess", 1.f);
 
 		monkey.draw(litShader);
 
 		if (drawLights) {
 			lightShader.bind();
-			lightShader.view(cam.cam().view());
-			lightShader.projection(cam.cam().projection());
+			lightShader.view(cam.ccam().view());
+			lightShader.projection(cam.ccam().projection());
 
 			for (const auto &l : pointLightSettings) {
 				model = glm::mat4{1.0f};
@@ -198,9 +203,9 @@ int main(int argc, const char *argv[]) {
 
 		gui::new_frame();
 
-		if(showMiscSettings) {
+		if(showModelSettings) {
 			ImGui::SetNextWindowSize({-1, -1});
-			ImGui::Begin("Misc Settings", &showMiscSettings,
+			ImGui::Begin("Misc Settings", &showModelSettings,
 						 ImGuiWindowFlags_NoResize);
 			ImGui::SliderFloat("Scale", &modelScale, 0.01f, 10.f);
 			if (ImGui::SliderInt("Shininess", &shininessExp, 0, 8)) {
@@ -208,9 +213,11 @@ int main(int argc, const char *argv[]) {
 				litShader.set("material.shininess", pow(2.f, shininessExp));
 			}
 			ImGui::ColorEdit3("Model Tint", glm::value_ptr(modelTint));
-			ImGui::Separator();
-			ImGui::ColorEdit3("Clear Color", (float *)&clearCol);
 			ImGui::End();
+		}
+
+		if(showCameraSettings) {
+			cam.settings_gui(showCameraSettings, clearCol);
 		}
 
 		if(showLightSettings) {
@@ -257,7 +264,9 @@ int main(int argc, const char *argv[]) {
 		}
 		if(ImGui::BeginMenu("Settings")) {
 			ImGui::MenuItem("Show Light Settings", nullptr, &showLightSettings);
-			ImGui::MenuItem("Show Misc Settings", nullptr, &showMiscSettings);
+			ImGui::MenuItem("Show Model Settings", nullptr, &showModelSettings);
+			ImGui::MenuItem("Show Camera Settings", nullptr, &showCameraSettings);
+			ImGui::Separator();
 			ImGui::MenuItem("Show FPS", nullptr, &showFps);
 			ImGui::EndMenu();
 		}
@@ -289,16 +298,6 @@ int main(int argc, const char *argv[]) {
 	gui::shutdown();
 
 	return 0;
-}
-
-void debug_gui(ImGui::FileBrowser &fileBrowser) {
-	ImGui::SetNextWindowSize({-1, -1});
-	ImGui::Begin("DEBUG", nullptr, ImGuiWindowFlags_NoResize);
-	ImGui::Text("FPS: %f", ImGui::GetIO().Framerate);
-	if (ImGui::Button("Open file browser")) {
-		fileBrowser.Open();
-	}
-	ImGui::End();
 }
 
 void point_light_gui(unsigned int index, const LitShader &litShader,

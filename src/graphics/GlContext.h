@@ -5,17 +5,30 @@
 #ifndef SD3D_GLCONTEXT_H
 #define SD3D_GLCONTEXT_H
 
+#include <functional>
+
 #pragma warning(push, 0)
 
 #include <glm/glm.hpp>
+#include <utility>
 
 #pragma warning(pop)
 
 #include <imgui.h>
 
 struct GLFWwindow;
+class InputHandler;
 
-namespace sd3d {
+namespace sd3d::gl {
+
+class GlContext;
+
+struct WindowData {
+	GlContext *context;
+	InputHandler *inputHandler;
+};
+
+WindowData *get_or_create_window_data(GLFWwindow *);
 
 class GlContext {
 public:
@@ -27,13 +40,19 @@ public:
 		bool resizable{false};
 		bool decorated{true};
 		const char *title{""};
+		int minWidth{480};
+		int minHeight{340};
 	};
+
+	using framebuffer_resize_cb_t = std::function<void(float)>;
 
 private:
 	static void setup_glfw();
 	[[nodiscard("Returns success")]] static bool setup_glad();
 	static void setup_debug_output();
 
+	framebuffer_resize_cb_t m_framebufferResizeCb{};
+	void framebuffer_resize_cb_instance(int width, int height);
 	static void framebuffer_resize_cb(GLFWwindow *, int width, int height);
 
 	static int bool_to_gl(bool);
@@ -64,19 +83,17 @@ public:
 
 	[[nodiscard]] bool is_current_context() const;
 
-	void clear() const {
-		clear(0, 0, 0);
-	}
-	void clear(const glm::vec3 &col) const {
-		clear(col.x, col.y, col.z);
-	}
+	void clear() const { clear(0, 0, 0); }
+	void clear(const glm::vec3 &col) const { clear(col.x, col.y, col.z); }
 	void clear(const glm::vec4 &col) const {
 		clear(col.x, col.y, col.z, col.w);
 	}
-	void clear(const ImVec4 &col) const {
-		clear(col.x, col.y, col.z, col.w);
-	}
+	void clear(const ImVec4 &col) const { clear(col.x, col.y, col.z, col.w); }
 	void clear(float r, float g, float b, float a = 1.0f) const;
+
+	void set_framebuffer_cb(framebuffer_resize_cb_t cb) {
+		m_framebufferResizeCb = std::move(cb);
+	}
 
 	// TODO more functions for resizing, minimizing, etc.
 	// TODO somehow handle resize callback
@@ -89,6 +106,6 @@ private:
 	int m_height{};
 };
 
-} // namespace sd3d
+} // namespace sd3d::gl
 
 #endif // SD3D_GLCONTEXT_H

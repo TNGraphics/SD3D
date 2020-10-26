@@ -12,6 +12,8 @@
 
 #pragma warning(pop)
 
+#include <imgui.h>
+
 class Camera {
 private:
 	static constexpr glm::vec3 s_worldUp = glm::vec3{0, 1, 0};
@@ -70,6 +72,16 @@ public:
 		m_right = glm::normalize(glm::cross(m_forward, s_worldUp));
 		m_up = glm::normalize(glm::cross(m_right, m_forward));
 	}
+
+	[[maybe_unused]] void set_aspect(double aspect) {
+		m_aspect = aspect;
+	}
+
+	[[nodiscard]] double aspect() const { return m_aspect; }
+
+	[[maybe_unused]] [[nodiscard]] double fov() const { return m_fov; }
+
+	[[maybe_unused]] void set_fov(double fov) { m_fov = fov; }
 };
 
 #endif // SD3D_CAMERA_H

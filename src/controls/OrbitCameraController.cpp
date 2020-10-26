@@ -7,6 +7,13 @@
 #include <algorithm>
 #include <cmath>
 
+#pragma warning(push, 0)
+
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
+#pragma warning(pop)
+
 #include <spdlog/spdlog.h>
 
 #include "OrbitCameraController.h"
@@ -36,4 +43,23 @@ void OrbitCameraController::rotate(double dX, double dY) {
 void OrbitCameraController::zoom(double dScroll) {
 	m_dist -= static_cast<float>(dScroll) * m_scrollSpeed;
 	m_dist = std::clamp(m_dist, m_minDist, m_maxDist);
+}
+
+void OrbitCameraController::settings_gui(bool &show, glm::vec3 &clearCol) {
+	ImGui::SetNextWindowSize({-1, -1});
+	ImGui::Begin("Camera Settings", &show);
+	if(ImGui::SliderFloat("FOV", &m_fovTemp, 45.f, 120.f)) {
+		cam().set_fov(m_fovTemp);
+	}
+	ImGui::SliderFloat("Move Speed", &m_speed, 0.1f, 1.f);
+	ImGui::DragFloat("Deceleration", &m_deceleration, 0.1f, 0.5f, 35.f);
+	if(ImGui::DragFloatRange2("Scroll Range", &m_minDist, &m_maxDist, 0.2f, 0.1f, 100.f)) {
+		if(m_maxDist > m_minDist) {
+			m_dist = std::clamp(m_dist, m_minDist, m_maxDist);
+		}
+	}
+	ImGui::SliderFloat("Scroll Speed", &m_scrollSpeed, 0.5f, 5.f);
+	ImGui::Separator();
+	ImGui::ColorEdit3("Clear Color", glm::value_ptr(clearCol));
+	ImGui::End();
 }

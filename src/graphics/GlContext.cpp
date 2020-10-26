@@ -12,13 +12,27 @@
 
 #include "GlContext.h"
 
-namespace sd3d {
+namespace sd3d::gl {
+
+WindowData *get_or_create_window_data(GLFWwindow *win) {
+	auto *data = static_cast<WindowData *>(glfwGetWindowUserPointer(win));
+	if (!data) {
+		// create new data
+		data = new WindowData{};
+		glfwSetWindowUserPointer(win, data);
+	}
+	return data;
+}
 
 GlContext::GlContext(const GlContext::Settings &s) {
 	init(s);
 }
 
 GlContext::~GlContext() {
+	// otherwise we would leak memory
+	// maybe we create window data here and immediately delete it, but that
+	// shouldn't happen
+	delete get_or_create_window_data(m_window);
 	glfwDestroyWindow(m_window);
 	glfwTerminate();
 }
@@ -27,7 +41,7 @@ void GlContext::init(const GlContext::Settings &s) {
 	if (m_initialized) return;
 
 	setup_glfw();
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+//	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 	//	glfwWindowHint(GLFW_RESIZABLE, bool_to_gl(s.resizable));
 	glfwWindowHint(GLFW_DECORATED, bool_to_gl(s.decorated));
 
@@ -43,6 +57,11 @@ void GlContext::init(const GlContext::Settings &s) {
 	glfwMakeContextCurrent(m_window);
 
 	glfwSetFramebufferSizeCallback(m_window, framebuffer_resize_cb);
+	// Window was just created there SHOULDN'T be another window here
+	get_or_create_window_data(m_window)->context = this;
+
+	glfwSetWindowSizeLimits(m_window, s.minWidth, s.minHeight, GLFW_DONT_CARE,
+							GLFW_DONT_CARE);
 
 	if (!setup_glad()) {
 		return;
@@ -133,11 +152,20 @@ int GlContext::bool_to_gl(bool b) {
 	}
 }
 
-void GlContext::framebuffer_resize_cb(GLFWwindow *, int width, int height) {
-	// FIXED needs to update current GlContext -> not static
-	// 		 fixed, because the context this is called on is always current
-	// Use same system as InputHandler -> GetUserAttribPointer
+void GlContext::framebuffer_resize_cb(GLFWwindow *win, int width, int height) {
+	auto *context = get_or_create_window_data(win)->context;
+	if (context) {
+		context->framebuffer_resize_cb_instance(width, height);
+	}
+}
+
+void GlContext::framebuffer_resize_cb_instance(int width, int height) {
 	glViewport(0, 0, width, height);
+	m_width = width;
+	m_height = height;
+	if(m_framebufferResizeCb) {
+		m_framebufferResizeCb(aspect());
+	}
 }
 
 bool GlContext::is_open() const {
@@ -158,7 +186,7 @@ void GlContext::setup_debug_output() {
 }
 
 void GlContext::clear(float r, float g, float b, float a) const {
-	if(!is_current_context()) return;
+	if (!is_current_context()) return;
 	glClearColor(r, g, b, a);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 }
@@ -182,4 +210,4 @@ void GLAPIENTRY opengl_message_callback(
 #endif
 }
 
-} // namespace sd3d
+} // namespace sd3d::gl
