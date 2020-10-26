@@ -41,7 +41,23 @@ void LitShader::load_light_locs() {
 	}
 }
 
-void LitShader::set_plight_position(unsigned int index, const glm::vec3 &val) const {
+void LitShader::set_plight(unsigned int index,
+						   const light::PointLight &light) const {
+	set_plight_position(index, light.position);
+	set_plight_color(index, light.color);
+	set_plight_diffuse(index, light.diffuse);
+	set_plight_specular(index, light.specular);
+}
+
+void LitShader::set_plights(
+	const std::array<light::PointLight, s_plightCount> &lights) const {
+	for (unsigned int i = 0; i < s_plightCount; ++i) {
+		set_plight(i, lights.at(i));
+	}
+}
+
+void LitShader::set_plight_position(unsigned int index,
+									const glm::vec3 &val) const {
 	set(m_plightPositions.at(index), val);
 }
 
@@ -84,4 +100,12 @@ void LitShader::set_dir_light_diffuse(float val) const {
 
 void LitShader::set_dir_light_specular(float val) const {
 	set(m_dirSpecularLoc, val);
+}
+
+void LitShader::set_dir_light(const light::DirLight &light) const {
+	set_dir_light_direction(light.direction);
+	set_dir_light_color(light.color);
+	set_dir_light_ambient(light.ambient);
+	set_dir_light_diffuse(light.diffuse);
+	set_dir_light_specular(light.specular);
 }

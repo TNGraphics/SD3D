@@ -20,6 +20,21 @@
 
 // TODO structurize
 namespace light {
+struct PointLight {
+	glm::vec3 position;
+	glm::vec3 color;
+	float diffuse;
+	float specular;
+};
+
+struct DirLight {
+	glm::vec3 direction;
+	glm::vec3 color;
+	float ambient;
+	float diffuse;
+	float specular;
+};
+
 using distance_t = int;
 
 struct Attenuation {
@@ -78,8 +93,10 @@ private:
 		GLint quadratic;
 	};
 
-private:
+public:
 	static constexpr unsigned int s_plightCount = 4;
+
+private:
 	using plight_attribs_t = std::array<GLint, s_plightCount>;
 
 	void load_light_locs();
@@ -97,24 +114,20 @@ private:
 	GLint m_dirDiffuseLoc;
 	GLint m_dirSpecularLoc;
 
-//	vec3 direction;
-//
-//	vec3 color;
-//	float ambient;
-//	float diffuse;
-//	float specular;
-
 public:
 	LitShader();
 
 	void set_cam_pos(const glm::vec3 &pos) const;
 
+	void set_plight(unsigned int index, const light::PointLight &light) const;
+	void set_plights(const std::array<light::PointLight, s_plightCount> &lights) const;
 	void set_plight_position(unsigned int index, const glm::vec3 &val) const;
 	void set_plight_diffuse(unsigned int index, float val) const;
 	void set_plight_specular(unsigned int index, float val) const;
 	void set_plight_color(unsigned int index, const glm::vec3  &val) const;
 	void set_plight_attenuation(unsigned int index, light::Attenuation val) const;
 
+	void set_dir_light(const light::DirLight &light) const;
 	void set_dir_light_direction(const glm::vec3 &val) const;
 	void set_dir_light_color(const glm::vec3 &val) const;
 	void set_dir_light_ambient(float val) const;
