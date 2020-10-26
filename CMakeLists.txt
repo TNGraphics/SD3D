@@ -34,7 +34,7 @@ include_directories("${GLM_PATH}")
 add_executable(SD3D
 			   ${GLAD_PATH}/src/glad.c
 			   src/main.cpp
-			   src/graphics/data/Shader.cpp
+			   src/graphics/shaders/Shader.cpp
 			   src/graphics/data/Texture.cpp
 			   src/controls/OrbitCameraController.cpp
 			   src/controls/InputHandler.cpp
@@ -47,6 +47,9 @@ add_executable(SD3D
 			   src/graphics/GlContext.cpp
 			   src/external/imgui-filebrowser/imfilebrowser.cpp
 			   src/graphics/memory/gl_memory.cpp
+			   src/graphics/shaders/TransformShader.cpp
+			   src/graphics/shaders/LitShader.cpp
+			   src/graphics/shaders/ColorShader.cpp
 			   )
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)

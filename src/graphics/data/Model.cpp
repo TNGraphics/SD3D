@@ -73,7 +73,6 @@ GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *scene) {
 		}
 	}
 	auto glMesh{GlMesh::from_data(vertices, indices)};
-	// TODO process materials
 	if (mesh->mMaterialIndex >= 0) {
 		process_material(scene->mMaterials[mesh->mMaterialIndex], glMesh);
 	}
@@ -101,6 +100,7 @@ void Model::process_material_textures_of_type(aiMaterial *mat,
 }
 
 Model Model::from_path(const std::string &path) {
+	// TODO multi-threaded model loading
 	Assimp::Importer importer;
 	const auto *scene =
 		importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);

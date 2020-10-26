@@ -31,13 +31,13 @@
 #include "graphics/ImGuiHandler.h"
 
 #include "graphics/GlContext.h"
-#include "graphics/data/Shader.h"
 #include "graphics/data/Texture.h"
+
+#include "graphics/shaders/ColorShader.h"
+#include "graphics/shaders/LitShader.h"
 
 #include "graphics/data/GlMesh.h"
 #include "graphics/data/Model.h"
-
-#include "models/primitives.h"
 
 #include "controls/GeneralInputHandler.h"
 #include "controls/OrbitCameraController.h"
@@ -104,42 +104,36 @@ int main(int argc, const char *argv[]) {
 
 	gui::load_font(resourcePath + "/res/fonts/roboto.ttf", 15.0f);
 
-	Shader litShader{resourcePath + "/res/shaders/lit.vert", resourcePath + "/res/shaders/lit.frag"};
-
-	Shader lightShader{resourcePath + "/res/shaders/light.vert",
-					   resourcePath + "/res/shaders/light.frag"};
+	LitShader litShader;
+	ColorShader lightShader;
 
 	Model monkey{};
-
-	GlMesh lightMesh{GlMesh::from_data(models::cube_layout(), models::g_cube,
-									   sizeof(models::g_cube))};
+	Model light{Model::from_path(resourcePath + "/res/light.fbx")};
 	glm::vec3 lightPos{0.f, 3.0f, 2.0f};
+	glm::vec3 lightCol{1, 0.4f, 1};
 
 	OrbitCameraController cam{
 		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
 		{glm::vec3{}, 10.0f, 2.5f, 20.0f, 1.f, 0.25f, 3.f}};
 
+	// TODO draw floor plane: https://stackoverflow.com/questions/12965161/rendering-infinitely-large-plane
+
 	// TODO abstract lights
 	litShader.bind();
-	litShader.set("material.shininess", 32.f);
-	litShader.set("material.diffuse", 0);
-	litShader.set("material.specular", 1);
 
-	litShader.set("dirLight.direction", -0.2f, -1.0f, -0.3f);
-	litShader.set("dirLight.ambient", 0.1f);
-	litShader.set("dirLight.diffuse", 0.4f);
-	litShader.set("dirLight.specular", 0.5f);
-	litShader.set("dirLight.color", 1.0f, 0.9f, 1.0f);
+	litShader.set_dir_light_direction(glm::vec3(-0.2f, -1.0f, -0.3f));
+	litShader.set_dir_light_ambient(0.1f);
+	litShader.set_dir_light_diffuse(0.4f);
+	litShader.set_dir_light_specular(0.5f);
+	litShader.set_dir_light_color(glm::vec3(1.0f, 0.9f, 1.0f));
 
-	litShader.set("pointLights[0].diffuse", 0.8f);
-	litShader.set("pointLights[0].specular", 1.0f);
-	litShader.set("pointLights[0].color", glm::vec3(1.0));
-	litShader.set("pointLights[0].constant", 1.0f);
-	litShader.set("pointLights[0].linear", 0.09f);
-	litShader.set("pointLights[0].quadratic", 0.032f);
+	litShader.set_plight_diffuse(0, 0.8f);
+	litShader.set_plight_specular(0, 1);
+	litShader.set_plight_color(0, glm::vec3(1, 0.4f, 1));
+	litShader.set_plight_attenuation(0, light::from_distance(500));
 
 	lightShader.bind();
-	lightShader.set("color", glm::vec3(1.0f));
+	lightShader.set("color", lightCol);
 
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
@@ -149,6 +143,10 @@ int main(int argc, const char *argv[]) {
 	ImVec4 clearCol{0, 0, 0, 1.0f};
 	glm::vec3 modelTint{1.0f};
 
+	int shininessExp = 5;
+	litShader.bind();
+	litShader.set("material.shininess", pow(2.f, shininessExp));
+
 	while (glContext.is_open()) {
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
@@ -156,38 +154,37 @@ int main(int argc, const char *argv[]) {
 
 		glContext.clear(clearCol);
 
-		lightPos.x = gsl::narrow_cast<float>(sin(glfwGetTime()) * 5.0);
-		lightPos.z = gsl::narrow_cast<float>(cos(glfwGetTime()) * 15.0);
-
 		litShader.bind();
 
-		litShader.set("view", cam.cam().view());
-		litShader.set("projection", cam.cam().projection());
-		litShader.set("light.position", lightPos);
-		litShader.set("camPos", cam.cam().get_pos());
+		litShader.view(cam.cam().view());
+		litShader.projection(cam.cam().projection());
+		litShader.set_cam_pos(cam.cam().get_pos());
+		litShader.set_plight_position(0, lightPos);
+		litShader.set_plight_color(0, lightCol);
 
 		glm::mat4 model{1.0};
 		model = glm::scale(model, glm::vec3(modelScale));
-		litShader.set("model", model);
+		litShader.model(model);
 		glm::mat3 normalMatrix{glm::transpose(glm::inverse(model))};
-		litShader.set("normalMatrix", normalMatrix);
+		litShader.normal_mat(normalMatrix);
 
-		litShader.set("pointLights[0].position", lightPos);
-
-		litShader.set("color", modelTint);
+		litShader.set_color(modelTint);
+		litShader.set("material.shininess", 1.f);
 
 		monkey.draw(litShader);
 
 		lightShader.bind();
-		lightShader.set("view", cam.cam().view());
-		lightShader.set("projection", cam.cam().projection());
+		lightShader.view(cam.cam().view());
+		lightShader.projection(cam.cam().projection());
 
 		model = glm::mat4{1.0f};
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.35f));
-		lightShader.set("model", model);
+		lightShader.model(model);
 
-		lightMesh.draw();
+		lightShader.set_color(lightCol);
+
+		light.draw();
 
 		gui::new_frame();
 
@@ -195,6 +192,10 @@ int main(int argc, const char *argv[]) {
 		ImGui::Begin("Model Settings", nullptr, ImGuiWindowFlags_NoResize);
 		ImGui::Text("Scale");
 		ImGui::SliderFloat("Scale", &modelScale, 0.01f, 100.f);
+		if(ImGui::SliderInt("Shininess", &shininessExp, 0, 8)) {
+			litShader.bind();
+			litShader.set("material.shininess", pow(2.f, shininessExp));
+		}
 		if(ImGui::CollapsingHeader("Colors")) {
 			if(ImGui::TreeNode("Clear Color")) {
 				ImGui::ColorPicker3("Clear Color", (float *)&clearCol);
@@ -202,6 +203,10 @@ int main(int argc, const char *argv[]) {
 			}
 			if (ImGui::TreeNode("Model Tint")) {
 				ImGui::ColorPicker3("Model Tint", glm::value_ptr(modelTint));
+				ImGui::TreePop();
+			}
+			if(ImGui::TreeNode("Light color")) {
+				ImGui::ColorPicker3("Light Color", glm::value_ptr(lightCol));
 				ImGui::TreePop();
 			}
 		}

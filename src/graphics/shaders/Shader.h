@@ -13,8 +13,8 @@
 
 #pragma warning(pop)
 
-#include <string>
 #include <optional>
+#include <string>
 
 #include "../memory/gl_memory.h"
 
@@ -28,13 +28,29 @@ private:
 
 	static int check_program_error(GLuint programId);
 
-	GLint get_uniform_loc(const GLchar *name) const;
+protected:
+	Shader(const char *vertexSource, const char *fragmentSource);
+
+	GLint get_uniform_loc(const char *name) const;
+
+	// TODO test both
+
+	/// Compiles a shader with the given glsl source code.
+	/// \attention No new program is created (gl object name), instead the old
+	/// name is used, so all shaders relying on that name will also change
+	/// \param vertexSource The vertex shader source code
+	/// \param fragmentSource The fragment shader source code
+	void compile(const char *vertexSource, const char *fragmentSource);
+
+	/// Same as \ref compile but creates a new object name so other shaders are not affected
+	/// \param vertexSource The vertex shader source code
+	/// \param fragmentSource The fragment shader source code
+	void recompile(const char *vertexSource, const char *fragmentSource);
 
 public:
 	Shader();
-	Shader(const char *vertexPath, const char *fragmentPath);
 	Shader(std::string_view vertexPath, std::string_view fragmentPath);
-	~Shader() = default;
+	virtual ~Shader() = default;
 
 	Shader(const Shader &) = default;
 	Shader &operator=(const Shader &);
@@ -61,17 +77,35 @@ public:
 
 	[[maybe_unused]] void set(const char *name, const glm::vec3 &val) const;
 
-	[[maybe_unused]] void set(const char *name, float x, float y, float z) const;
+	[[maybe_unused]] void set(const char *name, float x, float y,
+							  float z) const;
 
 	[[maybe_unused]] void set(const char *name, const glm::vec4 &val) const;
 
-	[[maybe_unused]] void set(const char *name, float x, float y, float z, float w) const;
+	[[maybe_unused]] void set(const char *name, float x, float y, float z,
+							  float w) const;
 
 	[[maybe_unused]] void set(const char *name, const glm::mat2 &val) const;
 
 	[[maybe_unused]] void set(const char *name, const glm::mat3 &val) const;
 
 	[[maybe_unused]] void set(const char *name, const glm::mat4 &val) const;
+
+protected:
+	// TODO for more functions
+	[[maybe_unused]] static void set(GLint loc, float val);
+
+	[[maybe_unused]] static void set(GLint loc, const glm::vec2 &val);
+
+	[[maybe_unused]] static void set(GLint loc, const glm::vec3 &val);
+
+	[[maybe_unused]] static void set(GLint loc, const glm::vec4 &val);
+
+	[[maybe_unused]] static void set(GLint loc, const glm::mat2 &val);
+
+	[[maybe_unused]] static void set(GLint loc, const glm::mat3 &val);
+
+	[[maybe_unused]] static void set(GLint loc, const glm::mat4 &val);
 };
 
 #endif // SD3D_SHADER_H

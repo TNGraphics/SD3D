@@ -9,8 +9,8 @@
 
 #include <gsl/gsl-lite.hpp>
 
+#include "../shaders/Shader.h"
 #include "DataLayout.h"
-#include "Shader.h"
 
 #include "GlMesh.h"
 

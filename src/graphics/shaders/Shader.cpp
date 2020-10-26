@@ -17,65 +17,50 @@
 
 #include <spdlog/spdlog.h>
 
+#include "builtin/builtin_shaders.h"
+
 #include "Shader.h"
 
-// region shader source
-// TODO move to separate file
-// maybe include shader texts at compile time?
-const std::string &default_vertex_source() {
-	// TODO add vertex color support
-	static std::string source = R"VERT(#version 460 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoord;
-
-out vec2 texCoord;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-
-void main()
-{
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
-    texCoord = aTexCoord;
-})VERT";
-	return source;
+Shader::Shader(const char *vertexSource, const char *fragmentSource) :
+	m_id{sd3d::memory::create_prog()} {
+	compile(vertexSource, fragmentSource);
 }
-
-const std::string &default_fragment_source() {
-	static std::string source = R"FRAG(#version 460 core
-out vec4 FragColor;
-
-in vec2 texCoord;
-
-void main()
-{
-    FragColor = vec4(1.0);
-})FRAG";
-	return source;
-}
-// endregion shader source
 
 Shader::Shader() : Shader("", "") {}
 
-Shader::Shader(const char *vertexPath, const char *fragmentPath) : m_id{sd3d::memory::create_prog()}{
-	auto vertexSource{
-		read_file_contents(vertexPath).value_or(default_vertex_source())};
-	auto fragmentSource{
-		read_file_contents(fragmentPath).value_or(default_fragment_source())};
+Shader::Shader(std::string_view vertexPath, std::string_view fragmentPath) :
+	Shader{read_file_contents(vertexPath.data())
+			   .value_or(sd3d::shaders::error_vertex_src())
+			   .c_str(),
+		   read_file_contents(fragmentPath.data())
+			   .value_or(sd3d::shaders::error_fragment_src())
+			   .c_str()} {}
 
-	// TODO maybe there is a better way
-	const auto *vertexSourceCstr{vertexSource.c_str()};
-	const auto *fragmentSourceCstr{fragmentSource.c_str()};
+Shader::Shader(Shader &&other) noexcept : m_id{std::move(other.m_id)} {
+	other.m_id = nullptr;
+}
 
+Shader &Shader::operator=(Shader &&other) noexcept {
+	m_id = std::move(other.m_id);
+	other.m_id = nullptr;
+	return *this;
+}
+
+Shader &Shader::operator=(const Shader &other) {
+	if (this != &other) {
+		m_id = other.m_id;
+	}
+	return *this;
+}
+
+void Shader::compile(const char *vertexSource, const char *fragmentSource) {
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertexShader, 1, &vertexSourceCstr, nullptr);
+	glShaderSource(vertexShader, 1, &vertexSource, nullptr);
 	glCompileShader(vertexShader);
 	if (!check_shader_error(vertexShader)) std::cout << "VERTEX STAGE\n";
 
 	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentSourceCstr, nullptr);
+	glShaderSource(fragmentShader, 1, &fragmentSource, nullptr);
 	glCompileShader(fragmentShader);
 	if (!check_shader_error(fragmentShader)) std::cout << "FRAGMENT STAGE\n";
 
@@ -89,25 +74,11 @@ Shader::Shader(const char *vertexPath, const char *fragmentPath) : m_id{sd3d::me
 	glDeleteShader(fragmentShader);
 }
 
-Shader::Shader(Shader &&other) noexcept : m_id{std::move(other.m_id)} {
-	other.m_id = nullptr;
+void Shader::recompile(const char *vertexSource, const char *fragmentSource) {
+	// get a new ID, because other shader objects could rely on this one
+	m_id = sd3d::memory::create_prog();
+	compile(vertexSource, fragmentSource);
 }
-
-Shader &Shader::operator=(Shader &&other) noexcept {
-	m_id = std::move(other.m_id);
-	other.m_id = nullptr;
-	return *this;
-}
-
-Shader &Shader::operator=(const Shader &other) {
-	if(this != &other) {
-		m_id = other.m_id;
-	}
-	return *this;
-}
-
-Shader::Shader(std::string_view vertexPath, std::string_view fragmentPath) :
-	Shader(vertexPath.data(), fragmentPath.data()) {}
 
 [[maybe_unused]] void Shader::bind() const {
 	glUseProgram(*m_id);
@@ -118,17 +89,17 @@ void Shader::unbind() {
 }
 
 std::optional<std::string> Shader::read_file_contents(const char *path) {
-	// TODO when file could not be opened, return default shader
 	std::stringstream ret{};
 	std::ifstream shaderFile(path);
 	if (!shaderFile.good()) {
+		spdlog::error("Error opening file {}", path);
 		return {};
 	}
 	try {
 		ret << shaderFile.rdbuf();
 		shaderFile.close();
 	} catch (const std::ifstream::failure &e) {
-		std::cout << "ERROR when opening file\n" << e.what() << '\n';
+		spdlog::error("Error {} reading file {} ({})", e.code().value(), path, e.what());
 		return {};
 	}
 	return ret.str();
@@ -177,11 +148,11 @@ void Shader::set(const char *name, unsigned int val) const {
 }
 
 void Shader::set(const char *name, float val) const {
-	glUniform1f(get_uniform_loc(name), val);
+	set(get_uniform_loc(name), val);
 }
 
 void Shader::set(const char *name, const glm::vec2 &val) const {
-	glUniform2fv(get_uniform_loc(name), 1, glm::value_ptr(val));
+	set(get_uniform_loc(name), val);
 }
 
 void Shader::set(const char *name, float x, float y) const {
@@ -189,7 +160,7 @@ void Shader::set(const char *name, float x, float y) const {
 }
 
 void Shader::set(const char *name, const glm::vec3 &val) const {
-	glUniform3fv(get_uniform_loc(name), 1, glm::value_ptr(val));
+	set(get_uniform_loc(name), val);
 }
 
 void Shader::set(const char *name, float x, float y, float z) const {
@@ -197,7 +168,7 @@ void Shader::set(const char *name, float x, float y, float z) const {
 }
 
 void Shader::set(const char *name, const glm::vec4 &val) const {
-	glUniform4fv(get_uniform_loc(name), 1, glm::value_ptr(val));
+	set(get_uniform_loc(name), val);
 }
 
 void Shader::set(const char *name, float x, float y, float z, float w) const {
@@ -205,16 +176,41 @@ void Shader::set(const char *name, float x, float y, float z, float w) const {
 }
 
 void Shader::set(const char *name, const glm::mat2 &val) const {
-	glUniformMatrix2fv(get_uniform_loc(name), 1, GL_FALSE,
-					   glm::value_ptr(val));
+	set(get_uniform_loc(name), val);
 }
 
 void Shader::set(const char *name, const glm::mat3 &val) const {
-	glUniformMatrix3fv(get_uniform_loc(name), 1, GL_FALSE,
-					   glm::value_ptr(val));
+	set(get_uniform_loc(name), val);
 }
 
 void Shader::set(const char *name, const glm::mat4 &val) const {
-	glUniformMatrix4fv(get_uniform_loc(name), 1, GL_FALSE,
-					   glm::value_ptr(val));
+	set(get_uniform_loc(name), val);
+}
+
+void Shader::set(GLint loc, float val) {
+	glUniform1f(loc, val);
+}
+
+void Shader::set(GLint loc, const glm::vec2 &val) {
+	glUniform2fv(loc, 1, glm::value_ptr(val));
+}
+
+void Shader::set(GLint loc, const glm::vec3 &val) {
+	glUniform3fv(loc, 1, glm::value_ptr(val));
+}
+
+void Shader::set(GLint loc, const glm::vec4 &val) {
+	glUniform4fv(loc, 1, glm::value_ptr(val));
+}
+
+void Shader::set(GLint loc, const glm::mat2 &val) {
+	glUniformMatrix2fv(loc, 1, GL_FALSE, glm::value_ptr(val));
+}
+
+void Shader::set(GLint loc, const glm::mat3 &val) {
+	glUniformMatrix3fv(loc, 1, GL_FALSE, glm::value_ptr(val));
+}
+
+void Shader::set(GLint loc, const glm::mat4 &val) {
+	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(val));
 }
