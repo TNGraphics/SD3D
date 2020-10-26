@@ -2,8 +2,6 @@
 // Created by Tobias on 10/2/2020.
 //
 
-#define _USE_MATH_DEFINES
-
 #include <algorithm>
 #include <cmath>
 
