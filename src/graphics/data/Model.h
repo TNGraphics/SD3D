@@ -17,44 +17,35 @@
 #include "DataLayout.h"
 
 class GlMesh;
+class Shader;
 
 struct aiNode;
 struct aiScene;
 struct aiMesh;
+struct aiMaterial;
+enum aiTextureType;
 
 class Model {
-public:
-	// TODO maybe move to GlMesh class because this one doesn't really use it
-	struct Vertex {
-		glm::vec3 position{};
-		glm::vec3 normal{};
-		glm::vec2 texCoords{};
-
-		Vertex();
-		Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 texCoords);
-	};
-
-	static const DataLayout &vertex_layout();
-
 private:
-	// TODO handle textures in some way
-
 	std::vector<GlMesh> m_meshes{};
 	// for later for textures ;)
 	std::string m_directory{};
 
-	Model(Model &&) = default;
+	Model(Model &&) noexcept;
 
 	void process_node(aiNode *node, const aiScene *scene);
-	static GlMesh process_mesh(aiMesh *mesh, const aiScene *scene);
+	GlMesh process_mesh(aiMesh *mesh, const aiScene *scene);
+	void process_material(aiMaterial *mat, GlMesh &mesh);
+	void process_material_textures_of_type(aiMaterial *, aiTextureType, GlMesh &);
 
 public:
 	Model() = default;
-	Model(const Model &) = delete;
-	Model &operator=(const Model &) = delete;
+	Model(const Model &) = default;
+	Model &operator=(const Model &);
 	Model &operator=(Model &&) noexcept;
 
 	void draw() const;
+	void draw(Shader &) const;
 
 	void clear();
 

@@ -8,11 +8,6 @@
 struct GLFWwindow;
 
 class InputHandler {
-	// This class only handles mouse input and the escape key, no other keys are
-	// needed
-private:
-	GLFWwindow *m_window;
-
 public:
 	explicit InputHandler(GLFWwindow *);
 	virtual ~InputHandler() = default;

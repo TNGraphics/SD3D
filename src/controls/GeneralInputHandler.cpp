@@ -14,9 +14,10 @@ void GeneralInputHandler::process_mouse_scroll_input(GLFWwindow *win, double x,
 	m_dScroll = y;
 }
 
-void GeneralInputHandler::process_mouse_press_input(GLFWwindow *, int button,
+void GeneralInputHandler::process_mouse_press_input(GLFWwindow *win, int button,
 													int action,
 													[[maybe_unused]] int mods) {
+	ImGui_ImplGlfw_MouseButtonCallback(win, button, action, mods);
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
 		if (action == GLFW_PRESS) {
 			m_mousePressed = true;
@@ -32,8 +33,9 @@ void GeneralInputHandler::process_mouse_pos_input(GLFWwindow *, double x,
 	m_y = y;
 }
 
-void GeneralInputHandler::process_keyboard_input(GLFWwindow *win, int key, int,
-												 int action, int) {
+void GeneralInputHandler::process_keyboard_input(GLFWwindow *win, int key, int sc,
+												 int action, int mods) {
+	ImGui_ImplGlfw_KeyCallback(win, key, sc, action, mods);
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(win, true);
 	}

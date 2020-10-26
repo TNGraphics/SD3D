@@ -6,22 +6,26 @@
 #include <assimp/scene.h>
 #include <assimp/Importer.hpp>
 
+#include <filesystem>
+
 #include <spdlog/spdlog.h>
 
 #include "Model.h"
+#include "Texture.h"
 
 #include "GlMesh.h"
 
-const DataLayout &Model::vertex_layout() {
-	static DataLayout d{{3, DataLayout::GlType::FLOAT, GL_FALSE},
-						{3, DataLayout::GlType::FLOAT, GL_FALSE},
-						{2, DataLayout::GlType::FLOAT, GL_FALSE}};
-	return d;
-}
+static constexpr Texture::Type from_assimp_type(aiTextureType type);
 
 void Model::draw() const {
 	for (const auto &mesh : m_meshes) {
 		mesh.draw();
+	}
+}
+
+void Model::draw(Shader &shader) const {
+	for(const auto &mesh : m_meshes) {
+		mesh.draw(shader);
 	}
 }
 
@@ -39,10 +43,9 @@ void Model::process_node(aiNode *node, const aiScene *scene) {
 	}
 }
 
-// TODO use scene
 // TODO move to GlMesh
-GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *) {
-	std::vector<Vertex> vertices{};
+GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *scene) {
+	std::vector<GlMesh::Vertex> vertices{};
 
 	vertices.reserve(mesh->mNumVertices);
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -68,11 +71,35 @@ GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *) {
 			indices.push_back(face.mIndices[j]);
 		}
 	}
-	// TODO process materials
-	return GlMesh::from_data(vertices, indices);
+	auto glMesh{GlMesh::from_data(vertices, indices)};
+	if (mesh->mMaterialIndex >= 0) {
+		process_material(scene->mMaterials[mesh->mMaterialIndex], glMesh);
+	}
+	glMesh.finish_setup();
+	return glMesh;
+}
+
+void Model::process_material(aiMaterial *mat, GlMesh &mesh) {
+	process_material_textures_of_type(mat, aiTextureType_DIFFUSE, mesh);
+	process_material_textures_of_type(mat, aiTextureType_SPECULAR, mesh);
+}
+
+void Model::process_material_textures_of_type(aiMaterial *mat,
+											  aiTextureType type,
+											  GlMesh &mesh) {
+	for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i) {
+		aiString filename;
+		mat->GetTexture(type, i, &filename);
+		mesh.add_texture(m_directory + filename.C_Str(), from_assimp_type(type),
+						 Texture::Settings{.wrapS = GL_REPEAT,
+										   .wrapT = GL_REPEAT,
+										   .minFilter = GL_LINEAR_MIPMAP_LINEAR,
+										   .magFilter = GL_LINEAR});
+	}
 }
 
 Model Model::from_path(const std::string &path) {
+	// TODO multi-threaded model loading
 	Assimp::Importer importer;
 	const auto *scene =
 		importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -83,8 +110,11 @@ Model Model::from_path(const std::string &path) {
 		return {};
 	}
 	Model m{};
-	m.m_directory = path.substr(0, path.find_last_of('/'));
+	auto p = std::filesystem::path(path);
+	p.remove_filename();
+	m.m_directory = p.string();
 	m.process_node(scene->mRootNode, scene);
+	spdlog::debug("Finished loading {}", path);
 	return m;
 }
 
@@ -93,9 +123,6 @@ size_t Model::mesh_count() const {
 }
 
 void Model::clear() {
-	for (auto &mesh : m_meshes) {
-		mesh.release_data();
-	}
 	m_meshes.clear();
 }
 
@@ -107,10 +134,44 @@ Model &Model::operator=(Model &&other) noexcept {
 	return *this;
 }
 
-Model::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
-					  glm::vec2 texCoords) :
-	position{position},
-	normal{normal},
-	texCoords{texCoords} {}
+Model::Model(Model &&other) noexcept :
+	m_meshes{std::move(other.m_meshes)},
+	m_directory{std::move(other.m_directory)} {}
 
-Model::Vertex::Vertex() : position{}, normal{}, texCoords{} {}
+Model &Model::operator=(const Model &other) {
+	if (this != &other) {
+		m_meshes = other.m_meshes;
+		m_directory = other.m_directory;
+	}
+	return *this;
+}
+
+constexpr Texture::Type from_assimp_type(aiTextureType type) {
+	switch (type) {
+	case aiTextureType_DIFFUSE:
+		return Texture::Type::DIFFUSE;
+	case aiTextureType_SPECULAR:
+		return Texture::Type::SPECULAR;
+		// TODO handle more types
+	case aiTextureType_AMBIENT:
+	case aiTextureType_EMISSIVE:
+	case aiTextureType_HEIGHT:
+	case aiTextureType_NORMALS:
+	case aiTextureType_SHININESS:
+	case aiTextureType_OPACITY:
+	case aiTextureType_DISPLACEMENT:
+	case aiTextureType_LIGHTMAP:
+	case aiTextureType_REFLECTION:
+	case aiTextureType_BASE_COLOR:
+	case aiTextureType_NORMAL_CAMERA:
+	case aiTextureType_EMISSION_COLOR:
+	case aiTextureType_METALNESS:
+	case aiTextureType_DIFFUSE_ROUGHNESS:
+	case aiTextureType_AMBIENT_OCCLUSION:
+	case aiTextureType_UNKNOWN:
+	case _aiTextureType_Force32Bit:
+	case aiTextureType_NONE:
+		return Texture::Type::DIFFUSE;
+	}
+	return Texture::Type::DIFFUSE;
+}

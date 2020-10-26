@@ -14,11 +14,15 @@
 
 namespace sd3d::gui {
 
-void setup_imgui(GLFWwindow *window) {
+void setup_imgui(GLFWwindow *window, bool useIni) {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO &io = ImGui::GetIO();
 	(void)io;
+
+	if(!useIni) {
+		ImGui::GetIO().IniFilename = nullptr;
+	}
 
 	ImGui::StyleColorsDark();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -44,6 +48,20 @@ void shutdown() {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+}
+
+ImFont *load_font(const std::string &path, float size) {
+	auto ptr{get_io().Fonts->AddFontFromFileTTF(path.c_str(), size)};
+	get_io().Fonts->Build();
+	return ptr;
+}
+
+void push_font(ImFont *font) {
+	ImGui::PushFont(font);
+}
+
+void pop_font() {
+	ImGui::PopFont();
 }
 
 } // namespace sd3d::gui

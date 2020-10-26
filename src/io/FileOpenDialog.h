@@ -7,9 +7,6 @@
 
 #include <string>
 
-// TODO also look at https://github.com/AirGuanZ/imgui-filebrowser
-// TODO also look at
-// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/bb776913(v=vs.85)
 
 namespace sd3d::io {
 

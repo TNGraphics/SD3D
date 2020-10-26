@@ -54,19 +54,23 @@ private:
 	glm::vec3 m_target{};
 
 	float m_dist{};
-	const float m_minDist{};
-	const float m_maxDist{};
-	const float m_scrollSpeed{};
+	float m_minDist{};
+	float m_maxDist{};
+	float m_scrollSpeed{};
 
 	float m_yaw{-90.0f};
 	float m_pitch{};
 
 	glm::vec2 m_moveVec{};
 
-	const float m_deceleration{0.05f};
-	const float m_speed{};
+	float m_deceleration{0.05f};
+	float m_speed{};
 
 	Camera m_cam;
+
+	// for settings window
+private:
+	float m_fovTemp{};
 
 public:
 	OrbitCameraController(Camera &&cam, const OrbitCamSettings &settings) :
@@ -81,11 +85,30 @@ public:
 
 	void update(float deltaTime);
 
-	[[nodiscard]] const Camera &cam() const { return m_cam; }
+	[[nodiscard]] const Camera &ccam() const { return m_cam; }
+	[[nodiscard]] Camera &cam() { return m_cam; };
 
 	void rotate(double dX, double dY);
 
 	void zoom(double dScroll);
+
+	[[nodiscard]] float min_dist() const {
+		return m_minDist;
+	}
+
+	[[nodiscard]] float max_dist() const {
+		return m_maxDist;
+	}
+
+	void set_min_dist(float val) {
+		m_minDist = val;
+	}
+
+	void set_max_dist(float val) {
+		m_maxDist = val;
+	}
+
+	void settings_gui(bool &show, glm::vec3 &clearCol);
 };
 
 #endif // SD3D_ORBITCAMERACONTROLLER_H
