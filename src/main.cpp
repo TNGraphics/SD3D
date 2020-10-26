@@ -107,13 +107,13 @@ int main(int argc, const char *argv[]) {
 
 	GeneralInputHandler inputHandler{glContext.win()};
 
-	gui::load_font(resourcePath + "/res/fonts/roboto.ttf", 15.0f);
+	gui::load_font(resourcePath + "res/fonts/roboto.ttf", 15.0f);
 
 	LitShader litShader;
 	ColorShader lightShader;
 
 	Model monkey{};
-	Model light{Model::from_path(resourcePath + "/res/light.fbx")};
+	Model light{Model::from_path(resourcePath + "res/light.fbx")};
 
 	OrbitCameraController cam{
 		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
