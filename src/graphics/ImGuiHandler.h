@@ -28,6 +28,8 @@ void pop_font();
 
 ImGuiIO &get_io();
 
+void apply_style();
+
 } // namespace sd3d::gui
 
 #endif // SD3D_IMGUIHANDLER_H

@@ -6,6 +6,7 @@
 #define SD3D_ORBITCAMERACONTROLLER_H
 
 #include <GLFW/glfw3.h>
+#include <gsl-lite/gsl-lite.hpp>
 
 #pragma warning(push, 0)
 
@@ -70,7 +71,10 @@ private:
 
 	// for settings window
 private:
-	float m_fovTemp{};
+	float m_fovTemp;
+
+	float m_fovSaved;
+	OrbitCamSettings m_settingsSaved;
 
 public:
 	OrbitCameraController(Camera &&cam, const OrbitCamSettings &settings) :
@@ -81,7 +85,10 @@ public:
 		m_scrollSpeed{settings.scrollSpeed},
 		m_deceleration{settings.deceleration},
 		m_speed{settings.speed},
-		m_cam{cam} {}
+		m_cam{cam},
+		m_fovTemp{gsl::narrow_cast<float>(m_cam.fov())},
+		m_fovSaved{m_fovTemp},
+		m_settingsSaved{settings} {}
 
 	void update(float deltaTime);
 
@@ -92,23 +99,28 @@ public:
 
 	void zoom(double dScroll);
 
-	[[nodiscard]] float min_dist() const {
-		return m_minDist;
-	}
+	[[nodiscard]] float min_dist() const { return m_minDist; }
 
-	[[nodiscard]] float max_dist() const {
-		return m_maxDist;
-	}
+	[[nodiscard]] float max_dist() const { return m_maxDist; }
 
-	void set_min_dist(float val) {
-		m_minDist = val;
-	}
+	void set_min_dist(float val) { m_minDist = val; }
 
-	void set_max_dist(float val) {
-		m_maxDist = val;
-	}
+	void set_max_dist(float val) { m_maxDist = val; }
 
 	void settings_gui(bool &show, glm::vec3 &clearCol);
+
+	void reset_settings() {
+		m_target = m_settingsSaved.target;
+		m_dist = m_settingsSaved.dist;
+		m_minDist = m_settingsSaved.minDist;
+		m_maxDist = m_settingsSaved.maxDist;
+		m_scrollSpeed = m_settingsSaved.scrollSpeed;
+		m_deceleration = m_settingsSaved.deceleration;
+		m_speed = m_settingsSaved.speed;
+
+		m_fovTemp = m_fovSaved;
+		m_cam.set_fov(m_fovTemp);
+	}
 };
 
 #endif // SD3D_ORBITCAMERACONTROLLER_H
