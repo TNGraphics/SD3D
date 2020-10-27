@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #pragma warning(push, 0)
 
@@ -31,18 +32,22 @@ private:
 	// for later for textures ;)
 	std::string m_directory{};
 
+	bool m_isValid{};
+
 	Model(Model &&) noexcept;
 
 	void process_node(aiNode *node, const aiScene *scene);
-	GlMesh process_mesh(aiMesh *mesh, const aiScene *scene);
-	void process_material(aiMaterial *mat, GlMesh &mesh);
-	void process_material_textures_of_type(aiMaterial *, aiTextureType, GlMesh &);
 
 public:
 	Model() = default;
+	explicit Model(const char *path);
+	explicit Model(const std::string &path);
+	explicit Model(const std::filesystem::path &path);
 	Model(const Model &) = default;
 	Model &operator=(const Model &);
 	Model &operator=(Model &&) noexcept;
+
+	explicit operator bool() const;
 
 	void draw() const;
 	void draw(Shader &) const;
@@ -50,8 +55,6 @@ public:
 	void clear();
 
 	[[nodiscard]] size_t mesh_count() const;
-
-	static Model from_path(const std::string &path);
 };
 
 #endif // SD3D_MODEL_H

@@ -114,7 +114,7 @@ int main(int argc, const char *argv[]) {
 	ColorShader lightShader;
 
 	Model monkey{};
-	Model light{Model::from_path(resourcePath + "res/light.fbx")};
+	Model light{resourcePath + "res/light.fbx"};
 
 	OrbitCameraController cam{
 		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
@@ -276,7 +276,7 @@ int main(int argc, const char *argv[]) {
 		if (fileBrowser.HasSelected()) {
 			spdlog::info("Opening model: {}",
 						 fileBrowser.GetSelected().string());
-			monkey = Model::from_path(fileBrowser.GetSelected().string());
+			monkey = Model{fileBrowser.GetSelected()};
 			fileBrowser.Close();
 		}
 

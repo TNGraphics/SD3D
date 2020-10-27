@@ -22,6 +22,11 @@
 class DataLayout;
 class Shader;
 
+struct aiScene;
+struct aiMesh;
+struct aiMaterial;
+enum aiTextureType;
+
 class GlMesh {
 public:
 	struct Vertex {
@@ -59,11 +64,10 @@ private:
 
 	static const Texture &placeholder_tex();
 
-	GlMesh(sd3d::memory::shared_vao_t vao, GLuint drawCount,
-		   sd3d::memory::shared_vbo_t vbo, sd3d::memory::shared_ebo_t ebo,
-		   bool useEbo);
-
 	void draw_mesh() const;
+
+	void process_material(aiMaterial *mat, const std::string &texDir);
+	void process_material_textures_of_type(aiMaterial *, aiTextureType, const std::string &texDir);
 
 public:
 	GlMesh(GlMesh &&) noexcept;
@@ -76,11 +80,11 @@ public:
 	void draw(Shader &) const;
 
 	// for now only float
-	static GlMesh from_data(const DataLayout &dataLayout, const float *data,
-							GLuint amount);
+	GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount);
 
-	static GlMesh from_data(const std::vector<Vertex> &data,
-							const std::vector<GLuint> &indices);
+	GlMesh(const std::vector<Vertex> &data, const std::vector<GLuint> &indices);
+
+	static GlMesh from_ai_mesh(aiMesh *, const aiScene *, const std::string &texDir);
 
 	void add_texture(const char *path, Texture::Type type, GLenum slot,
 					 const Texture::Settings &settings = Texture::Settings{});

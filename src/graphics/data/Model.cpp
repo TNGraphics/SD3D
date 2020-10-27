@@ -15,8 +15,6 @@
 
 #include "GlMesh.h"
 
-static constexpr Texture::Type from_assimp_type(aiTextureType type);
-
 void Model::draw() const {
 	for (const auto &mesh : m_meshes) {
 		mesh.draw();
@@ -24,7 +22,7 @@ void Model::draw() const {
 }
 
 void Model::draw(Shader &shader) const {
-	for(const auto &mesh : m_meshes) {
+	for (const auto &mesh : m_meshes) {
 		mesh.draw(shader);
 	}
 }
@@ -36,86 +34,11 @@ void Model::process_node(aiNode *node, const aiScene *scene) {
 	for (unsigned int i = 0; i < node->mNumMeshes; ++i) {
 		// TODO use node->mTransformation
 		auto *mesh = scene->mMeshes[node->mMeshes[i]];
-		m_meshes.push_back(process_mesh(mesh, scene));
+		m_meshes.push_back(GlMesh::from_ai_mesh(mesh, scene, m_directory));
 	}
 	for (unsigned int i = 0; i < node->mNumChildren; ++i) {
 		process_node(node->mChildren[i], scene);
 	}
-}
-
-// TODO move to GlMesh
-GlMesh Model::process_mesh(aiMesh *mesh, const aiScene *scene) {
-	std::vector<GlMesh::Vertex> vertices{};
-
-	vertices.reserve(mesh->mNumVertices);
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-		vertices.emplace_back(
-			(mesh->HasPositions()
-				 ? glm::vec3{mesh->mVertices[i].x, mesh->mVertices[i].y,
-							 mesh->mVertices[i].z}
-				 : glm::vec3{0}),
-			(mesh->HasNormals()
-				 ? glm::vec3{mesh->mNormals[i].x, mesh->mNormals[i].y,
-							 mesh->mNormals[i].z}
-				 : glm::vec3{0.0f, 1.0f, 0.0f}),
-			(mesh->HasTextureCoords(0) ? glm::vec2{mesh->mTextureCoords[0][i].x,
-												   mesh->mTextureCoords[0][i].y}
-									   : glm::vec2{0}));
-	}
-	// We are only dealing with triangles so the size will likely be num faces *
-	// 3
-	std::vector<unsigned int> indices{};
-	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
-		auto face = mesh->mFaces[i];
-		for (unsigned int j = 0; j < face.mNumIndices; j++) {
-			indices.push_back(face.mIndices[j]);
-		}
-	}
-	auto glMesh{GlMesh::from_data(vertices, indices)};
-	if (mesh->mMaterialIndex >= 0) {
-		process_material(scene->mMaterials[mesh->mMaterialIndex], glMesh);
-	}
-	glMesh.finish_setup();
-	return glMesh;
-}
-
-void Model::process_material(aiMaterial *mat, GlMesh &mesh) {
-	process_material_textures_of_type(mat, aiTextureType_DIFFUSE, mesh);
-	process_material_textures_of_type(mat, aiTextureType_SPECULAR, mesh);
-}
-
-void Model::process_material_textures_of_type(aiMaterial *mat,
-											  aiTextureType type,
-											  GlMesh &mesh) {
-	for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i) {
-		aiString filename;
-		mat->GetTexture(type, i, &filename);
-		mesh.add_texture(m_directory + filename.C_Str(), from_assimp_type(type),
-						 Texture::Settings{.wrapS = GL_REPEAT,
-										   .wrapT = GL_REPEAT,
-										   .minFilter = GL_LINEAR_MIPMAP_LINEAR,
-										   .magFilter = GL_LINEAR});
-	}
-}
-
-Model Model::from_path(const std::string &path) {
-	// TODO multi-threaded model loading
-	Assimp::Importer importer;
-	const auto *scene =
-		importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
-
-	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
-		!scene->mRootNode) {
-		spdlog::error("Assimp error: {}", importer.GetErrorString());
-		return {};
-	}
-	Model m{};
-	auto p = std::filesystem::path(path);
-	p.remove_filename();
-	m.m_directory = p.string();
-	m.process_node(scene->mRootNode, scene);
-	spdlog::debug("Finished loading {}", path);
-	return m;
 }
 
 size_t Model::mesh_count() const {
@@ -144,6 +67,34 @@ Model &Model::operator=(const Model &other) {
 		m_directory = other.m_directory;
 	}
 	return *this;
+}
+
+Model::Model(const char *path) : Model{std::filesystem::path{path}} {}
+
+Model::Model(const std::string &path) : Model{std::filesystem::path{path}} {}
+
+Model::Model(const std::filesystem::path &path) :
+	m_directory{path.parent_path().string() + '/'} {
+	Assimp::Importer importer;
+	// FIXME don't like path.string().c_str()
+	//  -> path has c_str() but that doesn't work for some reason
+	const auto *scene =
+		importer.ReadFile(path.string().c_str(), aiProcess_Triangulate | aiProcess_FlipUVs);
+
+	if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE ||
+		!scene->mRootNode) {
+		spdlog::error("Assimp error: {}", importer.GetErrorString());
+		m_directory.clear();
+		m_isValid = false;
+	} else {
+		process_node(scene->mRootNode, scene);
+		spdlog::debug("Finished loading {}", path.string());
+		m_isValid = true;
+	}
+}
+
+Model::operator bool() const {
+	return m_isValid;
 }
 
 constexpr Texture::Type from_assimp_type(aiTextureType type) {
