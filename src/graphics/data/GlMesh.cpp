@@ -121,7 +121,7 @@ GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
 }
 
 GlMesh &GlMesh::operator=(const GlMesh &other) {
-	if(this != &other) {
+	if (this != &other) {
 		m_vao = other.m_vao;
 		m_drawCount = other.m_drawCount;
 		m_vbo = other.m_vbo;
@@ -156,12 +156,13 @@ void GlMesh::draw(Shader &shader) const {
 
 	int diffuseNr = 0;
 	int specularNr = 0;
-	for(unsigned int i = 1; const auto &tex : m_textures) {
+	for (unsigned int i = 1; const auto &tex : m_textures) {
 		std::string property{};
-		if(tex.get_type() == Texture::Type::DIFFUSE) {
+		if (tex.get_type() == Texture::Type::DIFFUSE) {
 			property = "material.texture_diffuse" + std::to_string(++diffuseNr);
-		} else if(tex.get_type() == Texture::Type::SPECULAR) {
-			property = "material.texture_specular" + std::to_string(++specularNr);
+		} else if (tex.get_type() == Texture::Type::SPECULAR) {
+			property =
+				"material.texture_specular" + std::to_string(++specularNr);
 		}
 		shader.set_int(property.c_str(), gsl::narrow<int>(i));
 		// bin the texture to that slot
@@ -171,7 +172,7 @@ void GlMesh::draw(Shader &shader) const {
 
 	draw_mesh();
 
-	for(unsigned int i = 1; const auto &tex : m_textures) {
+	for (unsigned int i = 1; const auto &tex : m_textures) {
 		Texture::unbind_num(i);
 		++i;
 	}
@@ -210,7 +211,7 @@ void GlMesh::add_texture(std::string_view path, Texture::Type type,
 }
 
 void GlMesh::finish_setup() {
-	if(m_textures.empty()) {
+	if (m_textures.empty()) {
 		// add white texture
 		m_textures.push_back(Texture::empty_white());
 	}
@@ -222,7 +223,7 @@ const Texture &GlMesh::placeholder_tex() {
 }
 
 GlMesh::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
-					  glm::vec2 texCoords) :
+					   glm::vec2 texCoords) :
 	position{position},
 	normal{normal},
 	texCoords{texCoords} {}
