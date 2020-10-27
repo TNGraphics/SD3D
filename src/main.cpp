@@ -108,6 +108,7 @@ int main(int argc, const char *argv[]) {
 	GeneralInputHandler inputHandler{glContext.win()};
 
 	gui::load_font(resourcePath + "res/fonts/roboto.ttf", 15.0f);
+	gui::apply_style();
 
 	LitShader litShader;
 	ColorShader lightShader;
