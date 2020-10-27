@@ -57,6 +57,9 @@ void OrbitCameraController::settings_gui(bool &show, glm::vec3 &clearCol) {
 		}
 	}
 	ImGui::SliderFloat("Scroll Speed", &m_scrollSpeed, 0.5f, 5.f);
+	if(ImGui::Button("Reset Settings")) {
+		reset_settings();
+	}
 	ImGui::Separator();
 	ImGui::ColorEdit3("Clear Color", glm::value_ptr(clearCol));
 	ImGui::End();
