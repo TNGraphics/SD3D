@@ -12,6 +12,7 @@
 #include <gsl/gsl-lite.hpp>
 
 #include "detail/assimp_helpers.h"
+#include "../memory/gl_memory_helpers.h"
 
 #include "../shaders/Shader.h"
 #include "DataLayout.h"
@@ -35,47 +36,16 @@ static void unbind_all_buffers() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-// TODO probably should be in some header
-enum class BufferType {
-	// TODO add more
-	VBO,
-	EBO
-};
-
-static constexpr GLenum gl_buffer_type(BufferType type) {
-	switch (type) {
-	case BufferType::VBO:
-		return GL_ARRAY_BUFFER;
-	case BufferType::EBO:
-		return GL_ELEMENT_ARRAY_BUFFER;
-	}
-	return GL_INVALID_ENUM;
-}
-
-// FIXME don't like void * but might be the only option
-
-/// Bind and fill a buffer with the provided data
-/// \tparam type The type of buffer to bind and fill
-/// \param buffer The actual name of the buffer to bind and fill
-/// \param size The size of the data you want to fill the buffer with
-/// \param data The pointer to the data you want to fill the buffer with
-template<BufferType type>
-static void fill_buffer(GLint buffer, GLsizeiptr size, const void *data) {
-	glBindBuffer(gl_buffer_type(type), buffer);
-	// TODO other modes that GL_STATIC_DRAW
-	glBufferData(gl_buffer_type(type), size, data, GL_STATIC_DRAW);
-}
-
 GlMesh::GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount) :
-	m_vao{mem::create_vao()},
-	m_vbo{mem::create_vbo()},
+	m_vao{},
+	m_vbo{},
 	m_ebo{nullptr},
 	m_usesEbo{false},
 	m_drawCount{amount},
 	m_initialized{true} {
-	glBindVertexArray(*m_vao);
+	glBindVertexArray(m_vao.name());
 
-	fill_buffer<BufferType::VBO>(*m_vbo, amount, data);
+	sd3d::memory::fill_buffer(m_vbo, amount, data);
 
 	dataLayout.bind();
 
@@ -84,18 +54,18 @@ GlMesh::GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount) :
 
 GlMesh::GlMesh(const std::vector<Vertex> &data,
 			   const std::vector<GLuint> &indices) :
-	m_vao{mem::create_vao()},
-	m_vbo{mem::create_vbo()},
-	m_ebo{mem::create_ebo()},
+	m_vao{},
+	m_vbo{},
+	m_ebo{},
 	m_usesEbo{true},
 	m_drawCount{static_cast<GLuint>(indices.size())},
 	m_initialized{true} {
 	// Bind the VAO so upcoming changes are saved here
-	glBindVertexArray(*m_vao);
+	glBindVertexArray(m_vao.name());
 
-	fill_buffer<BufferType::VBO>(*m_vbo, data.size() * sizeof(Vertex),
+	sd3d::memory::fill_buffer(m_vbo, data.size() * sizeof(Vertex),
 								 data.data());
-	fill_buffer<BufferType::EBO>(*m_ebo, indices.size() * sizeof(unsigned int),
+	sd3d::memory::fill_buffer(m_ebo, indices.size() * sizeof(unsigned int),
 								 indices.data());
 
 	vertex_layout().bind();
@@ -200,7 +170,7 @@ void GlMesh::draw(Shader &shader) const {
 }
 
 void GlMesh::draw_mesh() const {
-	glBindVertexArray(*m_vao);
+	glBindVertexArray(m_vao.name());
 	if (m_usesEbo) {
 		glDrawElements(GL_TRIANGLES, m_drawCount, GL_UNSIGNED_INT, nullptr);
 	} else {

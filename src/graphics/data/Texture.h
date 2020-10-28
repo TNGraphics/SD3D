@@ -23,7 +23,7 @@ public:
 	enum class Type { DIFFUSE, SPECULAR };
 
 private:
-	sd3d::memory::shared_tex_t m_id{};
+	sd3d::memory::shared_tex_t m_tex_obj{};
 
 	GLenum m_slot;
 
