@@ -36,8 +36,10 @@ namespace detail {
 		explicit Buffer(buffer_ptr_t bufferPtr) : m_buffer{std::move(bufferPtr)} {}
 		Buffer(const Buffer &) = default;
 		Buffer(Buffer &&) noexcept = default;
+		explicit Buffer(nullptr_t) : m_buffer{nullptr} {}
 		Buffer &operator=(const Buffer &) = default;
 		Buffer &operator=(Buffer &&) noexcept = default;
+		Buffer &operator=(nullptr_t) { reset(); }
 		// todo maybe accept assignment with nullptr_t ?
 
 		// create a new gl object
