@@ -20,7 +20,7 @@
 #include "Texture.h"
 
 class DataLayout;
-class Shader;
+class LitShader;
 
 struct aiScene;
 struct aiMesh;
@@ -62,6 +62,9 @@ private:
 
 	std::vector<Texture> m_textures{};
 
+	glm::mat4 m_modelMatrix;
+	glm::mat3 m_normalMatrix;
+
 	static const Texture &placeholder_tex();
 
 	void draw_mesh() const;
@@ -77,14 +80,14 @@ public:
 	GlMesh &operator=(const GlMesh &);
 
 	void draw() const;
-	void draw(Shader &) const;
+	void draw(LitShader &) const;
 
 	// for now only float
-	GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount);
+	GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount, glm::mat4 transform = glm::mat4{1.0});
 
-	GlMesh(const std::vector<Vertex> &data, const std::vector<GLuint> &indices);
+	GlMesh(const std::vector<Vertex> &data, const std::vector<GLuint> &indices, glm::mat4 transform = glm::mat4{1.0});
 
-	static GlMesh from_ai_mesh(aiMesh *, const aiScene *, const std::string &texDir);
+	static GlMesh from_ai_mesh(aiMesh *, const aiScene *, const std::string &texDir, glm::mat4 transform = glm::mat4{1.0});
 
 	void add_texture(const char *path, Texture::Type type, GLenum slot,
 					 const Texture::Settings &settings = Texture::Settings{});
@@ -94,6 +97,8 @@ public:
 					 const Texture::Settings &settings = Texture::Settings{});
 	void add_texture(std::string_view path, Texture::Type type,
 					 const Texture::Settings &settings = Texture::Settings{});
+
+	void set_transform(glm::mat4 transform);
 
 	void finish_setup();
 };

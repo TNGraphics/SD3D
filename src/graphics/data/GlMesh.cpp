@@ -11,10 +11,10 @@
 
 #include <gsl/gsl-lite.hpp>
 
-#include "detail/assimp_helpers.h"
 #include "../memory/gl_memory_helpers.h"
+#include "detail/assimp_helpers.h"
 
-#include "../shaders/Shader.h"
+#include "../shaders/LitShader.h"
 #include "DataLayout.h"
 
 #include "GlMesh.h"
@@ -36,13 +36,16 @@ static void unbind_all_buffers() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-GlMesh::GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount) :
+GlMesh::GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount,
+			   glm::mat4 transform) :
 	m_vao{},
 	m_vbo{},
 	m_ebo{nullptr},
 	m_usesEbo{false},
 	m_drawCount{amount},
-	m_initialized{true} {
+	m_initialized{true},
+	m_modelMatrix{transform},
+	m_normalMatrix{glm::transpose(glm::inverse(transform))} {
 	glBindVertexArray(m_vao.name());
 
 	sd3d::memory::fill_buffer(m_vbo, amount, data);
@@ -53,20 +56,21 @@ GlMesh::GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount) :
 }
 
 GlMesh::GlMesh(const std::vector<Vertex> &data,
-			   const std::vector<GLuint> &indices) :
+			   const std::vector<GLuint> &indices, glm::mat4 transform) :
 	m_vao{},
 	m_vbo{},
 	m_ebo{},
 	m_usesEbo{true},
 	m_drawCount{static_cast<GLuint>(indices.size())},
-	m_initialized{true} {
+	m_initialized{true},
+	m_modelMatrix{transform},
+	m_normalMatrix{glm::transpose(glm::inverse(transform))} {
 	// Bind the VAO so upcoming changes are saved here
 	glBindVertexArray(m_vao.name());
 
-	sd3d::memory::fill_buffer(m_vbo, data.size() * sizeof(Vertex),
-								 data.data());
+	sd3d::memory::fill_buffer(m_vbo, data.size() * sizeof(Vertex), data.data());
 	sd3d::memory::fill_buffer(m_ebo, indices.size() * sizeof(unsigned int),
-								 indices.data());
+							  indices.data());
 
 	vertex_layout().bind();
 
@@ -80,7 +84,9 @@ GlMesh::GlMesh(GlMesh &&other) noexcept :
 	m_ebo{std::move(other.m_ebo)},
 	m_usesEbo{other.m_usesEbo},
 	m_initialized{other.m_initialized},
-	m_textures{std::move(other.m_textures)} {
+	m_textures{std::move(other.m_textures)},
+	m_modelMatrix{other.m_modelMatrix},
+	m_normalMatrix{other.m_normalMatrix} {
 	other.m_vao.reset();
 	other.m_drawCount = 0;
 	other.m_vbo.reset();
@@ -88,6 +94,8 @@ GlMesh::GlMesh(GlMesh &&other) noexcept :
 	other.m_usesEbo = false;
 	other.m_initialized = false;
 	other.m_textures.clear();
+	other.m_modelMatrix = glm::mat4{1.0};
+	other.m_normalMatrix = glm::mat4{1.0};
 }
 
 GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
@@ -98,6 +106,8 @@ GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
 	m_usesEbo = other.m_usesEbo;
 	m_initialized = other.m_initialized;
 	m_textures = std::move(other.m_textures);
+	m_modelMatrix = other.m_modelMatrix;
+	m_normalMatrix = other.m_normalMatrix;
 
 	other.m_vao.reset();
 	other.m_drawCount = 0;
@@ -106,6 +116,8 @@ GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
 	other.m_usesEbo = false;
 	other.m_initialized = false;
 	other.m_textures.clear();
+	other.m_modelMatrix = glm::mat4{1.0};
+	other.m_normalMatrix = glm::mat4{1.0};
 	return *this;
 }
 
@@ -138,10 +150,23 @@ void GlMesh::draw() const {
 	Texture::reset();
 }
 
-void GlMesh::draw(Shader &shader) const {
+void GlMesh::draw(LitShader &shader) const {
 	if (!m_initialized) return;
 
 	placeholder_tex().bind_to_num(0);
+
+	// TODO this doesn't work, it doesn't take parent transform into account
+	//  The effect of the mesh transform from assimp is likely accumulated
+	//  Meaning the transform of a mesh m in this scene tree:
+	//  		p
+	//  	   / \
+	//  	  p2  p2
+	//  	 /
+	//  	m
+	//  is p.transform * p2.transform * m.transform
+
+	shader.model(m_modelMatrix);
+	shader.normal_mat(m_normalMatrix);
 
 	int diffuseNr = 0;
 	int specularNr = 0;
@@ -216,8 +241,8 @@ static std::vector<unsigned int> extract_indices(const aiMesh *mesh);
 static std::vector<GlMesh::Vertex> extract_vertices(const aiMesh *mesh);
 
 GlMesh GlMesh::from_ai_mesh(aiMesh *mesh, const aiScene *scene,
-							const std::string &texDir) {
-	GlMesh glMesh{extract_vertices(mesh), extract_indices(mesh)};
+							const std::string &texDir, glm::mat4 transform) {
+	GlMesh glMesh{extract_vertices(mesh), extract_indices(mesh), transform};
 	if (mesh->mMaterialIndex >= 0) {
 		glMesh.process_material(scene->mMaterials[mesh->mMaterialIndex],
 								texDir);
@@ -245,6 +270,11 @@ void GlMesh::process_material_textures_of_type(aiMaterial *mat,
 		add_texture(texDir + filename.C_Str(),
 					sd3d::assimp::from_assimp_type(type), defaultSettings);
 	}
+}
+
+void GlMesh::set_transform(glm::mat4 transform) {
+	m_modelMatrix = transform;
+	m_normalMatrix = glm::transpose(glm::inverse(transform));
 }
 
 std::vector<unsigned int> extract_indices(const aiMesh *mesh) {

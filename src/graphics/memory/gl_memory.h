@@ -40,7 +40,6 @@ namespace detail {
 		Buffer &operator=(const Buffer &) = default;
 		Buffer &operator=(Buffer &&) noexcept = default;
 		Buffer &operator=(nullptr_t) { reset(); }
-		// todo maybe accept assignment with nullptr_t ?
 
 		// create a new gl object
 		// This might delete the old object if no other object is pointing to it
@@ -48,9 +47,6 @@ namespace detail {
 		// Reset the buffer so it points to nowhere (nullptr)
 		// The gpu object might be deleted, if no other buffer object points to it
 		void reset() { m_buffer.reset(); }
-
-		// TODO maybe implicit conversion to GLuint
-		// TODO maybe operator* which does the same as name()
 
 		// Get the name (id) of the object this is pointing to
 		[[nodiscard]] GLuint name() const { return *m_buffer; }
