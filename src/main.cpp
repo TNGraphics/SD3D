@@ -161,8 +161,6 @@ int main(int argc, const char *argv[]) {
 	bool showModelSettings = false;
 	bool showCameraSettings = false;
 
-	float fov{gsl::narrow_cast<float>(cam.ccam().fov())};
-
 	while (glContext.is_open()) {
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
