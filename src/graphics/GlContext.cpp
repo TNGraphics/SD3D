@@ -32,6 +32,7 @@ GlContext::~GlContext() {
 	// otherwise we would leak memory
 	// maybe we create window data here and immediately delete it, but that
 	// shouldn't happen
+	// TODO maybe also remove data from window user pointer
 	delete get_or_create_window_data(m_window);
 	glfwDestroyWindow(m_window);
 	glfwTerminate();
@@ -127,7 +128,7 @@ void GlContext::set_vsync(GlContext::Settings::Vsync vsync) {
 	}
 }
 
-void GlContext::swap_buffer() const {
+void GlContext::swap_buffer() {
 	glfwSwapBuffers(win());
 }
 
@@ -192,7 +193,7 @@ void GlContext::clear(float r, float g, float b, float a) const {
 }
 
 bool GlContext::is_current_context() const {
-	return glfwGetCurrentContext() == win();
+	return glfwGetCurrentContext() == m_window;
 }
 
 void GLAPIENTRY opengl_message_callback(

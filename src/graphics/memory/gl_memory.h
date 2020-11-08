@@ -5,8 +5,8 @@
 #ifndef SD3D_GL_MEMORY_H
 #define SD3D_GL_MEMORY_H
 
-#include <memory>
 #include <concepts>
+#include <memory>
 #include <utility>
 
 #include <GLFW/glfw3.h>
@@ -15,77 +15,81 @@ namespace sd3d::memory {
 
 namespace detail {
 
-	using buffer_ptr_t = std::shared_ptr<GLuint>;
-	using weak_buffer_ptr_t = std::weak_ptr<GLuint>;
+using buffer_ptr_t = std::shared_ptr<GLuint>;
+using weak_buffer_ptr_t = std::weak_ptr<GLuint>;
 
-	template<typename T>
-	concept Creator = requires(T t) {
-		// has to be callable
-		{t()};
-		// has to return a buffer_ptr_t
-		std::same_as<decltype(t()), buffer_ptr_t>;
-	};
+template<typename T>
+concept Creator = requires(T t) {
+	// has to be callable
+	{t()};
+	// has to return a buffer_ptr_t
+	std::same_as<decltype(t()), buffer_ptr_t>;
+};
 
-	template<Creator creator_t>
-	class Buffer {
-	private:
-		buffer_ptr_t m_buffer;
+template<Creator creator_t>
+class Buffer {
+private:
+	buffer_ptr_t m_buffer;
 
-	public:
-		Buffer() : m_buffer{creator_t()()} {}
-		explicit Buffer(buffer_ptr_t bufferPtr) : m_buffer{std::move(bufferPtr)} {}
-		Buffer(const Buffer &) = default;
-		Buffer(Buffer &&) noexcept = default;
-		explicit Buffer(nullptr_t) : m_buffer{nullptr} {}
-		Buffer &operator=(const Buffer &) = default;
-		Buffer &operator=(Buffer &&) noexcept = default;
-		Buffer &operator=(nullptr_t) { reset(); }
+public:
+	// FIXME will probably fail if type is not functor
+	Buffer() : m_buffer{creator_t()()} {}
+	explicit Buffer(buffer_ptr_t bufferPtr) : m_buffer{std::move(bufferPtr)} {}
+	Buffer(const Buffer &) = default;
+	Buffer(Buffer &&) noexcept = default;
+	explicit Buffer(nullptr_t) : m_buffer{nullptr} {}
+	Buffer &operator=(const Buffer &) = default;
+	Buffer &operator=(Buffer &&) noexcept = default;
+	Buffer &operator=(nullptr_t) {
+		reset();
+		return *this;
+	}
 
-		// create a new gl object
-		// This might delete the old object if no other object is pointing to it
-		void create_new() { m_buffer = creator_t()(); }
-		// Reset the buffer so it points to nowhere (nullptr)
-		// The gpu object might be deleted, if no other buffer object points to it
-		void reset() { m_buffer.reset(); }
+	/// create a new gl object
+	/// This might delete the old object if no other object is pointing to it
+	void create_new() { m_buffer = creator_t()(); }
+	// Reset the buffer so it points to nowhere (nullptr)
+	// The gpu object might be deleted, if no other buffer object points to it
+	void reset() { m_buffer.reset(); }
 
-		// Get the name (id) of the object this is pointing to
-		[[nodiscard]] GLuint name() const { return *m_buffer; }
-		// Get a new weak_ptr that points to the underlying shared_ptr
-		[[nodiscard]] weak_buffer_ptr_t weak() const { return m_buffer; }
-	};
+	// Get the name (id) of the object this is pointing to
+	[[nodiscard]] GLuint name() const { return *m_buffer; }
+	// Get a new weak_ptr that points to the underlying shared_ptr
+	[[nodiscard]] weak_buffer_ptr_t weak() const { return m_buffer; }
+};
 
-	// shared_ptrs don't have the deleter as type info, unique_ptrs do
-	// sad, but it is what it is, this makes the different buffer types
-	// as typedefs of shared_ptr<GLuint> not typesafe :(
+// shared_ptrs don't have the deleter as type info, unique_ptrs do
+// sad, but it is what it is, this makes the different buffer types
+// as typedefs of shared_ptr<GLuint> not typesafe :(
 
-	struct VboCreator {
-		[[nodiscard]] buffer_ptr_t operator()();
-	};
+struct VboCreator {
+	[[nodiscard]] buffer_ptr_t operator()();
+};
 
-	struct VaoCreator {
-		[[nodiscard]] buffer_ptr_t operator()();
-	};
+struct VaoCreator {
+	[[nodiscard]] buffer_ptr_t operator()();
+};
 
-	struct EboCreator {
-		[[nodiscard]] buffer_ptr_t operator()();
-	};
+struct EboCreator {
+	[[nodiscard]] buffer_ptr_t operator()();
+};
 
-	struct TexCreator {
-		[[nodiscard]] buffer_ptr_t operator()();
-	};
+struct TexCreator {
+	[[nodiscard]] buffer_ptr_t operator()();
+};
 
-	struct ProgCreator {
-		[[nodiscard]] buffer_ptr_t operator()();
-	};
+struct ProgCreator {
+	[[nodiscard]] buffer_ptr_t operator()();
+};
 
-	struct FboCreator {
-		[[nodiscard]] buffer_ptr_t operator()();
-	};
+struct FboCreator {
+	[[nodiscard]] buffer_ptr_t operator()();
+};
 
-	struct RboCreator {
-		[[nodiscard]] buffer_ptr_t operator()();
-	};
-}
+struct RboCreator {
+	[[nodiscard]] buffer_ptr_t operator()();
+};
+} // namespace detail
 
 // This is also not perfectly typesafe, because this works:
 // 		shared_tex_t tex;

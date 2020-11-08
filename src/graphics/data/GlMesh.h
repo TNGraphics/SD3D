@@ -70,7 +70,8 @@ private:
 	void draw_mesh() const;
 
 	void process_material(aiMaterial *mat, const std::string &texDir);
-	void process_material_textures_of_type(aiMaterial *, aiTextureType, const std::string &texDir);
+	void process_material_textures_of_type(aiMaterial *, aiTextureType,
+										   const std::string &texDir);
 
 public:
 	GlMesh(GlMesh &&) noexcept;
@@ -82,12 +83,15 @@ public:
 	void draw() const;
 	void draw(LitShader &) const;
 
-	// for now only float
-	GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount, glm::mat4 transform = glm::mat4{1.0});
+	GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount,
+		   glm::mat4 transform = glm::mat4{1.0});
 
-	GlMesh(const std::vector<Vertex> &data, const std::vector<GLuint> &indices, glm::mat4 transform = glm::mat4{1.0});
+	GlMesh(const std::vector<Vertex> &data, const std::vector<GLuint> &indices,
+		   glm::mat4 transform = glm::mat4{1.0});
 
-	static GlMesh from_ai_mesh(aiMesh *, const aiScene *, const std::string &texDir, glm::mat4 transform = glm::mat4{1.0});
+	static GlMesh from_ai_mesh(aiMesh *, const aiScene *,
+							   const std::string &texDir,
+							   glm::mat4 transform = glm::mat4{1.0});
 
 	void add_texture(const char *path, Texture::Type type, GLenum slot,
 					 const Texture::Settings &settings = Texture::Settings{});

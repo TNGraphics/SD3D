@@ -69,6 +69,7 @@ constexpr GLenum DataLayout::type_to_opengl(DataLayout::GlType type) {
 
 constexpr GLsizei DataLayout::type_size(DataLayout::GlType type) {
 	switch (type) {
+		// TODO maybe use GL types, like GLuint, etc.
 	case GlType::DOUBLE:
 		return sizeof(double);
 	case GlType::FLOAT:

@@ -53,6 +53,7 @@ Shader &Shader::operator=(const Shader &other) {
 }
 
 void Shader::compile(const char *vertexSource, const char *fragmentSource) {
+	// TODO better error handling
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSource, nullptr);
 	glCompileShader(vertexShader);
@@ -92,14 +93,14 @@ std::optional<std::string> Shader::read_file_contents(const char *path) {
 	std::ifstream shaderFile(path);
 	if (!shaderFile.good()) {
 		spdlog::error("Error opening file {}", path);
-		return {};
+		return std::nullopt;
 	}
 	try {
 		ret << shaderFile.rdbuf();
 		shaderFile.close();
 	} catch (const std::ifstream::failure &e) {
 		spdlog::error("Error {} reading file {} ({})", e.code().value(), path, e.what());
-		return {};
+		return std::nullopt;
 	}
 	return ret.str();
 }

@@ -24,6 +24,7 @@ private:
 
 	static void s_process_mouse_scroll_input(GLFWwindow *, double, double);
 
+protected:
 	// callbacks
 	virtual void process_keyboard_input(GLFWwindow *, int, int, int, int) = 0;
 

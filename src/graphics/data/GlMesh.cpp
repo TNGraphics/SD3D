@@ -29,6 +29,8 @@ const DataLayout &GlMesh::vertex_layout() {
 }
 
 static void unbind_all_buffers() {
+	// VAO always HAS to be first, because otherwise it may loose the buffers
+	// stored inside
 	glBindVertexArray(0);
 	// EBO is not necessarily used by some GlMesh instances, doesn't hurt to
 	// unbind it anyway
@@ -40,7 +42,7 @@ GlMesh::GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount,
 			   glm::mat4 transform) :
 	m_vao{},
 	m_vbo{},
-	m_ebo{nullptr},
+	m_ebo{nullptr}, // otherwise it gets one generated
 	m_usesEbo{false},
 	m_drawCount{amount},
 	m_initialized{true},
@@ -48,7 +50,7 @@ GlMesh::GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount,
 	m_normalMatrix{glm::transpose(glm::inverse(transform))} {
 	glBindVertexArray(m_vao.name());
 
-	sd3d::memory::fill_buffer(m_vbo, amount, data);
+	mem::fill_buffer(m_vbo, amount, data);
 
 	dataLayout.bind();
 
