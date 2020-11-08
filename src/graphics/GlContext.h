@@ -24,8 +24,8 @@ namespace sd3d::gl {
 class GlContext;
 
 struct WindowData {
-	GlContext *context;
-	InputHandler *inputHandler;
+	GlContext *context{nullptr};
+	InputHandler *inputHandler{nullptr};
 };
 
 WindowData *get_or_create_window_data(GLFWwindow *);
@@ -61,6 +61,7 @@ public:
 	GlContext() = default; // initialize with init method later
 	GlContext(const GlContext &) = delete;
 	GlContext(GlContext &&) = delete;
+	// FIXME no copy and move assignment
 	explicit GlContext(const Settings &settings);
 	~GlContext();
 
@@ -69,13 +70,13 @@ public:
 	void init(const Settings &settings);
 
 	[[nodiscard]] bool is_open() const;
-	void swap_buffer() const;
+	void swap_buffer();
 
 	// FIXME this setting applies to the current context (which is not
-	// necessarily this one)
+	//  necessarily this one)
 	static void set_vsync(Settings::Vsync vsync);
 
-	[[nodiscard]] GLFWwindow *win() const { return m_window; }
+	[[nodiscard]] GLFWwindow *win() { return m_window; }
 
 	[[nodiscard]] int width() const { return m_width; }
 	[[nodiscard]] int height() const { return m_height; }
@@ -83,6 +84,7 @@ public:
 
 	[[nodiscard]] bool is_current_context() const;
 
+	// FIXME why is clear const? (changes window)
 	void clear() const { clear(0, 0, 0); }
 	void clear(const glm::vec3 &col) const { clear(col.x, col.y, col.z); }
 	void clear(const glm::vec4 &col) const {

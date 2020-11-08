@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include <filesystem>
 
 #pragma warning(push, 0)
 
@@ -14,10 +15,13 @@
 
 #pragma warning(pop)
 
+#include "detail/AssimpNode.h"
 #include "DataLayout.h"
 
 class GlMesh;
-class Shader;
+class LitShader;
+
+class AssimpNode;
 
 struct aiNode;
 struct aiScene;
@@ -27,31 +31,33 @@ enum aiTextureType;
 
 class Model {
 private:
-	std::vector<GlMesh> m_meshes{};
+	sd3d::assimp::detail::AssimpNode m_nodeTree;
 	// for later for textures ;)
 	std::string m_directory{};
 
+	bool m_isValid{};
+
 	Model(Model &&) noexcept;
 
-	void process_node(aiNode *node, const aiScene *scene);
-	GlMesh process_mesh(aiMesh *mesh, const aiScene *scene);
-	void process_material(aiMaterial *mat, GlMesh &mesh);
-	void process_material_textures_of_type(aiMaterial *, aiTextureType, GlMesh &);
+//	void process_node(aiNode *node, const aiScene *scene);
 
 public:
 	Model() = default;
+	explicit Model(const char *path, glm::mat4 transformation = glm::mat4{1.0});
+	explicit Model(const std::string &path, glm::mat4 transformation = glm::mat4{1.0});
+	explicit Model(const std::filesystem::path &path, glm::mat4 transformation = glm::mat4{1.0});
 	Model(const Model &) = default;
 	Model &operator=(const Model &);
 	Model &operator=(Model &&) noexcept;
 
+	explicit operator bool() const;
+
+	void draw(LitShader &) const;
 	void draw() const;
-	void draw(Shader &) const;
+
+	void apply_transform(glm::mat4 transformation);
 
 	void clear();
-
-	[[nodiscard]] size_t mesh_count() const;
-
-	static Model from_path(const std::string &path);
 };
 
 #endif // SD3D_MODEL_H

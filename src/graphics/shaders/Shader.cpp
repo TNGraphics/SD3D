@@ -21,8 +21,7 @@
 
 #include "Shader.h"
 
-Shader::Shader(const char *vertexSource, const char *fragmentSource) :
-	m_id{sd3d::memory::create_prog()} {
+Shader::Shader(const char *vertexSource, const char *fragmentSource) : m_id{} {
 	compile(vertexSource, fragmentSource);
 }
 
@@ -37,12 +36,12 @@ Shader::Shader(std::string_view vertexPath, std::string_view fragmentPath) :
 			   .c_str()} {}
 
 Shader::Shader(Shader &&other) noexcept : m_id{std::move(other.m_id)} {
-	other.m_id = nullptr;
+	other.m_id.reset();
 }
 
 Shader &Shader::operator=(Shader &&other) noexcept {
 	m_id = std::move(other.m_id);
-	other.m_id = nullptr;
+	other.m_id.reset();
 	return *this;
 }
 
@@ -54,6 +53,7 @@ Shader &Shader::operator=(const Shader &other) {
 }
 
 void Shader::compile(const char *vertexSource, const char *fragmentSource) {
+	// TODO better error handling
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 	glShaderSource(vertexShader, 1, &vertexSource, nullptr);
 	glCompileShader(vertexShader);
@@ -64,11 +64,11 @@ void Shader::compile(const char *vertexSource, const char *fragmentSource) {
 	glCompileShader(fragmentShader);
 	if (!check_shader_error(fragmentShader)) std::cout << "FRAGMENT STAGE\n";
 
-	glAttachShader(*m_id, vertexShader);
-	glAttachShader(*m_id, fragmentShader);
-	glLinkProgram(*m_id);
+	glAttachShader(m_id.name(), vertexShader);
+	glAttachShader(m_id.name(), fragmentShader);
+	glLinkProgram(m_id.name());
 
-	check_program_error(*m_id);
+	check_program_error(m_id.name());
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
@@ -76,12 +76,12 @@ void Shader::compile(const char *vertexSource, const char *fragmentSource) {
 
 void Shader::recompile(const char *vertexSource, const char *fragmentSource) {
 	// get a new ID, because other shader objects could rely on this one
-	m_id = sd3d::memory::create_prog();
+	m_id.create_new();
 	compile(vertexSource, fragmentSource);
 }
 
 [[maybe_unused]] void Shader::bind() const {
-	glUseProgram(*m_id);
+	glUseProgram(m_id.name());
 }
 
 void Shader::unbind() {
@@ -93,14 +93,14 @@ std::optional<std::string> Shader::read_file_contents(const char *path) {
 	std::ifstream shaderFile(path);
 	if (!shaderFile.good()) {
 		spdlog::error("Error opening file {}", path);
-		return {};
+		return std::nullopt;
 	}
 	try {
 		ret << shaderFile.rdbuf();
 		shaderFile.close();
 	} catch (const std::ifstream::failure &e) {
 		spdlog::error("Error {} reading file {} ({})", e.code().value(), path, e.what());
-		return {};
+		return std::nullopt;
 	}
 	return ret.str();
 }
@@ -128,7 +128,7 @@ int Shader::check_program_error(GLuint programId) {
 }
 
 GLint Shader::get_uniform_loc(const GLchar *name) const {
-	return glGetUniformLocation(*m_id, name);
+	return glGetUniformLocation(m_id.name(), name);
 }
 
 void Shader::set(const char *name, bool val) const {

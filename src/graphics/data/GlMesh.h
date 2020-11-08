@@ -20,7 +20,12 @@
 #include "Texture.h"
 
 class DataLayout;
-class Shader;
+class LitShader;
+
+struct aiScene;
+struct aiMesh;
+struct aiMaterial;
+enum aiTextureType;
 
 class GlMesh {
 public:
@@ -57,13 +62,16 @@ private:
 
 	std::vector<Texture> m_textures{};
 
+	glm::mat4 m_modelMatrix;
+	glm::mat3 m_normalMatrix;
+
 	static const Texture &placeholder_tex();
 
-	GlMesh(sd3d::memory::shared_vao_t vao, GLuint drawCount,
-		   sd3d::memory::shared_vbo_t vbo, sd3d::memory::shared_ebo_t ebo,
-		   bool useEbo);
-
 	void draw_mesh() const;
+
+	void process_material(aiMaterial *mat, const std::string &texDir);
+	void process_material_textures_of_type(aiMaterial *, aiTextureType,
+										   const std::string &texDir);
 
 public:
 	GlMesh(GlMesh &&) noexcept;
@@ -73,14 +81,17 @@ public:
 	GlMesh &operator=(const GlMesh &);
 
 	void draw() const;
-	void draw(Shader &) const;
+	void draw(LitShader &) const;
 
-	// for now only float
-	static GlMesh from_data(const DataLayout &dataLayout, const float *data,
-							GLuint amount);
+	GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount,
+		   glm::mat4 transform = glm::mat4{1.0});
 
-	static GlMesh from_data(const std::vector<Vertex> &data,
-							const std::vector<GLuint> &indices);
+	GlMesh(const std::vector<Vertex> &data, const std::vector<GLuint> &indices,
+		   glm::mat4 transform = glm::mat4{1.0});
+
+	static GlMesh from_ai_mesh(aiMesh *, const aiScene *,
+							   const std::string &texDir,
+							   glm::mat4 transform = glm::mat4{1.0});
 
 	void add_texture(const char *path, Texture::Type type, GLenum slot,
 					 const Texture::Settings &settings = Texture::Settings{});
@@ -90,6 +101,8 @@ public:
 					 const Texture::Settings &settings = Texture::Settings{});
 	void add_texture(std::string_view path, Texture::Type type,
 					 const Texture::Settings &settings = Texture::Settings{});
+
+	void set_transform(glm::mat4 transform);
 
 	void finish_setup();
 };

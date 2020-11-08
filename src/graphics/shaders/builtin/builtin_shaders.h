@@ -5,8 +5,6 @@
 #ifndef SD3D_BUILTIN_SHADERS_H
 #define SD3D_BUILTIN_SHADERS_H
 
-#include <string>
-
 namespace sd3d::shaders {
 
 [[maybe_unused]] constexpr const char *error_vertex_src() {

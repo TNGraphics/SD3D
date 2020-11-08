@@ -14,19 +14,19 @@
 static std::pair<bool, sd3d::memory::shared_tex_t> add_or_get(const char *path);
 
 Texture::Texture(Texture &&other) noexcept :
-	m_id{std::move(other.m_id)},
+	m_texObj{std::move(other.m_texObj)},
 	m_slot{other.m_slot},
 	m_type{other.m_type} {
-	other.m_id = nullptr;
+	other.m_texObj.reset();
 	other.m_slot = GL_TEXTURE0;
 	other.m_type = Type::DIFFUSE;
 }
 
 Texture &Texture::operator=(Texture &&other) noexcept {
-	m_id = std::move(other.m_id);
+	m_texObj = std::move(other.m_texObj);
 	m_slot = other.m_slot;
 	m_type = other.m_type;
-	other.m_id = nullptr;
+	other.m_texObj.reset();
 	other.m_slot = GL_TEXTURE0;
 	other.m_type = Type::DIFFUSE;
 	return *this;
@@ -35,8 +35,8 @@ Texture &Texture::operator=(Texture &&other) noexcept {
 Texture::Texture(const Texture::Settings &settings, Texture::Type type) :
 	m_slot{GL_TEXTURE0},
 	m_type{type},
-	m_id{sd3d::memory::create_tex()} {
-	glBindTexture(GL_TEXTURE_2D, *m_id);
+	m_texObj{} {
+	glBindTexture(GL_TEXTURE_2D, m_texObj.name());
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, settings.wrapS);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, settings.wrapT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, settings.minFilter);
@@ -49,10 +49,10 @@ Texture::Texture(const char *path, const Settings &settings, GLenum slot,
 				 Type type) : m_slot{validate_slot(slot)}, m_type{type} {
 	// TODO way to force reloading texture
 	bool isNewVal{false};
-	std::tie(isNewVal, m_id) = add_or_get(path);
+	std::tie(isNewVal, m_texObj) = add_or_get(path);
 	if(isNewVal) {
 		spdlog::debug("Loading file {}", path);
-		glBindTexture(GL_TEXTURE_2D, *m_id);
+		glBindTexture(GL_TEXTURE_2D, m_texObj.name());
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, settings.wrapS);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, settings.wrapT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
@@ -73,6 +73,7 @@ Texture::Texture(const char *path, const Settings &settings, GLenum slot,
 			spdlog::error("Failed to load image data from file {}", path);
 		}
 		stbi_image_free(data);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	} else {
 		spdlog::debug("File {} already loaded, using cached version", path);
 	}
@@ -106,7 +107,7 @@ Texture::Texture(std::string_view path, GLenum slot, Texture::Type type) :
 
 Texture &Texture::operator=(const Texture &other) {
 	if (this != &other) {
-		m_id = other.m_id;
+		m_texObj = other.m_texObj;
 		m_slot = other.m_slot;
 		m_type = other.m_type;
 	}
@@ -138,7 +139,7 @@ GLenum Texture::validate_slot(GLenum slot) {
 }
 
 void Texture::bind() const {
-	bind_unchecked(m_slot, *m_id);
+	bind_unchecked(m_slot, m_texObj.name());
 }
 
 void Texture::bind_to_num(unsigned int num) const {
@@ -146,7 +147,7 @@ void Texture::bind_to_num(unsigned int num) const {
 }
 
 void Texture::bind(GLenum slot) const {
-	bind(slot, *m_id);
+	bind(slot, m_texObj.name());
 }
 
 void Texture::bind(GLenum slot, GLuint textureId) {
@@ -203,14 +204,14 @@ static std::pair<bool, sd3d::memory::shared_tex_t> add_or_get(const char *path) 
 	if(lookup.contains(path)) {
 		auto temp = lookup.at(path);
 		if(!temp.expired()) {
-			return std::make_pair(false, lookup.at(path).lock());
+			return std::make_pair(false, sd3d::memory::shared_tex_t(lookup.at(path).lock()));
 		}
 		std::erase_if(lookup, [](const lookup_t::value_type &item) {
 			return item.second.expired();
 		});
 	}
-	auto newTex = sd3d::memory::create_tex();
+	sd3d::memory::shared_tex_t newTex;
 
-	lookup.try_emplace(path, newTex);
+	lookup.try_emplace(path, newTex.weak());
 	return std::make_pair(true, newTex);
 }

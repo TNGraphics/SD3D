@@ -114,7 +114,7 @@ int main(int argc, const char *argv[]) {
 	ColorShader lightShader;
 
 	Model monkey{};
-	Model light{Model::from_path(resourcePath + "res/light.fbx")};
+	Model light{resourcePath + "res/light.fbx"};
 
 	OrbitCameraController cam{
 		{70.0, glContext.aspect(), glm::vec3{0, 0, -10}},
@@ -127,7 +127,8 @@ int main(int argc, const char *argv[]) {
 	double deltaTime;
 	double lastFrame{glfwGetTime()};
 
-	float modelScale{1.0f};
+	float modelScaleCoarse{1.f};
+	float modelScaleFine{1.f};
 
 	glm::vec3 clearCol{0, 0, 0};
 	glm::vec3 modelTint{1.0f};
@@ -160,8 +161,6 @@ int main(int argc, const char *argv[]) {
 	bool showModelSettings = false;
 	bool showCameraSettings = false;
 
-	float fov{gsl::narrow_cast<float>(cam.ccam().fov())};
-
 	while (glContext.is_open()) {
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
@@ -175,12 +174,6 @@ int main(int argc, const char *argv[]) {
 		litShader.projection(cam.ccam().projection());
 		litShader.set_cam_pos(cam.ccam().get_pos());
 
-		glm::mat4 model{1.0};
-		model = glm::scale(model, glm::vec3(modelScale));
-		litShader.model(model);
-		glm::mat3 normalMatrix{glm::transpose(glm::inverse(model))};
-		litShader.normal_mat(normalMatrix);
-
 		litShader.set_color(modelTint);
 
 		monkey.draw(litShader);
@@ -189,6 +182,8 @@ int main(int argc, const char *argv[]) {
 			lightShader.bind();
 			lightShader.view(cam.ccam().view());
 			lightShader.projection(cam.ccam().projection());
+
+			glm::mat4 model{1.0};
 
 			for (const auto &l : pointLightSettings) {
 				model = glm::mat4{1.0f};
@@ -208,7 +203,14 @@ int main(int argc, const char *argv[]) {
 			ImGui::SetNextWindowSize({-1, -1});
 			ImGui::Begin("Misc Settings", &showModelSettings,
 						 ImGuiWindowFlags_NoResize);
-			ImGui::SliderFloat("Scale", &modelScale, 0.01f, 10.f);
+			if(ImGui::InputFloat("Scale", &modelScaleCoarse, 0.001f, 0.05f)) {
+				auto model{glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse * modelScaleFine})};
+				monkey.apply_transform(model);
+			}
+			if(ImGui::SliderFloat("Scale - Fine", &modelScaleFine, 0.25f, 5.f)) {
+				auto model{glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse * modelScaleFine})};
+				monkey.apply_transform(model);
+			}
 			if (ImGui::SliderInt("Shininess", &shininessExp, 0, 8)) {
 				litShader.bind();
 				litShader.set("material.shininess", pow(2.f, shininessExp));
@@ -222,9 +224,9 @@ int main(int argc, const char *argv[]) {
 		}
 
 		if(showLightSettings) {
-			ImGui::SetNextWindowSize({-1, -1});
+			ImGui::SetNextWindowSizeConstraints({300, -1}, {FLT_MAX, -1});
 			if (ImGui::Begin("Light Settings", &showLightSettings,
-							 ImGuiWindowFlags_NoResize)) {
+							 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
 				if (ImGui::CollapsingHeader("Directional Light")) {
 					dir_light_gui(litShader, dirLightSettings);
 				}
@@ -276,7 +278,7 @@ int main(int argc, const char *argv[]) {
 		if (fileBrowser.HasSelected()) {
 			spdlog::info("Opening model: {}",
 						 fileBrowser.GetSelected().string());
-			monkey = Model::from_path(fileBrowser.GetSelected().string());
+			monkey = Model{fileBrowser.GetSelected(), glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
 			fileBrowser.Close();
 		}
 

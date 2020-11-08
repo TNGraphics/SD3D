@@ -5,11 +5,16 @@
 #include <glad/glad.h>
 #include <spdlog/spdlog.h>
 
+#include <assimp/scene.h>
+
 #include <utility>
 
 #include <gsl/gsl-lite.hpp>
 
-#include "../shaders/Shader.h"
+#include "../memory/gl_memory_helpers.h"
+#include "detail/assimp_helpers.h"
+
+#include "../shaders/LitShader.h"
 #include "DataLayout.h"
 
 #include "GlMesh.h"
@@ -23,66 +28,56 @@ const DataLayout &GlMesh::vertex_layout() {
 	return d;
 }
 
-GlMesh GlMesh::from_data(const DataLayout &dataLayout, const float *data,
-						 GLuint amount) {
-	auto vao = mem::create_vao();
-	auto vbo = mem::create_vbo();
-	glBindVertexArray(*vao);
-
-	// Bind the VBO to fill it with data
-	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-	// Fill the VBO with data
-	glBufferData(GL_ARRAY_BUFFER, amount, data, GL_STATIC_DRAW);
-
-	// Bind the DataLayout (basically multiple glVertexAttribPointers enabled)
-	dataLayout.bind();
-
-	// properly unbind all buffers, arrays, etc. to prevent collisions
+static void unbind_all_buffers() {
+	// VAO always HAS to be first, because otherwise it may loose the buffers
+	// stored inside
 	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	return GlMesh(vao, amount, vbo, nullptr, false);
-}
-
-GlMesh GlMesh::from_data(const std::vector<Vertex> &data,
-						 const std::vector<GLuint> &indices) {
-	auto vao = mem::create_vao();
-	auto vbo = mem::create_vbo();
-	auto ebo = mem::create_ebo();
-	// Bind the VAO so upcoming changes are saved here
-	glBindVertexArray(*vao);
-
-	// Bind the VBO to fill it with data
-	glBindBuffer(GL_ARRAY_BUFFER, *vbo);
-	// Fill the VBO with data
-	glBufferData(GL_ARRAY_BUFFER, data.size() * sizeof(Vertex),
-				 data.data(), GL_STATIC_DRAW);
-
-	// Bind and fill EBO with data
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *ebo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int),
-				 indices.data(), GL_STATIC_DRAW);
-
-	// Bind the DataLayout (basically multiple glVertexAttribPointers enabled)
-	vertex_layout().bind();
-
-	// properly unbind all buffers, arrays, etc. to prevent collisions
-	glBindVertexArray(0);
+	// EBO is not necessarily used by some GlMesh instances, doesn't hurt to
+	// unbind it anyway
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	return GlMesh(vao, static_cast<GLuint>(indices.size()), vbo, ebo, true);
 }
 
-GlMesh::GlMesh(mem::shared_vao_t vao, GLuint drawCount,
-			   mem::shared_vbo_t vbo, mem::shared_ebo_t ebo,
-			   bool useEbo) :
-	m_vao{std::move(vao)},
-	m_drawCount{drawCount},
-	m_vbo{std::move(vbo)},
-	m_ebo{std::move(ebo)},
-	m_usesEbo{useEbo},
-	m_initialized{true} {}
+GlMesh::GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount,
+			   glm::mat4 transform) :
+	m_vao{},
+	m_vbo{},
+	m_ebo{nullptr}, // otherwise it gets one generated
+	m_usesEbo{false},
+	m_drawCount{amount},
+	m_initialized{true},
+	m_modelMatrix{transform},
+	m_normalMatrix{glm::transpose(glm::inverse(transform))} {
+	glBindVertexArray(m_vao.name());
+
+	mem::fill_buffer(m_vbo, amount, data);
+
+	dataLayout.bind();
+
+	unbind_all_buffers();
+}
+
+GlMesh::GlMesh(const std::vector<Vertex> &data,
+			   const std::vector<GLuint> &indices, glm::mat4 transform) :
+	m_vao{},
+	m_vbo{},
+	m_ebo{},
+	m_usesEbo{true},
+	m_drawCount{static_cast<GLuint>(indices.size())},
+	m_initialized{true},
+	m_modelMatrix{transform},
+	m_normalMatrix{glm::transpose(glm::inverse(transform))} {
+	// Bind the VAO so upcoming changes are saved here
+	glBindVertexArray(m_vao.name());
+
+	sd3d::memory::fill_buffer(m_vbo, data.size() * sizeof(Vertex), data.data());
+	sd3d::memory::fill_buffer(m_ebo, indices.size() * sizeof(unsigned int),
+							  indices.data());
+
+	vertex_layout().bind();
+
+	unbind_all_buffers();
+}
 
 GlMesh::GlMesh(GlMesh &&other) noexcept :
 	m_vao{std::move(other.m_vao)},
@@ -91,14 +86,18 @@ GlMesh::GlMesh(GlMesh &&other) noexcept :
 	m_ebo{std::move(other.m_ebo)},
 	m_usesEbo{other.m_usesEbo},
 	m_initialized{other.m_initialized},
-	m_textures{std::move(other.m_textures)} {
-	other.m_vao = nullptr;
+	m_textures{std::move(other.m_textures)},
+	m_modelMatrix{other.m_modelMatrix},
+	m_normalMatrix{other.m_normalMatrix} {
+	other.m_vao.reset();
 	other.m_drawCount = 0;
-	other.m_vbo = nullptr;
-	other.m_ebo = nullptr;
+	other.m_vbo.reset();
+	other.m_ebo.reset();
 	other.m_usesEbo = false;
 	other.m_initialized = false;
 	other.m_textures.clear();
+	other.m_modelMatrix = glm::mat4{1.0};
+	other.m_normalMatrix = glm::mat4{1.0};
 }
 
 GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
@@ -109,19 +108,23 @@ GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
 	m_usesEbo = other.m_usesEbo;
 	m_initialized = other.m_initialized;
 	m_textures = std::move(other.m_textures);
+	m_modelMatrix = other.m_modelMatrix;
+	m_normalMatrix = other.m_normalMatrix;
 
-	other.m_vao = nullptr;
+	other.m_vao.reset();
 	other.m_drawCount = 0;
-	other.m_vbo = nullptr;
-	other.m_ebo = nullptr;
+	other.m_vbo.reset();
+	other.m_ebo.reset();
 	other.m_usesEbo = false;
 	other.m_initialized = false;
 	other.m_textures.clear();
+	other.m_modelMatrix = glm::mat4{1.0};
+	other.m_normalMatrix = glm::mat4{1.0};
 	return *this;
 }
 
 GlMesh &GlMesh::operator=(const GlMesh &other) {
-	if(this != &other) {
+	if (this != &other) {
 		m_vao = other.m_vao;
 		m_drawCount = other.m_drawCount;
 		m_vbo = other.m_vbo;
@@ -149,29 +152,43 @@ void GlMesh::draw() const {
 	Texture::reset();
 }
 
-void GlMesh::draw(Shader &shader) const {
+void GlMesh::draw(LitShader &shader) const {
 	if (!m_initialized) return;
 
 	placeholder_tex().bind_to_num(0);
 
+	// TODO this doesn't work, it doesn't take parent transform into account
+	//  The effect of the mesh transform from assimp is likely accumulated
+	//  Meaning the transform of a mesh m in this scene tree:
+	//  		p
+	//  	   / \
+	//  	  p2  p2
+	//  	 /
+	//  	m
+	//  is p.transform * p2.transform * m.transform
+
+	shader.model(m_modelMatrix);
+	shader.normal_mat(m_normalMatrix);
+
 	int diffuseNr = 0;
 	int specularNr = 0;
-	for(unsigned int i = 1; const auto &tex : m_textures) {
+	for (unsigned int i = 1; const auto &tex : m_textures) {
 		std::string property{};
-		if(tex.get_type() == Texture::Type::DIFFUSE) {
+		if (tex.get_type() == Texture::Type::DIFFUSE) {
 			property = "material.texture_diffuse" + std::to_string(++diffuseNr);
-		} else if(tex.get_type() == Texture::Type::SPECULAR) {
-			property = "material.texture_specular" + std::to_string(++specularNr);
+		} else if (tex.get_type() == Texture::Type::SPECULAR) {
+			property =
+				"material.texture_specular" + std::to_string(++specularNr);
 		}
 		shader.set_int(property.c_str(), gsl::narrow<int>(i));
-		// bin the texture to that slot
+		// bind the texture to that slot
 		tex.bind_to_num(i);
 		++i;
 	}
 
 	draw_mesh();
 
-	for(unsigned int i = 1; const auto &tex : m_textures) {
+	for (unsigned int i = 1; const auto &tex : m_textures) {
 		Texture::unbind_num(i);
 		++i;
 	}
@@ -180,7 +197,7 @@ void GlMesh::draw(Shader &shader) const {
 }
 
 void GlMesh::draw_mesh() const {
-	glBindVertexArray(*m_vao);
+	glBindVertexArray(m_vao.name());
 	if (m_usesEbo) {
 		glDrawElements(GL_TRIANGLES, m_drawCount, GL_UNSIGNED_INT, nullptr);
 	} else {
@@ -210,7 +227,7 @@ void GlMesh::add_texture(std::string_view path, Texture::Type type,
 }
 
 void GlMesh::finish_setup() {
-	if(m_textures.empty()) {
+	if (m_textures.empty()) {
 		// add white texture
 		m_textures.push_back(Texture::empty_white());
 	}
@@ -221,10 +238,85 @@ const Texture &GlMesh::placeholder_tex() {
 	return tex;
 }
 
+static std::vector<unsigned int> extract_indices(const aiMesh *mesh);
+
+static std::vector<GlMesh::Vertex> extract_vertices(const aiMesh *mesh);
+
+GlMesh GlMesh::from_ai_mesh(aiMesh *mesh, const aiScene *scene,
+							const std::string &texDir, glm::mat4 transform) {
+	GlMesh glMesh{extract_vertices(mesh), extract_indices(mesh), transform};
+	if (mesh->mMaterialIndex >= 0) {
+		glMesh.process_material(scene->mMaterials[mesh->mMaterialIndex],
+								texDir);
+	}
+	glMesh.finish_setup();
+	return glMesh;
+}
+
+void GlMesh::process_material(aiMaterial *mat, const std::string &texDir) {
+	process_material_textures_of_type(mat, aiTextureType_DIFFUSE, texDir);
+	process_material_textures_of_type(mat, aiTextureType_SPECULAR, texDir);
+}
+
+void GlMesh::process_material_textures_of_type(aiMaterial *mat,
+											   aiTextureType type,
+											   const std::string &texDir) {
+	static constexpr Texture::Settings defaultSettings{
+		.wrapS = GL_REPEAT,
+		.wrapT = GL_REPEAT,
+		.minFilter = GL_LINEAR_MIPMAP_LINEAR,
+		.magFilter = GL_LINEAR};
+	for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i) {
+		aiString filename;
+		mat->GetTexture(type, i, &filename);
+		add_texture(texDir + filename.C_Str(),
+					sd3d::assimp::from_assimp_type(type), defaultSettings);
+	}
+}
+
+void GlMesh::set_transform(glm::mat4 transform) {
+	m_modelMatrix = transform;
+	m_normalMatrix = glm::transpose(glm::inverse(transform));
+}
+
+std::vector<unsigned int> extract_indices(const aiMesh *mesh) {
+	std::vector<unsigned int> indices{};
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
+		auto face = mesh->mFaces[i];
+		for (unsigned int j = 0; j < face.mNumIndices; j++) {
+			indices.push_back(face.mIndices[j]);
+		}
+	}
+	return indices;
+}
+
+std::vector<GlMesh::Vertex> extract_vertices(const aiMesh *mesh) {
+	std::vector<GlMesh::Vertex> vertices{};
+
+	vertices.reserve(mesh->mNumVertices);
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+		vertices.emplace_back(
+			(mesh->HasPositions()
+				 ? glm::vec3{mesh->mVertices[i].x, mesh->mVertices[i].y,
+							 mesh->mVertices[i].z}
+				 : glm::vec3{0}),
+			(mesh->HasNormals()
+				 ? glm::vec3{mesh->mNormals[i].x, mesh->mNormals[i].y,
+							 mesh->mNormals[i].z}
+				 : glm::vec3{0.0f, 1.0f, 0.0f}),
+			(mesh->HasTextureCoords(0) ? glm::vec2{mesh->mTextureCoords[0][i].x,
+												   mesh->mTextureCoords[0][i].y}
+									   : glm::vec2{0}));
+	}
+	return vertices;
+}
+
+// region Vertex
 GlMesh::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
-					  glm::vec2 texCoords) :
+					   glm::vec2 texCoords) :
 	position{position},
 	normal{normal},
 	texCoords{texCoords} {}
 
 GlMesh::Vertex::Vertex() : position{}, normal{}, texCoords{} {}
+// endregion Vertex

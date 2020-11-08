@@ -8,6 +8,9 @@
 
 #include "GeneralInputHandler.h"
 
+// TODO move all the ImGui_ImplGlfw callbacks to the abstract base classes
+//  static functions
+
 void GeneralInputHandler::process_mouse_scroll_input(GLFWwindow *win, double x,
 													 double y) {
 	ImGui_ImplGlfw_ScrollCallback(win, x, y);
@@ -33,8 +36,8 @@ void GeneralInputHandler::process_mouse_pos_input(GLFWwindow *, double x,
 	m_y = y;
 }
 
-void GeneralInputHandler::process_keyboard_input(GLFWwindow *win, int key, int sc,
-												 int action, int mods) {
+void GeneralInputHandler::process_keyboard_input(GLFWwindow *win, int key,
+												 int sc, int action, int mods) {
 	ImGui_ImplGlfw_KeyCallback(win, key, sc, action, mods);
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
 		glfwSetWindowShouldClose(win, true);
