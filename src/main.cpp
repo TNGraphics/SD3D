@@ -135,7 +135,7 @@ int main(int argc, const char *argv[]) {
 
 	int shininessExp = 5;
 	litShader.bind();
-	litShader.set("material.shininess", pow(2.f, shininessExp));
+	litShader.set("material.shininess", static_cast<float>(pow(2.f, shininessExp)));
 
 	light::DirLight dirLightSettings{{-0.2f, -1.0f, -0.3f},
 									 {1.0f, 0.9f, 1.0f},
@@ -213,7 +213,7 @@ int main(int argc, const char *argv[]) {
 			}
 			if (ImGui::SliderInt("Shininess", &shininessExp, 0, 8)) {
 				litShader.bind();
-				litShader.set("material.shininess", pow(2.f, shininessExp));
+				litShader.set("material.shininess", static_cast<float>(pow(2.f, shininessExp)));
 			}
 			ImGui::ColorEdit3("Model Tint", glm::value_ptr(modelTint));
 			ImGui::End();
