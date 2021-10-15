@@ -21,8 +21,6 @@
 class GlMesh;
 class LitShader;
 
-class AssimpNode;
-
 struct aiNode;
 struct aiScene;
 struct aiMesh;

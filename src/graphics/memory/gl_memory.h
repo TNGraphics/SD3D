@@ -48,7 +48,7 @@ public:
 	/// create a new gl object
 	/// This might delete the old object if no other object is pointing to it
 	void create_new() { m_buffer = creator_t()(); }
-	// Reset the buffer so it points to nowhere (nullptr)
+	// Reset the buffer, so it points to nowhere (nullptr)
 	// The gpu object might be deleted, if no other buffer object points to it
 	void reset() { m_buffer.reset(); }
 
@@ -57,10 +57,6 @@ public:
 	// Get a new weak_ptr that points to the underlying shared_ptr
 	[[nodiscard]] weak_buffer_ptr_t weak() const { return m_buffer; }
 };
-
-// shared_ptrs don't have the deleter as type info, unique_ptrs do
-// sad, but it is what it is, this makes the different buffer types
-// as typedefs of shared_ptr<GLuint> not typesafe :(
 
 struct VboCreator {
 	[[nodiscard]] buffer_ptr_t operator()();
