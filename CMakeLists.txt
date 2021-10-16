@@ -55,6 +55,9 @@ add_executable(SD3D
 			   src/graphics/shaders/ColorShader.cpp
 			   src/graphics/data/detail/AssimpNode.cpp
 			   src/graphics/data/AsyncModel.cpp
+			   src/graphics/data/AsyncGlMesh.cpp
+			   src/graphics/data/detail/assimp_helpers.cpp
+			   src/graphics/data/detail/AsyncAssimpNode.cpp
 			   )
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)

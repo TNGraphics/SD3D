@@ -5,13 +5,38 @@
 #ifndef SD3D_ASSIMP_HELPERS_H
 #define SD3D_ASSIMP_HELPERS_H
 
+#include <vector>
+
 #include <assimp/scene.h>
+
+#pragma warning(push, 0)
+
+#include <glm/glm.hpp>
+
+#pragma warning(pop)
 
 #include "../Texture.h"
 
 enum aiTextureType;
 
-namespace sd3d::assimp {
+namespace sd3d {
+namespace data {
+
+struct Vertex {
+	[[maybe_unused]] glm::vec3 position{};
+	[[maybe_unused]] glm::vec3 normal{};
+	[[maybe_unused]] glm::vec2 texCoords{};
+
+	Vertex();
+	Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 texCoords);
+};
+
+std::vector<Vertex> extract_vertices(const aiMesh *mesh);
+std::vector<unsigned int> extract_indices(const aiMesh *mesh);
+
+}
+
+namespace assimp {
 
 constexpr Texture::Type from_assimp_type(aiTextureType type) {
 	switch (type) {
@@ -43,6 +68,7 @@ constexpr Texture::Type from_assimp_type(aiTextureType type) {
 	}
 }
 
+}
 }
 
 #endif // SD3D_ASSIMP_HELPERS_H

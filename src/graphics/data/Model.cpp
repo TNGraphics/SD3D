@@ -32,17 +32,15 @@ Model &Model::operator=(Model &&other) noexcept {
 	// move data
 	m_nodeTree = std::move(other.m_nodeTree);
 	m_directory = std::move(other.m_directory);
+	m_isValid = other.m_isValid;
 	return *this;
 }
-
-Model::Model(Model &&other) noexcept :
-	m_nodeTree{std::move(other.m_nodeTree)},
-	m_directory{std::move(other.m_directory)} {}
 
 Model &Model::operator=(const Model &other) {
 	if (this != &other) {
 		m_nodeTree = other.m_nodeTree;
 		m_directory = other.m_directory;
+		m_isValid = other.m_isValid;
 	}
 	return *this;
 }

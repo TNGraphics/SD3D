@@ -2,7 +2,6 @@
 // Created by Tobias on 10/13/2020.
 //
 
-#include <glad/glad.h>
 #include <spdlog/spdlog.h>
 
 #include <assimp/scene.h>
@@ -20,6 +19,7 @@
 #include "GlMesh.h"
 
 namespace mem = sd3d::memory;
+namespace data = sd3d::data;
 
 const DataLayout &GlMesh::vertex_layout() {
 	static DataLayout d{{3, DataLayout::GlType::FLOAT, GL_FALSE},
@@ -57,7 +57,7 @@ GlMesh::GlMesh(const DataLayout &dataLayout, const float *data, GLuint amount,
 	unbind_all_buffers();
 }
 
-GlMesh::GlMesh(const std::vector<Vertex> &data,
+GlMesh::GlMesh(const std::vector<data::Vertex> &data,
 			   const std::vector<GLuint> &indices, glm::mat4 transform) :
 	m_vao{},
 	m_vbo{},
@@ -70,7 +70,7 @@ GlMesh::GlMesh(const std::vector<Vertex> &data,
 	// Bind the VAO so upcoming changes are saved here
 	glBindVertexArray(m_vao.name());
 
-	sd3d::memory::fill_buffer(m_vbo, data.size() * sizeof(Vertex), data.data());
+	sd3d::memory::fill_buffer(m_vbo, data.size() * sizeof(data::Vertex), data.data());
 	sd3d::memory::fill_buffer(m_ebo, indices.size() * sizeof(unsigned int),
 							  indices.data());
 
@@ -99,6 +99,15 @@ GlMesh::GlMesh(GlMesh &&other) noexcept :
 	other.m_modelMatrix = glm::mat4{1.0};
 	other.m_normalMatrix = glm::mat4{1.0};
 }
+
+GlMesh::GlMesh(bool useEbo, glm::mat4 transform) :
+	m_ebo{nullptr},
+	m_vao{nullptr},
+	m_vbo{nullptr},
+	m_usesEbo{useEbo},
+	m_drawCount{0},
+	m_modelMatrix{transform},
+	m_normalMatrix{glm::transpose(glm::inverse(transform))} {}
 
 GlMesh &GlMesh::operator=(GlMesh &&other) noexcept {
 	m_vao = std::move(other.m_vao);
@@ -138,6 +147,7 @@ GlMesh &GlMesh::operator=(const GlMesh &other) {
 
 void GlMesh::draw() const {
 	if (!m_initialized) return;
+
 	// bind all textures
 	for (const auto &tex : m_textures) {
 		tex.bind();
@@ -156,16 +166,6 @@ void GlMesh::draw(LitShader &shader) const {
 	if (!m_initialized) return;
 
 	placeholder_tex().bind_to_num(0);
-
-	// TODO this doesn't work, it doesn't take parent transform into account
-	//  The effect of the mesh transform from assimp is likely accumulated
-	//  Meaning the transform of a mesh m in this scene tree:
-	//  		p
-	//  	   / \
-	//  	  p2  p2
-	//  	 /
-	//  	m
-	//  is p.transform * p2.transform * m.transform
 
 	shader.model(m_modelMatrix);
 	shader.normal_mat(m_normalMatrix);
@@ -238,13 +238,9 @@ const Texture &GlMesh::placeholder_tex() {
 	return tex;
 }
 
-static std::vector<unsigned int> extract_indices(const aiMesh *mesh);
-
-static std::vector<GlMesh::Vertex> extract_vertices(const aiMesh *mesh);
-
 GlMesh GlMesh::from_ai_mesh(aiMesh *mesh, const aiScene *scene,
 							const std::string &texDir, glm::mat4 transform) {
-	GlMesh glMesh{extract_vertices(mesh), extract_indices(mesh), transform};
+	GlMesh glMesh{data::extract_vertices(mesh), data::extract_indices(mesh), transform};
 	if (mesh->mMaterialIndex >= 0) {
 		glMesh.process_material(scene->mMaterials[mesh->mMaterialIndex],
 								texDir);
@@ -278,45 +274,3 @@ void GlMesh::set_transform(glm::mat4 transform) {
 	m_modelMatrix = transform;
 	m_normalMatrix = glm::transpose(glm::inverse(transform));
 }
-
-std::vector<unsigned int> extract_indices(const aiMesh *mesh) {
-	std::vector<unsigned int> indices{};
-	for (unsigned int i = 0; i < mesh->mNumFaces; i++) {
-		auto face = mesh->mFaces[i];
-		for (unsigned int j = 0; j < face.mNumIndices; j++) {
-			indices.push_back(face.mIndices[j]);
-		}
-	}
-	return indices;
-}
-
-std::vector<GlMesh::Vertex> extract_vertices(const aiMesh *mesh) {
-	std::vector<GlMesh::Vertex> vertices{};
-
-	vertices.reserve(mesh->mNumVertices);
-	for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-		vertices.emplace_back(
-			(mesh->HasPositions()
-				 ? glm::vec3{mesh->mVertices[i].x, mesh->mVertices[i].y,
-							 mesh->mVertices[i].z}
-				 : glm::vec3{0}),
-			(mesh->HasNormals()
-				 ? glm::vec3{mesh->mNormals[i].x, mesh->mNormals[i].y,
-							 mesh->mNormals[i].z}
-				 : glm::vec3{0.0f, 1.0f, 0.0f}),
-			(mesh->HasTextureCoords(0) ? glm::vec2{mesh->mTextureCoords[0][i].x,
-												   mesh->mTextureCoords[0][i].y}
-									   : glm::vec2{0}));
-	}
-	return vertices;
-}
-
-// region Vertex
-GlMesh::Vertex::Vertex(glm::vec3 position, glm::vec3 normal,
-					   glm::vec2 texCoords) :
-	position{position},
-	normal{normal},
-	texCoords{texCoords} {}
-
-GlMesh::Vertex::Vertex() : position{}, normal{}, texCoords{} {}
-// endregion Vertex

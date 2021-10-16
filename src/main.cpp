@@ -38,6 +38,7 @@
 
 #include "graphics/data/GlMesh.h"
 #include "graphics/data/Model.h"
+#include "graphics/data/AsyncModel.h"
 
 #include "controls/GeneralInputHandler.h"
 #include "controls/OrbitCameraController.h"
@@ -113,7 +114,7 @@ int main(int argc, const char *argv[]) {
 	LitShader litShader;
 	ColorShader lightShader;
 
-	Model monkey{};
+	AsyncModel monkey{};
 	Model light{resourcePath + "res/light.fbx"};
 
 	OrbitCameraController cam{
@@ -278,7 +279,7 @@ int main(int argc, const char *argv[]) {
 		if (fileBrowser.HasSelected()) {
 			spdlog::info("Opening model: {}",
 						 fileBrowser.GetSelected().string());
-			monkey = Model{fileBrowser.GetSelected(), glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
+			monkey = AsyncModel{fileBrowser.GetSelected(), glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
 			fileBrowser.Close();
 		}
 
