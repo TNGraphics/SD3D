@@ -5,6 +5,8 @@
 #ifndef SD3D_ASYNCGLMESH_H
 #define SD3D_ASYNCGLMESH_H
 
+#include <string>
+
 #include "GlMesh.h"
 
 #include "detail/assimp_helpers.h"
@@ -13,7 +15,7 @@ class AsyncGlMesh : public GlMesh {
 private:
 	struct TextureLoadInstruction {
 		// TODO don't require string_view (allow other string types)
-		std::string_view path;
+		std::string path;
 		Texture::Settings settings;
 		GLenum slot;
 		Texture::Type type;
@@ -30,6 +32,8 @@ private:
 	std::vector<TextureLoadInstruction> m_texturesToLoad;
 
 	void add_texture(const TextureLoadInstruction &);
+
+	void process_material_textures_of_type(aiMaterial *, aiTextureType, const std::string &texDir) override;
 
 public:
 	static AsyncGlMesh async_from_ai_mesh(aiMesh *, const aiScene *,

@@ -20,14 +20,17 @@ static void unbind_all_buffers() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
-void AsyncGlMesh::add_texture(const AsyncGlMesh::TextureLoadInstruction &instruction) {
-	GlMesh::add_texture(instruction.path, instruction.type, instruction.slot, instruction.settings);
+void AsyncGlMesh::add_texture(
+	const AsyncGlMesh::TextureLoadInstruction &instruction) {
+	GlMesh::add_texture(instruction.path, instruction.type, instruction.slot,
+						instruction.settings);
 }
 
 AsyncGlMesh AsyncGlMesh::async_from_ai_mesh(aiMesh *mesh, const aiScene *scene,
 											const std::string &texDir,
 											glm::mat4 transform) {
-	AsyncGlMesh glMesh{data::extract_vertices(mesh), data::extract_indices(mesh), transform};
+	AsyncGlMesh glMesh{data::extract_vertices(mesh),
+					   data::extract_indices(mesh), transform};
 	if (mesh->mMaterialIndex >= 0) {
 		glMesh.process_material(scene->mMaterials[mesh->mMaterialIndex],
 								texDir);
@@ -36,11 +39,10 @@ AsyncGlMesh AsyncGlMesh::async_from_ai_mesh(aiMesh *mesh, const aiScene *scene,
 }
 
 AsyncGlMesh::AsyncGlMesh(std::vector<data::Vertex> data,
-						 std::vector<GLuint> indices,
-						 glm::mat4 transform) :
-	GlMesh(true, transform), m_data{std::move(data)}, m_indices{std::move(indices)} {
-
-}
+						 std::vector<GLuint> indices, glm::mat4 transform) :
+	GlMesh(true, transform),
+	m_data{std::move(data)},
+	m_indices{std::move(indices)} {}
 
 void AsyncGlMesh::finalize() {
 	// Load meshes into GPU
@@ -52,9 +54,12 @@ void AsyncGlMesh::finalize() {
 	// Bind the VAO so upcoming changes are saved here
 	glBindVertexArray(m_vao.name());
 
-	sd3d::memory::fill_buffer(m_vbo, static_cast<GLsizeiptr>(m_data.size() * sizeof(data::Vertex)), m_data.data());
-	sd3d::memory::fill_buffer(m_ebo, static_cast<GLsizeiptr>(m_indices.size() * sizeof(unsigned int)),
-							  m_indices.data());
+	sd3d::memory::fill_buffer(
+		m_vbo, static_cast<GLsizeiptr>(m_data.size() * sizeof(data::Vertex)),
+		m_data.data());
+	sd3d::memory::fill_buffer(
+		m_ebo, static_cast<GLsizeiptr>(m_indices.size() * sizeof(unsigned int)),
+		m_indices.data());
 
 	vertex_layout().bind();
 
@@ -76,4 +81,22 @@ void AsyncGlMesh::finalize() {
 	}
 
 	m_initialized = true;
+}
+void AsyncGlMesh::process_material_textures_of_type(aiMaterial *mat,
+													aiTextureType type,
+													const std::string &texDir) {
+	static constexpr Texture::Settings defaultSettings{
+		.wrapS = GL_REPEAT,
+		.wrapT = GL_REPEAT,
+		.minFilter = GL_LINEAR_MIPMAP_LINEAR,
+		.magFilter = GL_LINEAR};
+	for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i) {
+		aiString filename;
+		mat->GetTexture(type, i, &filename);
+		m_texturesToLoad.push_back(AsyncGlMesh::TextureLoadInstruction{
+			.path = texDir + filename.C_Str(),
+			.settings = defaultSettings,
+			.slot = GL_TEXTURE0,
+			.type = sd3d::assimp::from_assimp_type(type)});
+	}
 }
