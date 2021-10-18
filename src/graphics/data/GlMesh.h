@@ -62,7 +62,7 @@ protected:
 	void draw_mesh() const;
 
 	void process_material(aiMaterial *mat, const std::string &texDir);
-	void process_material_textures_of_type(aiMaterial *, aiTextureType,
+	virtual void process_material_textures_of_type(aiMaterial *, aiTextureType,
 										   const std::string &texDir);
 
 	void finish_setup();

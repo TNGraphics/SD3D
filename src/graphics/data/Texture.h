@@ -23,6 +23,7 @@ public:
 	enum class Type { DIFFUSE, SPECULAR };
 
 private:
+	// TODO maybe also load file asynchronously
 	sd3d::memory::shared_tex_t m_texObj{};
 
 	GLenum m_slot;

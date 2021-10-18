@@ -265,6 +265,7 @@ void GlMesh::process_material_textures_of_type(aiMaterial *mat,
 	for (unsigned int i = 0; i < mat->GetTextureCount(type); ++i) {
 		aiString filename;
 		mat->GetTexture(type, i, &filename);
+		// TODO this doesn't support multiple textures of the same type
 		add_texture(texDir + filename.C_Str(),
 					sd3d::assimp::from_assimp_type(type), defaultSettings);
 	}

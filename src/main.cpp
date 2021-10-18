@@ -169,6 +169,8 @@ int main(int argc, const char *argv[]) {
 	bool showCameraSettings = false;
 
 	while (glContext.is_open()) {
+		monkey.update_state();
+
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -205,6 +207,29 @@ int main(int argc, const char *argv[]) {
 		}
 
 		gui::new_frame();
+
+		if (monkey.state() == AsyncModel::State::LOADING) {
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
+			ImGuiIO &io = ImGui::GetIO();
+			ImGuiWindowFlags windowFlags =
+				ImGuiWindowFlags_NoDecoration |
+				ImGuiWindowFlags_AlwaysAutoResize |
+				ImGuiWindowFlags_NoSavedSettings |
+				ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav |
+				ImGuiWindowFlags_NoMove;
+			constexpr float pad = 10.0f;
+			const ImGuiViewport *viewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(
+				ImVec2{viewport->WorkPos.x + pad,
+					   viewport->WorkPos.y + pad},
+				ImGuiCond_Always, ImVec2{5.f, 5.f});
+			ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+			if (ImGui::Begin("Loading Popup", nullptr, windowFlags)) {
+				ImGui::PaddedText("Loading...", 0.f, 0.f);
+			}
+			ImGui::End();
+			ImGui::PopStyleVar();
+		}
 
 		if (showModelSettings) {
 			ImGui::SetNextWindowSize({-1, -1});
@@ -369,6 +394,7 @@ void fps_window() {
 		ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing |
 		ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
 	auto &io = ImGui::GetIO();
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{5.0f, 5.0f});
 	ImVec2 windowPos{io.DisplaySize.x - dist, io.DisplaySize.y - dist};
 	ImVec2 windowPivot{1.f, 1.f};
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always, windowPivot);
@@ -376,4 +402,5 @@ void fps_window() {
 	ImGui::Begin("FPS", nullptr, windowFlags);
 	ImGui::Value("FPS", io.Framerate);
 	ImGui::End();
+	ImGui::PopStyleVar();
 }

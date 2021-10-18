@@ -31,21 +31,17 @@ enum aiTextureType;
 
 class AsyncModel {
 public:
-	enum class State {
-		Valid,
-		Loading,
-		Invalid
-	};
+	enum class State { INITIAL, VALID, LOADING, INVALID };
 
 private:
 	std::future<std::optional<sd3d::assimp::detail::AsyncAssimpNode>> m_future;
 	std::optional<sd3d::assimp::detail::AsyncAssimpNode> m_nodeTree{};
 	std::string m_directory;
 
-	bool m_loadingFailed;
-	bool m_finishedLoading;
-
 	AsyncModel(AsyncModel &&) noexcept = default;
+
+	State m_state{State::INITIAL};
+	glm::mat4 m_cachedTransform;
 
 public:
 	AsyncModel() = default;
@@ -56,13 +52,14 @@ public:
 	AsyncModel &operator=(const AsyncModel &) = delete;
 	AsyncModel &operator=(AsyncModel &&) noexcept = default;
 
-	State state();
+	void update_state();
+	[[nodiscard]] State state() const;
 
 	void draw(LitShader &);
 	void draw();
 
 	// TODO queue the transformation if the model is not loaded yet
-	void apply_transform(glm::mat4 transformation);
+	void apply_transform(glm::mat4 transform);
 
 	void clear();
 };
