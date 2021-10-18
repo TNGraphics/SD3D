@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.17.3)
 
-project(SD3D)
+project(SD3D VERSION 0.1.1.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -33,6 +33,8 @@ include_directories(${STBI_PATH})
 include_directories(${GLAD_PATH}/include)
 include_directories(${GLM_PATH})
 include_directories(external/imgui)
+
+configure_file(src/include/version.h.in version.h)
 
 add_executable(SD3D
 			   ${GLAD_PATH}/src/glad.c
@@ -68,7 +70,12 @@ if(DEFINED MEMORY_DEBUG AND MEMORY_DEBUG)
 	target_compile_definitions(SD3D PUBLIC -DMEM_DEBUG)
 endif()
 
-target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS} external/imgui/imgui)
+target_include_directories(SD3D PRIVATE
+						   ${PROJECT_BINARY_DIR}
+						   ${BFGROUP_LYRA_INCLUDE_DIRS}
+						   external/imgui/imgui
+						   )
+
 target_link_libraries(SD3D PRIVATE
 					  glfw
 					  ${OPENGL_LIBRARIES}

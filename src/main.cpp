@@ -36,12 +36,13 @@
 #include "graphics/shaders/ColorShader.h"
 #include "graphics/shaders/LitShader.h"
 
-#include "graphics/data/GlMesh.h"
-#include "graphics/data/Model.h"
 #include "graphics/data/AsyncModel.h"
+#include "graphics/data/Model.h"
 
 #include "controls/GeneralInputHandler.h"
 #include "controls/OrbitCameraController.h"
+
+#include "version.h"
 
 void fps_window();
 
@@ -68,6 +69,7 @@ int main(int argc, const char *argv[]) {
 		lyra::opt(width, "width")["-w"]["--width"]("The window width") |
 		lyra::opt(height, "height")["-h"]["--height"]("The window height") |
 		lyra::opt(noVsync)["--disable-vsync"]("Force VSYNC to be disabled") |
+		// TODO at some point, compile them into the binary
 		lyra::opt(resourcePath, "resource path")["-r"]["--res"](
 			"The path to the resource folder, relative to the .exe. Leave "
 			"empty if next to it.") |
@@ -92,7 +94,10 @@ int main(int argc, const char *argv[]) {
 		.height = height,
 		.vsync = noVsync ? gl::GlContext::Settings::Vsync::NONE
 						 : gl::GlContext::Settings::Vsync::SINGLE_BUFFERED,
-		.title = "SD3D"}};
+		.title = fmt::format("SD3D {}.{}.{}.{}", SD3D_VERSION_MAJOR,
+							 SD3D_VERSION_MINOR, SD3D_VERSION_PATCH,
+							 SD3D_VERSION_TWEAK)
+					 .c_str()}};
 	if (!glContext) {
 		spdlog::error("Error setting up GL Context!");
 		return -1;
@@ -136,7 +141,8 @@ int main(int argc, const char *argv[]) {
 
 	int shininessExp = 5;
 	litShader.bind();
-	litShader.set("material.shininess", static_cast<float>(pow(2.f, shininessExp)));
+	litShader.set("material.shininess",
+				  static_cast<float>(pow(2.f, shininessExp)));
 
 	light::DirLight dirLightSettings{{-0.2f, -1.0f, -0.3f},
 									 {1.0f, 0.9f, 1.0f},
@@ -200,34 +206,41 @@ int main(int argc, const char *argv[]) {
 
 		gui::new_frame();
 
-		if(showModelSettings) {
+		if (showModelSettings) {
 			ImGui::SetNextWindowSize({-1, -1});
 			ImGui::Begin("Misc Settings", &showModelSettings,
 						 ImGuiWindowFlags_NoResize);
-			if(ImGui::InputFloat("Scale", &modelScaleCoarse, 0.001f, 0.05f)) {
-				auto model{glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse * modelScaleFine})};
+			if (ImGui::InputFloat("Scale", &modelScaleCoarse, 0.001f, 0.05f)) {
+				auto model{
+					glm::scale(glm::mat4{1.0},
+							   glm::vec3{modelScaleCoarse * modelScaleFine})};
 				monkey.apply_transform(model);
 			}
-			if(ImGui::SliderFloat("Scale - Fine", &modelScaleFine, 0.25f, 5.f)) {
-				auto model{glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse * modelScaleFine})};
+			if (ImGui::SliderFloat("Scale - Fine", &modelScaleFine, 0.25f,
+								   5.f)) {
+				auto model{
+					glm::scale(glm::mat4{1.0},
+							   glm::vec3{modelScaleCoarse * modelScaleFine})};
 				monkey.apply_transform(model);
 			}
 			if (ImGui::SliderInt("Shininess", &shininessExp, 0, 8)) {
 				litShader.bind();
-				litShader.set("material.shininess", static_cast<float>(pow(2.f, shininessExp)));
+				litShader.set("material.shininess",
+							  static_cast<float>(pow(2.f, shininessExp)));
 			}
 			ImGui::ColorEdit3("Model Tint", glm::value_ptr(modelTint));
 			ImGui::End();
 		}
 
-		if(showCameraSettings) {
+		if (showCameraSettings) {
 			cam.settings_gui(showCameraSettings, clearCol);
 		}
 
-		if(showLightSettings) {
+		if (showLightSettings) {
 			ImGui::SetNextWindowSizeConstraints({300, -1}, {FLT_MAX, -1});
 			if (ImGui::Begin("Light Settings", &showLightSettings,
-							 ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize)) {
+							 ImGuiWindowFlags_NoResize |
+								 ImGuiWindowFlags_AlwaysAutoResize)) {
 				if (ImGui::CollapsingHeader("Directional Light")) {
 					dir_light_gui(litShader, dirLightSettings);
 				}
@@ -254,22 +267,23 @@ int main(int argc, const char *argv[]) {
 			ImGui::End();
 		}
 
-		if(showFps) {
+		if (showFps) {
 			fps_window();
 		}
 
 		ImGui::BeginMainMenuBar();
-		if(ImGui::BeginMenu("File")) {
-			if(ImGui::MenuItem("Open...")) {
+		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("Open...")) {
 				// TODO also add shortcut
 				fileBrowser.Open();
 			}
 			ImGui::EndMenu();
 		}
-		if(ImGui::BeginMenu("Settings")) {
+		if (ImGui::BeginMenu("Settings")) {
 			ImGui::MenuItem("Show Light Settings", nullptr, &showLightSettings);
 			ImGui::MenuItem("Show Model Settings", nullptr, &showModelSettings);
-			ImGui::MenuItem("Show Camera Settings", nullptr, &showCameraSettings);
+			ImGui::MenuItem("Show Camera Settings", nullptr,
+							&showCameraSettings);
 			ImGui::Separator();
 			ImGui::MenuItem("Show FPS", nullptr, &showFps);
 			ImGui::EndMenu();
@@ -279,7 +293,9 @@ int main(int argc, const char *argv[]) {
 		if (fileBrowser.HasSelected()) {
 			spdlog::info("Opening model: {}",
 						 fileBrowser.GetSelected().string());
-			monkey = AsyncModel{fileBrowser.GetSelected(), glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
+			monkey = AsyncModel{
+				fileBrowser.GetSelected(),
+				glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
 			fileBrowser.Close();
 		}
 
