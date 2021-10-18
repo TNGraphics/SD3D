@@ -211,21 +211,28 @@ int main(int argc, const char *argv[]) {
 		if (monkey.state() == AsyncModel::State::LOADING) {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
 			ImGuiIO &io = ImGui::GetIO();
-			ImGuiWindowFlags windowFlags =
-				ImGuiWindowFlags_NoDecoration |
-				ImGuiWindowFlags_AlwaysAutoResize |
-				ImGuiWindowFlags_NoSavedSettings |
-				ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav |
-				ImGuiWindowFlags_NoMove;
+			ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration |
+										   ImGuiWindowFlags_AlwaysAutoResize |
+										   ImGuiWindowFlags_NoSavedSettings |
+										   ImGuiWindowFlags_NoFocusOnAppearing |
+										   ImGuiWindowFlags_NoNav |
+										   ImGuiWindowFlags_NoMove;
 			constexpr float pad = 10.0f;
 			const ImGuiViewport *viewport = ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(
-				ImVec2{viewport->WorkPos.x + pad,
-					   viewport->WorkPos.y + pad},
+				ImVec2{viewport->WorkPos.x + pad, viewport->WorkPos.y + pad},
 				ImGuiCond_Always, ImVec2{5.f, 5.f});
 			ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
 			if (ImGui::Begin("Loading Popup", nullptr, windowFlags)) {
-				ImGui::PaddedText("Loading...", 0.f, 0.f);
+				if (monkey.currently_loading_node()) {
+					ImGui::PaddedText(
+						fmt::format("Loading Node: {}",
+									monkey.currently_loading_node().value())
+							.c_str(),
+						0.f, 0.f);
+				} else {
+					ImGui::PaddedText("Loading...", 0.f, 0.f);
+				}
 			}
 			ImGui::End();
 			ImGui::PopStyleVar();
@@ -318,9 +325,10 @@ int main(int argc, const char *argv[]) {
 		if (fileBrowser.HasSelected()) {
 			spdlog::info("Opening model: {}",
 						 fileBrowser.GetSelected().string());
-			monkey = AsyncModel{
+			// Maybe don't replace the model yet
+			monkey = std::move(AsyncModel{
 				fileBrowser.GetSelected(),
-				glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
+				glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})});
 			fileBrowser.Close();
 		}
 

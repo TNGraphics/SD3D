@@ -5,11 +5,13 @@
 #ifndef SD3D_ASYNCMODEL_H
 #define SD3D_ASYNCMODEL_H
 
-#include <string>
-#include <vector>
 #include <filesystem>
 #include <future>
 #include <optional>
+#include <string>
+#include <vector>
+
+#include <spsc_queue.hpp>
 
 #pragma warning(push, 0)
 
@@ -17,8 +19,8 @@
 
 #pragma warning(pop)
 
-#include "detail/AsyncAssimpNode.h"
 #include "DataLayout.h"
+#include "detail/AsyncAssimpNode.h"
 
 class GlMesh;
 class LitShader;
@@ -32,22 +34,28 @@ enum aiTextureType;
 class AsyncModel {
 public:
 	enum class State { INITIAL, VALID, LOADING, INVALID };
+	using message_queue_t = sd3d::assimp::detail::AsyncAssimpNode::message_queue_t;
 
 private:
 	std::future<std::optional<sd3d::assimp::detail::AsyncAssimpNode>> m_future;
 	std::optional<sd3d::assimp::detail::AsyncAssimpNode> m_nodeTree{};
 	std::string m_directory;
+	message_queue_t m_messages{};
 
 	AsyncModel(AsyncModel &&) noexcept = default;
+	std::optional<std::string> m_currentlyLoadingNode{};
 
 	State m_state{State::INITIAL};
 	glm::mat4 m_cachedTransform;
 
 public:
 	AsyncModel() = default;
-	explicit AsyncModel(const char *path, glm::mat4 transformation = glm::mat4{1.0});
-	explicit AsyncModel(const std::string &path, glm::mat4 transformation = glm::mat4{1.0});
-	explicit AsyncModel(const std::filesystem::path &path, glm::mat4 transformation = glm::mat4{1.0});
+	explicit AsyncModel(const char *path,
+						glm::mat4 transformation = glm::mat4{1.0});
+	explicit AsyncModel(const std::string &path,
+						glm::mat4 transformation = glm::mat4{1.0});
+	explicit AsyncModel(const std::filesystem::path &path,
+						glm::mat4 transformation = glm::mat4{1.0});
 	AsyncModel(const AsyncModel &) = delete;
 	AsyncModel &operator=(const AsyncModel &) = delete;
 	AsyncModel &operator=(AsyncModel &&) noexcept = default;
@@ -57,6 +65,8 @@ public:
 
 	void draw(LitShader &);
 	void draw();
+
+	[[nodiscard]] const std::optional<std::string> &currently_loading_node() const;
 
 	// TODO queue the transformation if the model is not loaded yet
 	void apply_transform(glm::mat4 transform);

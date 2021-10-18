@@ -8,16 +8,23 @@
 
 namespace sd3d::assimp::detail {
 
-AsyncAssimpNode::AsyncAssimpNode(aiNode *node, const aiScene *scene,
+AsyncAssimpNode::AsyncAssimpNode(message_queue_t &messageQueue, aiNode *node,
+								 const aiScene *scene,
 								 const std::string &directory,
 								 glm::mat4 transformation) :
 	m_initialized{false} {
-	process_node(node, scene, directory, transformation);
+	process_node(messageQueue, node, scene, directory, transformation);
 }
 
-void AsyncAssimpNode::process_node(aiNode *node, const aiScene *scene,
+void AsyncAssimpNode::process_node(message_queue_t &messageQueue, aiNode *node, const aiScene *scene,
 								   const std::string &directory,
 								   glm::mat4 transformation) {
+	// When nodes are loaded next to each other, do it like this:
+	// - use a threadpool
+	// - Each Node that loads sends a signal to some MPSC thing with a unique ID
+	// -> One when starting to load
+	// -> One when finishing to load
+	messageQueue.emplace(std::string{node->mName.C_Str()});
 	spdlog::debug("Loading node [{}]", node->mName.C_Str());
 	auto aT{node->mTransformation};
 	glm::mat4 nodeTransformation{aT.a1, aT.b1, aT.c1, aT.d1, aT.a2, aT.b2,
@@ -32,7 +39,7 @@ void AsyncAssimpNode::process_node(aiNode *node, const aiScene *scene,
 											scene, directory, transformation));
 	}
 	for (unsigned int i = 0; i < node->mNumChildren; ++i) {
-		m_nodes.emplace_back(node->mChildren[i], scene, directory,
+		m_nodes.emplace_back(messageQueue, node->mChildren[i], scene, directory,
 							 transformation);
 	}
 }
@@ -86,4 +93,7 @@ void AsyncAssimpNode::finalize() {
 	m_initialized = true;
 }
 
-}
+AsyncAssimpNode::LoadMessage::LoadMessage(std::string nodeName) :
+	nodeName{std::move(nodeName)} {}
+
+} // namespace sd3d::assimp::detail

@@ -14,7 +14,6 @@
 class AsyncGlMesh : public GlMesh {
 private:
 	struct TextureLoadInstruction {
-		// TODO don't require string_view (allow other string types)
 		std::string path;
 		Texture::Settings settings;
 		GLenum slot;

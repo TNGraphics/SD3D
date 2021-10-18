@@ -22,7 +22,8 @@ AsyncModel::AsyncModel(const std::string &path, glm::mat4 transformation)
 AsyncModel::AsyncModel(const std::filesystem::path &path,
 					   glm::mat4 transformation)
 	: m_directory{path.parent_path().string() + '/'}, m_cachedTransform{transformation} {
-	m_future = std::async(std::launch::async, [&transformation](const std::string& directory, const auto &path) {
+	auto &messages = m_messages;
+	m_future = std::async(std::launch::async, [&transformation](message_queue_t &msgs, const std::string& directory, const auto &path) {
 		Assimp::Importer importer;
 
 		const auto *scene = importer.ReadFile(
@@ -33,11 +34,11 @@ AsyncModel::AsyncModel(const std::filesystem::path &path,
 			spdlog::error("Assimp error: {}", importer.GetErrorString());
 			return std::optional<sd3d::assimp::detail::AsyncAssimpNode>{};
 		} else {
-			auto ret = sd3d::assimp::detail::AsyncAssimpNode(scene->mRootNode, scene, directory, transformation);
+			auto ret = sd3d::assimp::detail::AsyncAssimpNode(msgs, scene->mRootNode, scene, directory, transformation);
 			spdlog::debug("Finished loading {}", path.string());
 			return std::optional{ret};
 		}
-	}, m_directory, path);
+	}, messages, m_directory, path);
 }
 
 AsyncModel::State AsyncModel::state() const {
@@ -56,11 +57,16 @@ void AsyncModel::update_state() {
 					m_nodeTree = loadedModel;
 					m_nodeTree->finalize();
 					m_nodeTree->apply_transform(m_cachedTransform);
+					m_currentlyLoadingNode = std::nullopt;
 					m_state = AsyncModel::State::VALID;
 				} else {
 					m_state = AsyncModel::State::INVALID;
 				}
 			} else {
+				sd3d::assimp::detail::AsyncAssimpNode::LoadMessage msg{};
+				if (m_messages.pop(msg)) {
+					m_currentlyLoadingNode = msg.nodeName;
+				}
 				m_state = AsyncModel::State::LOADING;
 			}
 		}
@@ -92,6 +98,11 @@ void AsyncModel::apply_transform(glm::mat4 transform) {
 
 void AsyncModel::clear() {
 	if (m_nodeTree) {
+		// TODO clear other stuff
 		m_nodeTree->clear();
 	}
+}
+
+const std::optional<std::string> &AsyncModel::currently_loading_node() const {
+	return m_currentlyLoadingNode;
 }
