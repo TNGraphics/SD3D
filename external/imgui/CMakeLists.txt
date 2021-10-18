@@ -17,6 +17,7 @@ add_library(imgui
 			imgui_impl_opengl3.cpp
 			imgui_impl_glfw.h
 			imgui_impl_glfw.cpp
+			imconfig.cpp
 			)
 
 target_include_directories(imgui PRIVATE ../glfw/include)

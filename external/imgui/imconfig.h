@@ -121,3 +121,8 @@ namespace ImGui
     void MyFunction(const char* name, const MyMatrix44& v);
 }
 */
+
+namespace ImGui {
+	void PaddedText(const char *text, float paddingX, float paddingY);
+	void PaddedText(const char *text, float top, float bottom, float left, float right);
+}
