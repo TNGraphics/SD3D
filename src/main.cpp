@@ -38,6 +38,7 @@
 
 #include "graphics/data/GlMesh.h"
 #include "graphics/data/Model.h"
+#include "graphics/data/AsyncModel.h"
 
 #include "controls/GeneralInputHandler.h"
 #include "controls/OrbitCameraController.h"
@@ -113,7 +114,7 @@ int main(int argc, const char *argv[]) {
 	LitShader litShader;
 	ColorShader lightShader;
 
-	Model monkey{};
+	AsyncModel monkey{};
 	Model light{resourcePath + "res/light.fbx"};
 
 	OrbitCameraController cam{
@@ -135,7 +136,7 @@ int main(int argc, const char *argv[]) {
 
 	int shininessExp = 5;
 	litShader.bind();
-	litShader.set("material.shininess", pow(2.f, shininessExp));
+	litShader.set("material.shininess", static_cast<float>(pow(2.f, shininessExp)));
 
 	light::DirLight dirLightSettings{{-0.2f, -1.0f, -0.3f},
 									 {1.0f, 0.9f, 1.0f},
@@ -213,7 +214,7 @@ int main(int argc, const char *argv[]) {
 			}
 			if (ImGui::SliderInt("Shininess", &shininessExp, 0, 8)) {
 				litShader.bind();
-				litShader.set("material.shininess", pow(2.f, shininessExp));
+				litShader.set("material.shininess", static_cast<float>(pow(2.f, shininessExp)));
 			}
 			ImGui::ColorEdit3("Model Tint", glm::value_ptr(modelTint));
 			ImGui::End();
@@ -278,7 +279,7 @@ int main(int argc, const char *argv[]) {
 		if (fileBrowser.HasSelected()) {
 			spdlog::info("Opening model: {}",
 						 fileBrowser.GetSelected().string());
-			monkey = Model{fileBrowser.GetSelected(), glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
+			monkey = AsyncModel{fileBrowser.GetSelected(), glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
 			fileBrowser.Close();
 		}
 

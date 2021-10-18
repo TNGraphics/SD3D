@@ -2,9 +2,11 @@ cmake_minimum_required(VERSION 3.17.3)
 
 project(SD3D)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /WX")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 else ()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
@@ -12,9 +14,9 @@ endif ()
 
 find_path(BFGROUP_LYRA_INCLUDE_DIRS "lyra/arg.hpp")
 
-find_package(imgui CONFIG REQUIRED)
+add_subdirectory(external/imgui)
 
-find_package(glfw3 CONFIG REQUIRED)
+add_subdirectory(external/glfw)
 
 find_package(spdlog CONFIG REQUIRED)
 
@@ -28,8 +30,9 @@ include_directories(${OPENGL_INCLUDE_DIRS})
 # TODO get from vcpkg
 include_directories(${STBI_PATH})
 
-include_directories("${GLAD_PATH}/include")
-include_directories("${GLM_PATH}")
+include_directories(${GLAD_PATH}/include)
+include_directories(${GLM_PATH})
+include_directories(external/imgui)
 
 add_executable(SD3D
 			   ${GLAD_PATH}/src/glad.c
@@ -51,6 +54,10 @@ add_executable(SD3D
 			   src/graphics/shaders/LitShader.cpp
 			   src/graphics/shaders/ColorShader.cpp
 			   src/graphics/data/detail/AssimpNode.cpp
+			   src/graphics/data/AsyncModel.cpp
+			   src/graphics/data/AsyncGlMesh.cpp
+			   src/graphics/data/detail/assimp_helpers.cpp
+			   src/graphics/data/detail/AsyncAssimpNode.cpp
 			   )
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
@@ -61,12 +68,12 @@ if(DEFINED MEMORY_DEBUG AND MEMORY_DEBUG)
 	target_compile_definitions(SD3D PUBLIC -DMEM_DEBUG)
 endif()
 
-target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS})
+target_include_directories(SD3D PRIVATE ${BFGROUP_LYRA_INCLUDE_DIRS} external/imgui/imgui)
 target_link_libraries(SD3D PRIVATE
 					  glfw
 					  ${OPENGL_LIBRARIES}
 					  spdlog::spdlog spdlog::spdlog_header_only
-					  imgui::imgui
+					  imgui
 					  assimp::assimp
 					  gsl::gsl-lite-v1
 					  )

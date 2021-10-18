@@ -21,8 +21,6 @@
 class GlMesh;
 class LitShader;
 
-class AssimpNode;
-
 struct aiNode;
 struct aiScene;
 struct aiMesh;
@@ -37,9 +35,7 @@ private:
 
 	bool m_isValid{};
 
-	Model(Model &&) noexcept;
-
-//	void process_node(aiNode *node, const aiScene *scene);
+	Model(Model &&) noexcept = default;
 
 public:
 	Model() = default;

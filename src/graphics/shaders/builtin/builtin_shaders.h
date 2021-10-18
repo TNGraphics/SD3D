@@ -8,39 +8,39 @@
 namespace sd3d::shaders {
 
 [[maybe_unused]] constexpr const char *error_vertex_src() {
-	constexpr char *src = {
+	constexpr const char *src = {
 #include "src/error.vert"
 	};
 	return src;
 }
 [[maybe_unused]] constexpr const char *error_fragment_src() {
-	constexpr char *src = {
+	constexpr const char *src = {
 #include "src/error.frag"
 	};
 	return src;
 }
 
 [[maybe_unused]] constexpr const char *color_vertex_src() {
-	constexpr char *src = {
+	constexpr const char *src = {
 #include "src/color.vert"
 	};
 	return src;
 }
 [[maybe_unused]] constexpr const char *color_fragment_src() {
-	constexpr char *src = {
+	constexpr const char *src = {
 #include "src/color.frag"
 	};
 	return src;
 }
 
 [[maybe_unused]] constexpr const char *lit_vertex_src() {
-	constexpr char *src = {
+	constexpr const char *src = {
 #include "src/lit.vert"
 	};
 	return src;
 }
 [[maybe_unused]] constexpr const char *lit_fragment_src() {
-	constexpr char *src = {
+	constexpr const char *src = {
 #include "src/lit.frag"
 	};
 	return src;
