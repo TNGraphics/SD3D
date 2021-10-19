@@ -1,6 +1,3 @@
 [submodule "external/glfw"]
 	path = external/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "external/spsc_queue"]
-	path = external/spsc_queue
-	url = https://github.com/Deaod/spsc_queue.git

@@ -74,7 +74,6 @@ target_include_directories(SD3D PRIVATE
 						   ${PROJECT_BINARY_DIR}
 						   ${BFGROUP_LYRA_INCLUDE_DIRS}
 						   external/imgui/imgui
-						   external/spsc_queue
 						   )
 
 target_link_libraries(SD3D PRIVATE
