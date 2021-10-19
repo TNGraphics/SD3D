@@ -119,7 +119,8 @@ int main(int argc, const char *argv[]) {
 	LitShader litShader;
 	ColorShader lightShader;
 
-	AsyncModel monkey{};
+	AsyncModel monkey;
+
 	Model light{resourcePath + "res/light.fbx"};
 
 	OrbitCameraController cam{
@@ -209,7 +210,7 @@ int main(int argc, const char *argv[]) {
 		gui::new_frame();
 
 		if (monkey.state() == AsyncModel::State::LOADING) {
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{5.f, 5.f});
 			ImGuiIO &io = ImGui::GetIO();
 			ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration |
 										   ImGuiWindowFlags_AlwaysAutoResize |
@@ -221,17 +222,15 @@ int main(int argc, const char *argv[]) {
 			const ImGuiViewport *viewport = ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(
 				ImVec2{viewport->WorkPos.x + pad, viewport->WorkPos.y + pad},
-				ImGuiCond_Always, ImVec2{5.f, 5.f});
+				ImGuiCond_Always, ImVec2{0.f, 0.f});
 			ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
 			if (ImGui::Begin("Loading Popup", nullptr, windowFlags)) {
+				ImGui::Text("Loading %s:", monkey.filename().c_str());
 				if (monkey.currently_loading_node()) {
-					ImGui::PaddedText(
-						fmt::format("Loading Node: {}",
+					ImGui::Text(
+						"%s", fmt::format("{}...",
 									monkey.currently_loading_node().value())
-							.c_str(),
-						0.f, 0.f);
-				} else {
-					ImGui::PaddedText("Loading...", 0.f, 0.f);
+							.c_str());
 				}
 			}
 			ImGui::End();
@@ -325,10 +324,10 @@ int main(int argc, const char *argv[]) {
 		if (fileBrowser.HasSelected()) {
 			spdlog::info("Opening model: {}",
 						 fileBrowser.GetSelected().string());
-			// Maybe don't replace the model yet
-			monkey = std::move(AsyncModel{
+			monkey = AsyncModel{
 				fileBrowser.GetSelected(),
-				glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})});
+				glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
+
 			fileBrowser.Close();
 		}
 

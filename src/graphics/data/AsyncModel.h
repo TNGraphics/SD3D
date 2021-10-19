@@ -34,9 +34,13 @@ public:
 	enum class State { INITIAL, VALID, LOADING, INVALID };
 
 private:
+	using message_queue_t = sd3d::assimp::detail::AsyncAssimpNode::message_queue_t;
+
 	std::future<std::optional<sd3d::assimp::detail::AsyncAssimpNode>> m_future;
 	std::optional<sd3d::assimp::detail::AsyncAssimpNode> m_nodeTree{};
 	std::string m_directory;
+	std::string m_filename;
+	std::unique_ptr<message_queue_t> m_messages;
 
 	AsyncModel(AsyncModel &&) noexcept = default;
 	std::optional<std::string> m_currentlyLoadingNode{};
@@ -63,6 +67,7 @@ public:
 	void draw();
 
 	[[nodiscard]] const std::optional<std::string> &currently_loading_node() const;
+	[[nodiscard]] const std::string &filename() const;
 
 	// TODO queue the transformation if the model is not loaded yet
 	void apply_transform(glm::mat4 transform);
