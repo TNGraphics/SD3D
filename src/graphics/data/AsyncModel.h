@@ -42,7 +42,6 @@ private:
 	std::string m_filename;
 	std::unique_ptr<message_queue_t> m_messages;
 
-	AsyncModel(AsyncModel &&) noexcept = default;
 	std::optional<std::string> m_currentlyLoadingNode{};
 
 	State m_state{State::INITIAL};
@@ -58,6 +57,7 @@ public:
 						glm::mat4 transformation = glm::mat4{1.0});
 	AsyncModel(const AsyncModel &) = delete;
 	AsyncModel &operator=(const AsyncModel &) = delete;
+	AsyncModel(AsyncModel &&) noexcept = default;
 	AsyncModel &operator=(AsyncModel &&) noexcept = default;
 
 	void update_state();
@@ -68,6 +68,8 @@ public:
 
 	[[nodiscard]] const std::optional<std::string> &currently_loading_node() const;
 	[[nodiscard]] const std::string &filename() const;
+
+	[[nodiscard]] bool loading() const { return state() == State::LOADING; }
 
 	// TODO queue the transformation if the model is not loaded yet
 	void apply_transform(glm::mat4 transform);
