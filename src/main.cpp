@@ -4,6 +4,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <iostream>
+#include <ranges>
 
 #include <glad/glad.h>
 
@@ -43,6 +44,15 @@
 #include "controls/OrbitCameraController.h"
 
 #include "version.h"
+
+// TODO Lights in a shader should not be hardcoded
+// Calculate them on the fly based on the ones being closest
+// Use a texture to store a variable amount of lights or a fixed array
+
+// TODO everything should get a UUID, so IMGUI IDs are easier
+// Every model instance, etc.
+
+// TODO use blocking ImGui --> You can move out Windows, etc.
 
 void fps_window();
 
@@ -119,7 +129,7 @@ int main(int argc, const char *argv[]) {
 	LitShader litShader;
 	ColorShader lightShader;
 
-	AsyncModel monkey;
+	std::vector<AsyncModel> models{};
 
 	Model light{resourcePath + "res/light.fbx"};
 
@@ -169,8 +179,12 @@ int main(int argc, const char *argv[]) {
 	bool showModelSettings = false;
 	bool showCameraSettings = false;
 
+	auto selectedModel = -1;
+
 	while (glContext.is_open()) {
-		monkey.update_state();
+		for (auto &model : models) {
+			model.update_state();
+		}
 
 		auto currentFrame{glfwGetTime()};
 		deltaTime = currentFrame - lastFrame;
@@ -186,7 +200,9 @@ int main(int argc, const char *argv[]) {
 
 		litShader.set_color(modelTint);
 
-		monkey.draw(litShader);
+		for (auto &model : models) {
+			model.draw(litShader);
+		}
 
 		if (drawLights) {
 			lightShader.bind();
@@ -209,7 +225,9 @@ int main(int argc, const char *argv[]) {
 
 		gui::new_frame();
 
-		if (monkey.state() == AsyncModel::State::LOADING) {
+		if (std::ranges::any_of(models, [](const auto &m) {
+				return m.loading();
+			})) {
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{5.f, 5.f});
 			ImGuiIO &io = ImGui::GetIO();
 			ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDecoration |
@@ -225,41 +243,87 @@ int main(int argc, const char *argv[]) {
 				ImGuiCond_Always, ImVec2{0.f, 0.f});
 			ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
 			if (ImGui::Begin("Loading Popup", nullptr, windowFlags)) {
-				ImGui::Text("Loading %s:", monkey.filename().c_str());
-				if (monkey.currently_loading_node()) {
-					ImGui::Text(
-						"%s", fmt::format("{}...",
-									monkey.currently_loading_node().value())
-							.c_str());
+				for (const auto &model : models) {
+					if (!model.loading()) continue;
+					if (model.currently_loading_node()) {
+						ImGui::Text(
+							"Loading %s: %s...", model.filename().c_str(),
+							model.currently_loading_node().value().c_str());
+					} else {
+						ImGui::Text("Loading %s", model.filename().c_str());
+					}
 				}
 			}
 			ImGui::End();
 			ImGui::PopStyleVar();
 		}
 
-		if (showModelSettings) {
-			ImGui::SetNextWindowSize({-1, -1});
-			ImGui::Begin("Misc Settings", &showModelSettings,
-						 ImGuiWindowFlags_NoResize);
-			if (ImGui::InputFloat("Scale", &modelScaleCoarse, 0.001f, 0.05f)) {
-				auto model{
-					glm::scale(glm::mat4{1.0},
-							   glm::vec3{modelScaleCoarse * modelScaleFine})};
-				monkey.apply_transform(model);
+		//		if (showModelSettings) {
+		//			ImGui::SetNextWindowSize({-1, -1});
+		//			ImGui::Begin("Misc Settings", &showModelSettings,
+		//						 ImGuiWindowFlags_NoResize);
+		//			if (ImGui::InputFloat("Scale", &modelScaleCoarse, 0.001f,
+		// 0.05f)) { 				auto model{
+		// glm::scale(glm::mat4{1.0},
+		// glm::vec3{modelScaleCoarse
+		// * modelScaleFine})}; 				monkey.apply_transform(model);
+		//			}
+		//			if (ImGui::SliderFloat("Scale - Fine", &modelScaleFine,
+		// 0.25f, 								   5.f)) { 				auto
+		// model{ glm::scale(glm::mat4{1.0},
+		// glm::vec3{modelScaleCoarse * modelScaleFine})};
+		// monkey.apply_transform(model);
+		//			}
+		//			// TODO make Shader a property of an Object
+		//			// --> An object should also have things like the transform,
+		// postition, etc. 			if (ImGui::SliderInt("Shininess",
+		// &shininessExp, 0, 8)) { 				litShader.bind();
+		// litShader.set("material.shininess",
+		// static_cast<float>(pow(2.f, shininessExp)));
+		//			}
+		//			ImGui::ColorEdit3("Model Tint", glm::value_ptr(modelTint));
+		//			ImGui::End();
+		//		}
+
+		ImGui::ShowDemoWindow();
+
+		ImGui::SetNextWindowSizeConstraints({200, FLT_MIN}, {FLT_MAX, FLT_MAX});
+		if (ImGui::Begin("Models", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			if (!models.empty()) {
+				if (ImGui::BeginListBox("##listbox 2",
+										ImVec2{-FLT_MIN, ImGui::GetFrameHeightWithSpacing() * models.size()})) {
+					for (auto i = models.size(); i-- > 0;) {
+						const auto &model = models[i];
+						const bool isSelected = (selectedModel == i);
+						float buttonWidth =
+							ImGui::CalcTextSize("Delete").x +
+							ImGui::GetStyle().FramePadding.x * 2.f;
+						if (ImGui::Selectable(
+								fmt::format("{}##{}", model.filename(), i)
+									.c_str(),
+								isSelected, 0,
+								ImVec2{ImGui::GetContentRegionAvail().x -
+										   (buttonWidth +
+											ImGui::GetStyle().ItemSpacing.x),
+									   ImGui::GetFrameHeight()}))
+							selectedModel = i;
+						ImGui::SameLine();
+						if (ImGui::Button(
+								fmt::format("Delete##{}", i).c_str())) {
+							models.erase(models.begin() +
+										 static_cast<long long>(i));
+							selectedModel = -1;
+						}
+
+						// Set the initial focus when opening the combo
+						// (scrolling + keyboard navigation focus)
+						if (isSelected) ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndListBox();
+				}
+			} else {
+				ImGui::Text("No models here...");
 			}
-			if (ImGui::SliderFloat("Scale - Fine", &modelScaleFine, 0.25f,
-								   5.f)) {
-				auto model{
-					glm::scale(glm::mat4{1.0},
-							   glm::vec3{modelScaleCoarse * modelScaleFine})};
-				monkey.apply_transform(model);
-			}
-			if (ImGui::SliderInt("Shininess", &shininessExp, 0, 8)) {
-				litShader.bind();
-				litShader.set("material.shininess",
-							  static_cast<float>(pow(2.f, shininessExp)));
-			}
-			ImGui::ColorEdit3("Model Tint", glm::value_ptr(modelTint));
 			ImGui::End();
 		}
 
@@ -324,9 +388,9 @@ int main(int argc, const char *argv[]) {
 		if (fileBrowser.HasSelected()) {
 			spdlog::info("Opening model: {}",
 						 fileBrowser.GetSelected().string());
-			monkey = AsyncModel{
+			models.emplace_back(
 				fileBrowser.GetSelected(),
-				glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse})};
+				glm::scale(glm::mat4{1.0}, glm::vec3{modelScaleCoarse}));
 
 			fileBrowser.Close();
 		}
