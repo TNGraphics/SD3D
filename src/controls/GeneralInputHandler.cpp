@@ -6,7 +6,7 @@
 
 #include <imgui_impl_glfw.h>
 
-#include "GeneralInputHandler.h"
+#include "GeneralInputHandler.hpp"
 
 // TODO move all the ImGui_ImplGlfw callbacks to the abstract base classes
 //  static functions

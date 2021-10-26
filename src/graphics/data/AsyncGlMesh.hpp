@@ -7,9 +7,9 @@
 
 #include <string>
 
-#include "GlMesh.h"
+#include "GlMesh.hpp"
 
-#include "detail/assimp_helpers.h"
+#include "detail/assimp_helpers.hpp"
 
 class AsyncGlMesh : public GlMesh {
 private:

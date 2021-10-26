@@ -11,7 +11,7 @@
 #include <xenium/policy.hpp>
 #include <xenium/reclamation/generic_epoch_based.hpp>
 
-#include "../AsyncGlMesh.h"
+#include "../AsyncGlMesh.hpp"
 
 namespace sd3d::assimp::detail {
 

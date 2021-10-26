@@ -2,9 +2,9 @@
 // Created by Tobias on 10/21/2020.
 //
 
-#include "builtin/builtin_shaders.h"
+#include "LitShader.hpp"
 
-#include "LitShader.h"
+#include "builtin/builtin_shaders.hpp"
 
 LitShader::LitShader() :
 	ColorShader{sd3d::shaders::lit_vertex_src(),

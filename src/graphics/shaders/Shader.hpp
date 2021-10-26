@@ -16,7 +16,7 @@
 #include <optional>
 #include <string>
 
-#include "../memory/gl_memory.h"
+#include "../memory/gl_memory.hpp"
 
 class Shader {
 private:

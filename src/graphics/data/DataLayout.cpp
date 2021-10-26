@@ -4,7 +4,7 @@
 
 #include <glad/glad.h>
 
-#include "DataLayout.h"
+#include "DataLayout.hpp"
 
 DataLayout::DataLayout() : m_attribs{} {}
 

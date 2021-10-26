@@ -9,7 +9,7 @@
 
 #include <glad/glad.h>
 
-#include "Texture.h"
+#include "Texture.hpp"
 
 static std::pair<bool, sd3d::memory::shared_tex_t> add_or_get(const char *path);
 

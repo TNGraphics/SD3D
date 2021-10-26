@@ -2,7 +2,7 @@
 // Created by Tobias on 10/16/2021.
 //
 
-#include "AsyncAssimpNode.h"
+#include "AsyncAssimpNode.hpp"
 
 #include <spdlog/spdlog.h>
 

@@ -17,9 +17,9 @@
 
 #include <spdlog/spdlog.h>
 
-#include "builtin/builtin_shaders.h"
+#include "builtin/builtin_shaders.hpp"
 
-#include "Shader.h"
+#include "Shader.hpp"
 
 Shader::Shader(const char *vertexSource, const char *fragmentSource) : m_id{} {
 	compile(vertexSource, fragmentSource);

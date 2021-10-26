@@ -2,7 +2,7 @@
 // Created by Tobias on 10/13/2020.
 //
 
-#include "ImGuiHandler.h"
+#include "ImGuiHandler.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -10,7 +10,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include "../external/imgui-filebrowser/imfilebrowser.h"
+#include "../external/imgui-filebrowser/imfilebrowser.hpp"
 
 namespace sd3d::gui {
 

@@ -28,20 +28,20 @@
 
 #include <gsl-lite/gsl-lite.hpp>
 
-#include "external/imgui-filebrowser/imfilebrowser.h"
-#include "graphics/ImGuiHandler.h"
+#include "external/imgui-filebrowser/imfilebrowser.hpp"
+#include "graphics/ImGuiHandler.hpp"
 
-#include "graphics/GlContext.h"
-#include "graphics/data/Texture.h"
+#include "graphics/GlContext.hpp"
+#include "graphics/data/Texture.hpp"
 
-#include "graphics/shaders/ColorShader.h"
-#include "graphics/shaders/LitShader.h"
+#include "graphics/shaders/ColorShader.hpp"
+#include "graphics/shaders/LitShader.hpp"
 
-#include "graphics/data/AsyncModel.h"
-#include "graphics/data/Model.h"
+#include "graphics/data/AsyncModel.hpp"
+#include "graphics/data/Model.hpp"
 
-#include "controls/GeneralInputHandler.h"
-#include "controls/OrbitCameraController.h"
+#include "controls/GeneralInputHandler.hpp"
+#include "controls/OrbitCameraController.hpp"
 
 #include "version.h"
 

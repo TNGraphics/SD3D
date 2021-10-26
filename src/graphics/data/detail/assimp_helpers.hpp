@@ -15,7 +15,7 @@
 
 #pragma warning(pop)
 
-#include "../Texture.h"
+#include "../Texture.hpp"
 
 enum aiTextureType;
 

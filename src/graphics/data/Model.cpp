@@ -10,10 +10,10 @@
 
 #include <spdlog/spdlog.h>
 
-#include "Model.h"
-#include "Texture.h"
+#include "Model.hpp"
+#include "Texture.hpp"
 
-#include "GlMesh.h"
+#include "GlMesh.hpp"
 
 void Model::draw(LitShader &shader) const {
 	m_nodeTree.draw(shader);

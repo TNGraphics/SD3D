@@ -5,9 +5,9 @@
 #include <assimp/scene.h>
 #include <spdlog/spdlog.h>
 
-#include "../GlMesh.h"
+#include "../GlMesh.hpp"
 
-#include "AssimpNode.h"
+#include "AssimpNode.hpp"
 
 namespace sd3d::assimp::detail {
 

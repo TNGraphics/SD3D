@@ -5,7 +5,7 @@
 #ifndef SD3D_GENERALINPUTHANDLER_H
 #define SD3D_GENERALINPUTHANDLER_H
 
-#include "InputHandler.h"
+#include "InputHandler.hpp"
 
 class GeneralInputHandler : public InputHandler {
 private:

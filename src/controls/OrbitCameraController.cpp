@@ -14,7 +14,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include "OrbitCameraController.h"
+#include "OrbitCameraController.hpp"
 
 void OrbitCameraController::update(float deltaTime) {
 	glm::vec3 dir{cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch)),

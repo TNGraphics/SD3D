@@ -2,11 +2,11 @@
 // Created by Tobias on 10/16/2021.
 //
 
-#include "../memory/gl_memory_helpers.h"
+#include "../memory/gl_memory_helpers.hpp"
 
-#include "AsyncGlMesh.h"
+#include "AsyncGlMesh.hpp"
 
-#include "DataLayout.h"
+#include "DataLayout.hpp"
 
 namespace data = sd3d::data;
 

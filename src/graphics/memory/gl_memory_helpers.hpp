@@ -21,7 +21,7 @@
 
 #include <glad/glad.h>
 
-#include "gl_memory.h"
+#include "gl_memory.hpp"
 
 namespace sd3d::memory {
 

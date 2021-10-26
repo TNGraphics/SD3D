@@ -16,7 +16,7 @@
 
 #pragma warning(pop)
 
-#include "ColorShader.h"
+#include "ColorShader.hpp"
 
 // TODO structurize
 namespace light {

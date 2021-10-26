@@ -9,7 +9,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "../memory/gl_memory.h"
+#include "../memory/gl_memory.hpp"
 
 class Texture {
 public:

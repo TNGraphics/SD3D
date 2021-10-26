@@ -5,7 +5,7 @@
 // Important so the header doesnt complain
 #include <imgui.h>
 
-#include "imfilebrowser.h"
+#include "imfilebrowser.hpp"
 
 #ifdef _WIN32
 

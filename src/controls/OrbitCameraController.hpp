@@ -15,7 +15,7 @@
 
 #pragma warning(pop)
 
-#include "../graphics/Camera.h"
+#include "../graphics/Camera.hpp"
 
 class OrbitCameraController {
 public:

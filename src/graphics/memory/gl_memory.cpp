@@ -7,7 +7,7 @@
 #include <spdlog/spdlog.h>
 #endif
 
-#include "gl_memory.h"
+#include "gl_memory.hpp"
 
 namespace sd3d::memory::detail {
 

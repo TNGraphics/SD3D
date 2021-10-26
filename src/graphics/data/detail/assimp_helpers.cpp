@@ -2,7 +2,7 @@
 // Created by Tobias on 10/16/2021.
 //
 
-#include "assimp_helpers.h"
+#include "assimp_helpers.hpp"
 
 namespace sd3d::data {
 

@@ -5,9 +5,9 @@
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
 
-#include "../graphics/GlContext.h"
+#include "../graphics/GlContext.hpp"
 
-#include "InputHandler.h"
+#include "InputHandler.hpp"
 
 InputHandler::InputHandler(GLFWwindow *win) {
 	// TODO maybe create a containing object so that more than one thing

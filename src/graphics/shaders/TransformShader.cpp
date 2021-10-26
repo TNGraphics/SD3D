@@ -2,7 +2,8 @@
 // Created by Tobias on 10/21/2020.
 //
 
-#include "TransformShader.h"
+#include "TransformShader.hpp"
+
 TransformShader::TransformShader(std::string_view vertexPath,
 								 std::string_view fragmentPath) :
 	Shader(vertexPath, fragmentPath) {

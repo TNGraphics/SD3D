@@ -15,8 +15,8 @@
 
 #pragma warning(pop)
 
-#include "detail/AssimpNode.h"
-#include "DataLayout.h"
+#include "detail/AssimpNode.hpp"
+#include "DataLayout.hpp"
 
 class GlMesh;
 class LitShader;

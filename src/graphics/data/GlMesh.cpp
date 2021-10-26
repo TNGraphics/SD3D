@@ -10,13 +10,13 @@
 
 #include <gsl/gsl-lite.hpp>
 
-#include "../memory/gl_memory_helpers.h"
-#include "detail/assimp_helpers.h"
+#include "../memory/gl_memory_helpers.hpp"
+#include "detail/assimp_helpers.hpp"
 
-#include "../shaders/LitShader.h"
-#include "DataLayout.h"
+#include "../shaders/LitShader.hpp"
+#include "DataLayout.hpp"
 
-#include "GlMesh.h"
+#include "GlMesh.hpp"
 
 namespace mem = sd3d::memory;
 namespace data = sd3d::data;

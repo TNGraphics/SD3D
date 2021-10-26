@@ -10,7 +10,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include "GlContext.h"
+#include "GlContext.hpp"
 
 namespace sd3d::gl {
 

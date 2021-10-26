@@ -13,7 +13,7 @@
 
 #pragma warning(pop)
 
-#include "TransformShader.h"
+#include "TransformShader.hpp"
 
 class ColorShader : public TransformShader {
 private:

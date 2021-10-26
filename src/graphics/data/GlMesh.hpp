@@ -15,10 +15,10 @@
 
 #pragma warning(pop)
 
-#include "../memory/gl_memory.h"
-#include "detail/assimp_helpers.h"
+#include "../memory/gl_memory.hpp"
+#include "detail/assimp_helpers.hpp"
 
-#include "Texture.h"
+#include "Texture.hpp"
 
 class DataLayout;
 class LitShader;

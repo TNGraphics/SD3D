@@ -15,7 +15,7 @@
 
 #pragma warning(pop)
 
-#include "Shader.h"
+#include "Shader.hpp"
 
 class TransformShader : public Shader {
 private:

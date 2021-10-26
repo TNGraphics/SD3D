@@ -6,7 +6,7 @@
 
 #include <spdlog/spdlog.h>
 
-#include "FileOpenDialog.h"
+#include "FileOpenDialog.hpp"
 
 static constexpr const char *g_filterStr =
 	"obj files (*.obj)\0*.obj\0fbx files (*.fbx)\0*.fbx";
