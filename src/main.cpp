@@ -52,7 +52,9 @@
 // TODO everything should get a UUID, so IMGUI IDs are easier
 // Every model instance, etc.
 
-// TODO use blocking ImGui --> You can move out Windows, etc.
+// TODO use docking ImGui --> You can move out Windows, etc.
+
+// http://nigelgriffin.com/notebook_warrior/ebooks/Math,%20Physics%20and%20Algorithms/Mathematics%20for%20Game%20Developers.pdf
 
 void fps_window();
 

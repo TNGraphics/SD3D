@@ -60,6 +60,7 @@ add_executable(SD3D
 			   src/graphics/data/AsyncGlMesh.cpp
 			   src/graphics/data/detail/assimp_helpers.cpp
 			   src/graphics/data/detail/AsyncAssimpNode.cpp
+			   src/objects/Transform.cpp
 			   )
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
