@@ -83,6 +83,36 @@ void main()
 	constexpr const char *src = {
 		R"(
 #version 460 core
+layout (location = 0) in vec3 aPos;
+layout (location = 1) in vec3 aNormal;
+layout (location = 2) in vec2 aTexCoord;
+
+out vec3 fragPos;
+out vec3 normal;
+out vec2 texCoord;
+
+uniform mat4 model;
+uniform mat3 normalMatrix;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main()
+{
+    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    fragPos = vec3(model * vec4(aPos, 1.0));
+    texCoord = aTexCoord;
+    // TODO understand normal matrix -> http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/the-normal-matrix/
+    normal = normalMatrix * aNormal;
+}
+)"
+	};
+	return src;
+}
+
+[[maybe_unused]] constexpr const char *lit_fragment_src() {
+	constexpr const char *src = {
+		R"(
+#version 460 core
 struct Material {
     sampler2D texture_diffuse1;
     sampler2D texture_diffuse2;
@@ -198,35 +228,6 @@ ColorInfo sample_colors() {
     vec3 spec = vec3(texture(material.texture_specular1, texCoord));
     spec += vec3(texture(material.texture_specular2, texCoord));
     return ColorInfo(diff, spec);
-}
-)"
-	};
-	return src;
-}
-[[maybe_unused]] constexpr const char *lit_fragment_src() {
-	constexpr const char *src = {
-		R"(
-#version 460 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoord;
-
-out vec3 fragPos;
-out vec3 normal;
-out vec2 texCoord;
-
-uniform mat4 model;
-uniform mat3 normalMatrix;
-uniform mat4 view;
-uniform mat4 projection;
-
-void main()
-{
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
-    fragPos = vec3(model * vec4(aPos, 1.0));
-    texCoord = aTexCoord;
-    // TODO understand normal matrix -> http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/the-normal-matrix/
-    normal = normalMatrix * aNormal;
 }
 )"
 	};
