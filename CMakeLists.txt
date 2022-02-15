@@ -12,6 +12,18 @@ else ()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
 endif ()
 
+set(SHADERS
+	src/graphics/shaders/builtin/src/color.frag
+	src/graphics/shaders/builtin/src/color.vert
+	src/graphics/shaders/builtin/src/error.frag
+	src/graphics/shaders/builtin/src/error.vert
+	src/graphics/shaders/builtin/src/lit.frag
+	src/graphics/shaders/builtin/src/lit.vert
+	)
+
+execute_process(COMMAND python ./build_scripts/compile_shaders.py ${GLSLC_PATH} ${PROJECT_BINARY_DIR} ${SHADERS}
+				WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+
 find_path(BFGROUP_LYRA_INCLUDE_DIRS "lyra/arg.hpp")
 
 add_subdirectory(external/imgui)

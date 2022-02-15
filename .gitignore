@@ -121,3 +121,5 @@ _deps
 
 .idea
 ignore
+
+venv

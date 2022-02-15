@@ -1,4 +1,3 @@
-R"(
 #version 460 core
 struct Material {
     sampler2D texture_diffuse1;
@@ -6,7 +5,6 @@ struct Material {
     sampler2D texture_diffuse3;
     sampler2D texture_specular1;
     sampler2D texture_specular2;
-    float shininess;
 };
 
 struct PointLight {
@@ -35,21 +33,28 @@ struct ColorInfo {
     vec3 specular;
 };
 
-out vec4 FragColor;
+layout (location = 0) out vec4 FragColor;
 
-in vec3 fragPos;
-in vec3 normal;
-in vec2 texCoord;
+layout (location = 0) in vec3 fragPos;
+layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 texCoord;
 
-uniform vec3 color;
+layout (binding = 0) uniform ColorSettings {
+    vec3 color;
+    float shininess;
+};
 
 uniform Material material;
 
-uniform DirLight dirLight;
 #define NR_POINT_LIGHTS 4
-uniform PointLight pointLights[NR_POINT_LIGHTS];
+layout (binding = 1) uniform LightSettings {
+    DirLight dirLight;
+    PointLight pointLights[NR_POINT_LIGHTS];
+};
 
-uniform vec3 camPos;
+layout (binding = 1) uniform CamSettings {
+    vec3 camPos;
+};
 
 vec3 calc_dir_light(DirLight light, vec3 normal, vec3 viewDir, ColorInfo colors);
 vec3 calc_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, ColorInfo colors);
@@ -76,7 +81,7 @@ vec3 calc_dir_light(DirLight light, vec3 normal, vec3 viewDir, ColorInfo colors)
     float diff = max(dot(normal, lightDir), 0.0);
 
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
 
     vec3 ambient = light.ambient * colors.diffuse;
     vec3 diffuse = light.diffuse * diff * colors.diffuse;
@@ -93,7 +98,7 @@ vec3 calc_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir,
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     // attenuation
     float distance    = length(light.position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance +
@@ -116,4 +121,3 @@ ColorInfo sample_colors() {
     spec += vec3(texture(material.texture_specular2, texCoord));
     return ColorInfo(diff, spec);
 }
-)"
