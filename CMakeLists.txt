@@ -12,6 +12,18 @@ else ()
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
 endif ()
 
+if (NOT DEFINED PYTHON_PATH)
+	find_program(PYTHON_PATH python REQUIRED)
+endif()
+
+message("python will be " ${PYTHON_PATH})
+
+if (NOT DEFINED GLSLC_PATH)
+	find_program(GLSLC_PATH glslc REQUIRED)
+endif()
+
+message("GLSLC will be " ${GLSLC_PATH})
+
 set(SHADERS
 	src/graphics/shaders/builtin/src/color.frag
 	src/graphics/shaders/builtin/src/color.vert
@@ -21,7 +33,7 @@ set(SHADERS
 	src/graphics/shaders/builtin/src/lit.vert
 	)
 
-execute_process(COMMAND python ./build_scripts/compile_shaders.py ${GLSLC_PATH} ${PROJECT_BINARY_DIR} ${SHADERS}
+execute_process(COMMAND ${PYTHON_PATH} ./build_scripts/compile_shaders.py ${GLSLC_PATH} ${PROJECT_BINARY_DIR} ${SHADERS}
 				WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
 
 find_path(BFGROUP_LYRA_INCLUDE_DIRS "lyra/arg.hpp")
