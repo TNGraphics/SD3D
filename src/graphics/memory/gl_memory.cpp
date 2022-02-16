@@ -115,4 +115,18 @@ buffer_ptr_t RboCreator::operator()() {
 	return rbo;
 }
 
+buffer_ptr_t SsboCreator::operator()() {
+	auto ssbo = buffer_ptr_t(new GLuint{0}, [](const GLuint *ptr) {
+#ifdef MEM_DEBUG
+		spdlog::trace("Deleting SSBO {}", *ptr);
+#endif
+		glDeleteBuffers(1, ptr);
+		delete ptr;
+	});
+	glGenBuffers(1, ssbo.get());
+#ifdef MEM_DEBUG
+	spdlog::trace("Generating SSBO {}", *ssbo);
+#endif
+	return ssbo;
+}
 } // namespace sd3d::memory

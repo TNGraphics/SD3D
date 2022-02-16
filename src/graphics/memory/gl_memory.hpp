@@ -85,6 +85,10 @@ struct FboCreator {
 struct RboCreator {
 	[[nodiscard]] buffer_ptr_t operator()();
 };
+
+struct SsboCreator {
+	[[nodiscard]] buffer_ptr_t operator()();
+};
 } // namespace detail
 
 // This is also not perfectly typesafe, because this works:
@@ -107,6 +111,8 @@ using shared_prog_t = detail::Buffer<detail::ProgCreator>;
 using shared_fbo_t = detail::Buffer<detail::FboCreator>;
 
 using shared_rbo_t = detail::Buffer<detail::RboCreator>;
+
+using shared_ssbo_t = detail::Buffer<detail::SsboCreator>;
 
 } // namespace sd3d::memory
 

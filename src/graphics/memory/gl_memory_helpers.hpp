@@ -43,6 +43,11 @@ struct BufferInfo<shared_ebo_t> {
 	static constexpr GLenum gl_type() { return GL_ELEMENT_ARRAY_BUFFER; }
 };
 
+template<>
+struct BufferInfo<shared_ssbo_t> {
+	static constexpr GLenum gl_type() { return GL_SHADER_STORAGE_BUFFER; }
+};
+
 template<typename T>
 concept FillableBuffer = requires {
 	std::same_as<T, shared_vbo_t> || std::same_as<T, shared_ebo_t>;
@@ -55,10 +60,16 @@ concept FillableBuffer = requires {
 /// \param size The size of the data you want to fill the buffer with
 /// \param data The pointer to the data you want to fill the buffer with
 template<detail::FillableBuffer T>
-void fill_buffer(T buffer, GLsizeiptr size, const void *data) {
+void fill_buffer(T buffer, GLsizeiptr size, const void *data, GLenum usage = GL_STATIC_DRAW) {
 	glBindBuffer(detail::BufferInfo<T>::gl_type(), buffer.name());
-	// TODO other modes that GL_STATIC_DRAW
-	glBufferData(detail::BufferInfo<T>::gl_type(), size, data, GL_STATIC_DRAW);
+	glBufferData(detail::BufferInfo<T>::gl_type(), size, data, usage);
+}
+
+template<class T>
+void fill_ssbo(shared_ssbo_t buffer, const T *data, GLenum usage = GL_DYNAMIC_COPY) {
+	glBindBuffer(detail::BufferInfo<shared_ssbo_t>::gl_type(), buffer.name());
+	glBufferData(detail::BufferInfo<shared_ssbo_t>::gl_type(), sizeof(T), data, usage);
+	glBindBuffer(detail::BufferInfo<shared_ssbo_t>::gl_type(), 0);
 }
 
 } // namespace sd3d::memory
