@@ -28,12 +28,12 @@ Shader::Shader(const char *vertexSource, const char *fragmentSource) : m_id{} {
 Shader::Shader() : Shader("", "") {}
 
 Shader::Shader(std::string_view vertexPath, std::string_view fragmentPath) :
-	Shader{read_file_contents(vertexPath.data())
-			   .value_or(sd3d::shaders::error_vertex_src())
-			   .c_str(),
-		   read_file_contents(fragmentPath.data())
-			   .value_or(sd3d::shaders::error_fragment_src())
-			   .c_str()} {}
+	Shader{read_file_contents(vertexPath.data())->c_str(),
+		   read_file_contents(fragmentPath.data())->c_str()} {}
+
+Shader::Shader(ShaderHandle vertex, ShaderHandle fragment) : m_id{} {
+	compile(vertex, fragment);
+}
 
 Shader::Shader(Shader &&other) noexcept : m_id{std::move(other.m_id)} {
 	other.m_id.reset();
@@ -74,10 +74,39 @@ void Shader::compile(const char *vertexSource, const char *fragmentSource) {
 	glDeleteShader(fragmentShader);
 }
 
+void Shader::compile(ShaderHandle vertex, ShaderHandle fragment) {
+	// TODO better error handling
+	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderBinary(1, &vertexShader, GL_SHADER_BINARY_FORMAT_SPIR_V,
+				   vertex.bytes, static_cast<GLint>(vertex.length));
+	glSpecializeShader(vertexShader, "main", 0, nullptr, nullptr);
+	if (!check_shader_error(vertexShader)) std::cout << "VERTEX STAGE\n";
+
+	GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderBinary(1, &fragmentShader, GL_SHADER_BINARY_FORMAT_SPIR_V,
+				   fragment.bytes, static_cast<GLint>(fragment.length));
+	glSpecializeShader(fragmentShader, "main", 0, nullptr, nullptr);
+	if (!check_shader_error(fragmentShader)) std::cout << "FRAGMENT STAGE\n";
+
+	glAttachShader(m_id.name(), vertexShader);
+	glAttachShader(m_id.name(), fragmentShader);
+	glLinkProgram(m_id.name());
+
+	check_program_error(m_id.name());
+
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+}
+
 void Shader::recompile(const char *vertexSource, const char *fragmentSource) {
 	// get a new ID, because other shader objects could rely on this one
 	m_id.create_new();
 	compile(vertexSource, fragmentSource);
+}
+
+void Shader::recompile(ShaderHandle vertex, ShaderHandle fragment) {
+	m_id.create_new();
+	compile(vertex, fragment);
 }
 
 [[maybe_unused]] void Shader::bind() const {

@@ -19,6 +19,7 @@
 
 class TransformShader : public Shader {
 private:
+	GLuint m_positionBlock{};
 	GLint m_modelLoc{};
 	GLint m_viewLoc{};
 	GLint m_projLoc{};
@@ -27,6 +28,7 @@ private:
 
 protected:
 	TransformShader(const char *vertSource, const char *fragSource);
+	TransformShader(ShaderHandle vertex, ShaderHandle fragment);
 
 public:
 	TransformShader(std::string_view vertexPath, std::string_view fragmentPath);

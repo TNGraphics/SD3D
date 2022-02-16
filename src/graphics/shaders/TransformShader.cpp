@@ -16,6 +16,11 @@ TransformShader::TransformShader(const char *vertSource,
 	init_locations();
 }
 
+TransformShader::TransformShader(ShaderHandle vertex, ShaderHandle fragment) :
+	Shader{vertex, fragment} {
+	init_locations();
+}
+
 void TransformShader::init_locations() {
 	m_modelLoc = get_uniform_loc("model");
 	m_viewLoc = get_uniform_loc("view");

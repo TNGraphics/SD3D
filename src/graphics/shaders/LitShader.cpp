@@ -7,8 +7,8 @@
 #include "builtin/builtin_shaders.hpp"
 
 LitShader::LitShader() :
-	ColorShader{sd3d::shaders::lit_vertex_src(),
-				sd3d::shaders::lit_fragment_src()},
+	ColorShader{sd3d::shaders::lit_vertex_data(),
+				sd3d::shaders::lit_fragment_data()},
 	m_camPosLoc{get_uniform_loc("camPos")},
 	m_dirDirectionLoc{get_uniform_loc("dirLight.direction")},
 	m_dirColorLoc{get_uniform_loc("dirLight.color")},

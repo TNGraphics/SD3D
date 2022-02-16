@@ -21,6 +21,7 @@ private:
 
 protected:
 	ColorShader(const char *vertSource, const char *fragSource);
+	ColorShader(ShaderHandle vertex, ShaderHandle fragment);
 public:
 	ColorShader();
 

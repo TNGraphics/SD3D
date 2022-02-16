@@ -18,6 +18,8 @@
 
 #include "../memory/gl_memory.hpp"
 
+#include "ShaderHandle.hpp"
+
 class Shader {
 private:
 	sd3d::memory::shared_prog_t m_id;
@@ -30,6 +32,7 @@ private:
 
 protected:
 	Shader(const char *vertexSource, const char *fragmentSource);
+	explicit Shader(ShaderHandle vertex, ShaderHandle fragment);
 
 	GLint get_uniform_loc(const char *name) const;
 
@@ -42,10 +45,14 @@ protected:
 	/// \param fragmentSource The fragment shader source code
 	void compile(const char *vertexSource, const char *fragmentSource);
 
+	void compile(ShaderHandle vertex, ShaderHandle fragment);
+
 	/// Same as \ref compile but creates a new object name so other shaders are not affected
 	/// \param vertexSource The vertex shader source code
 	/// \param fragmentSource The fragment shader source code
 	void recompile(const char *vertexSource, const char *fragmentSource);
+
+	void recompile(ShaderHandle vertex, ShaderHandle fragment);
 
 public:
 	Shader();
