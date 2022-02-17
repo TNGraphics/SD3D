@@ -194,17 +194,17 @@ int main(int argc, const char *argv[]) {
 
 		glContext.clear(clearCol);
 
-		litShader.bind();
-
-		litShader.view(cam.ccam().view());
-		litShader.projection(cam.ccam().projection());
-		litShader.set_cam_pos(cam.ccam().get_pos());
-
-		litShader.set_color(modelTint);
-
-		for (auto &model : models) {
-			model.draw(litShader);
-		}
+//		litShader.bind();
+//
+//		litShader.view(cam.ccam().view());
+//		litShader.projection(cam.ccam().projection());
+//		litShader.set_cam_pos(cam.ccam().get_pos());
+//
+//		litShader.set_color(modelTint);
+//
+//		for (auto &model : models) {
+//			model.draw(litShader);
+//		}
 
 		if (drawLights) {
 			lightShader.bind();
@@ -218,9 +218,8 @@ int main(int argc, const char *argv[]) {
 				model = glm::translate(model, l.position);
 				model = glm::scale(model, glm::vec3(0.35f));
 				lightShader.model(model);
-
+				lightShader.apply_transform();
 				lightShader.set_color(l.color);
-
 				light.draw();
 			}
 		}

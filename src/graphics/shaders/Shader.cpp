@@ -243,3 +243,7 @@ void Shader::set(GLint loc, const glm::mat3 &val) {
 void Shader::set(GLint loc, const glm::mat4 &val) {
 	glUniformMatrix4fv(loc, 1, GL_FALSE, glm::value_ptr(val));
 }
+
+GLuint Shader::get_uniform_block_index(const char *name) const {
+	return glGetUniformBlockIndex(m_id.name(), name);
+}

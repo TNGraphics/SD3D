@@ -60,16 +60,15 @@ concept FillableBuffer = requires {
 /// \param size The size of the data you want to fill the buffer with
 /// \param data The pointer to the data you want to fill the buffer with
 template<detail::FillableBuffer T>
-void fill_buffer(T buffer, GLsizeiptr size, const void *data, GLenum usage = GL_STATIC_DRAW) {
+GLenum fill_buffer(const T &buffer, GLsizeiptr size, const void *data, GLenum usage = GL_STATIC_DRAW) {
 	glBindBuffer(detail::BufferInfo<T>::gl_type(), buffer.name());
 	glBufferData(detail::BufferInfo<T>::gl_type(), size, data, usage);
+	return detail::BufferInfo<T>::gl_type();
 }
 
 template<class T>
-void fill_ssbo(shared_ssbo_t buffer, const T *data, GLenum usage = GL_DYNAMIC_COPY) {
-	glBindBuffer(detail::BufferInfo<shared_ssbo_t>::gl_type(), buffer.name());
-	glBufferData(detail::BufferInfo<shared_ssbo_t>::gl_type(), sizeof(T), data, usage);
-	glBindBuffer(detail::BufferInfo<shared_ssbo_t>::gl_type(), 0);
+GLenum fill_ssbo(const shared_ssbo_t &buffer, const T *data, GLenum usage = GL_DYNAMIC_COPY) {
+	return fill_buffer(buffer, sizeof(T), data, usage);
 }
 
 } // namespace sd3d::memory

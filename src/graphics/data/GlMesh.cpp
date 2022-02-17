@@ -186,6 +186,8 @@ void GlMesh::draw(LitShader &shader) const {
 		++i;
 	}
 
+	shader.apply_transform();
+
 	draw_mesh();
 
 	for (unsigned int i = 1; const auto &tex : m_textures) {

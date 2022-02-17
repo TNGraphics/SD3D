@@ -1,7 +1,7 @@
 #version 460 core
 layout (location = 0) out vec4 FragColor;
 
-layout (binding = 0) uniform ColorBlock {
+layout (std430, binding = 1) buffer ColorBlock {
     vec3 color;
 };
 

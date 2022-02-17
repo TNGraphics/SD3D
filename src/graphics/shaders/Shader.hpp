@@ -35,6 +35,7 @@ protected:
 	explicit Shader(ShaderHandle vertex, ShaderHandle fragment);
 
 	GLint get_uniform_loc(const char *name) const;
+	GLuint get_uniform_block_index(const char *name) const;
 
 	// TODO test both
 

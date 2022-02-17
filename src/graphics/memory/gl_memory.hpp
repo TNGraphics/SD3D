@@ -112,6 +112,8 @@ using shared_fbo_t = detail::Buffer<detail::FboCreator>;
 
 using shared_rbo_t = detail::Buffer<detail::RboCreator>;
 
+// TODO also support UBOs -> faster
+// https://www.uni-weimar.de/fileadmin/user/fak/medien/professuren/Computer_Graphics/CG_WS_18_19/CG/06_ShaderBuffers.pdf
 using shared_ssbo_t = detail::Buffer<detail::SsboCreator>;
 
 } // namespace sd3d::memory

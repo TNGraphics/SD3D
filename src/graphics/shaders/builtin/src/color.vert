@@ -1,7 +1,7 @@
 #version 460 core
 layout (location = 0) in vec3 aPos;
 
-layout (binding = 0) uniform PositionData {
+layout (std430, binding = 0) buffer PositionData {
     mat4 model;
     mat4 view;
     mat4 projection;

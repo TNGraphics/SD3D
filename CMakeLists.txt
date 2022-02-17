@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17.3)
+cmake_minimum_required(VERSION 3.20)
 
 project(SD3D VERSION 0.1.1.0)
 set(CMAKE_CXX_STANDARD 20)
@@ -33,8 +33,12 @@ set(SHADERS
 	src/graphics/shaders/builtin/src/lit.vert
 	)
 
-execute_process(COMMAND ${PYTHON_PATH} ./build_scripts/compile_shaders.py ${GLSLC_PATH} ${PROJECT_BINARY_DIR} ${SHADERS}
-				WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+add_custom_target(
+		shader_gen ALL
+		COMMAND ${PYTHON_PATH} ./build_scripts/compile_shaders.py ${GLSLC_PATH} ${PROJECT_BINARY_DIR} ${SHADERS}
+		WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+		COMMENT "Generating Shaders"
+)
 
 find_path(BFGROUP_LYRA_INCLUDE_DIRS "lyra/arg.hpp")
 
@@ -85,7 +89,11 @@ add_executable(SD3D
 			   src/graphics/data/detail/assimp_helpers.cpp
 			   src/graphics/data/detail/AsyncAssimpNode.cpp
 			   src/objects/Transform.cpp
+			   src/objects/Object.cpp
+			   src/scene/SceneTree.cpp
 			   )
+
+add_dependencies(SD3D shader_gen)
 
 if (CMAKE_BUILD_TYPE MATCHES Debug)
 	target_compile_definitions(SD3D PUBLIC -DDEBUG=1)

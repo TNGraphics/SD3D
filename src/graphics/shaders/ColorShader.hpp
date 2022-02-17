@@ -17,7 +17,7 @@
 
 class ColorShader : public TransformShader {
 private:
-	GLint m_colorLoc;
+	sd3d::memory::shared_ssbo_t m_ssbo{};
 
 protected:
 	ColorShader(const char *vertSource, const char *fragSource);

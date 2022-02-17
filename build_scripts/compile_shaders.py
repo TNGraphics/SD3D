@@ -29,9 +29,7 @@ if __name__ == "__main__":
 
     p = os.path.join(p, 'test.txt')
     for s in shaders:
-        shader_id = ''.join(random.choices(string.ascii_uppercase +
-                                           string.digits, k=6))
-        header = f"SD3D_SHADER{s['field_name'].upper()}_{shader_id}"
+        header = f"SD3D_SHADER{s['field_name'].upper()}"
         print(f"Compiling {s['in']}")
         if not os.system(f"{args['glslc']} {s['in']} -o {s['temp_out']}"):
             with open(s['temp_out'], 'rb') as sprv:

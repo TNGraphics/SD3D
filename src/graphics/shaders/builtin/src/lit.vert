@@ -9,9 +9,9 @@ layout (location = 2) out vec2 texCoord;
 
 layout (binding = 0) uniform ColorBlock {
     mat4 model;
-    mat3 normalMatrix;
     mat4 view;
     mat4 projection;
+    mat3 normalMatrix;
 };
 
 void main()
