@@ -7,25 +7,19 @@ struct Material {
     sampler2D texture_specular2;
 };
 
-struct PointLight {
-    vec3 position;
-
-    float diffuse;
-    float specular;
-    vec3 color;
-
-    float constant;
-    float linear;
-    float quadratic;
-};
-
-struct DirLight {
-    vec3 direction;
+struct Light {
+    int mode;
+    vec3 pos;
+    vec3 dir;
 
     vec3 color;
     float ambient;
     float diffuse;
     float specular;
+
+    float constant;
+    float linear;
+    float quadratic;
 };
 
 struct ColorInfo {
@@ -47,17 +41,16 @@ layout (binding = 0) uniform ColorSettings {
 uniform Material material;
 
 #define NR_POINT_LIGHTS 4
-layout (binding = 1) uniform LightSettings {
-    DirLight dirLight;
-    PointLight pointLights[NR_POINT_LIGHTS];
+layout (binding = 1) buffer LightSettings {
+    Light lights[];
 };
 
-layout (binding = 1) uniform CamSettings {
+layout (binding = 1) buffer CamSettings {
     vec3 camPos;
 };
 
-vec3 calc_dir_light(DirLight light, vec3 normal, vec3 viewDir, ColorInfo colors);
-vec3 calc_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, ColorInfo colors);
+vec3 calc_dir_light(Light light, vec3 normal, vec3 viewDir, ColorInfo colors);
+vec3 calc_point_light(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, ColorInfo colors);
 
 ColorInfo sample_colors();
 
@@ -68,15 +61,21 @@ void main()
 
     ColorInfo colors = sample_colors();
 
-    vec3 result = calc_dir_light(dirLight, unitNormal, viewDir, colors);
-    for(int i = 0; i < NR_POINT_LIGHTS; i++) {
-        result += calc_point_light(pointLights[i], unitNormal, fragPos, viewDir, colors);
+    vec3 result = vec3(0);
+    for(int i = 0; i < lights.length(); i++) {
+        Light light = lights[i];
+        if (light.mode == 0) {
+            result += calc_dir_light(light, unitNormal, viewDir, colors);
+        } else {
+            result += calc_point_light(light, unitNormal, fragPos, viewDir, colors);
+        }
     }
+
     FragColor = vec4(result, 1.0);
 }
 
-vec3 calc_dir_light(DirLight light, vec3 normal, vec3 viewDir, ColorInfo colors) {
-    vec3 lightDir = normalize(-light.direction);
+vec3 calc_dir_light(Light light, vec3 normal, vec3 viewDir, ColorInfo colors) {
+    vec3 lightDir = normalize(-light.dir);
 
     float diff = max(dot(normal, lightDir), 0.0);
 
@@ -89,18 +88,18 @@ vec3 calc_dir_light(DirLight light, vec3 normal, vec3 viewDir, ColorInfo colors)
     return (ambient + diffuse + specular) * light.color;
 }
 
-vec3 calc_point_light(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, ColorInfo colors) {
+vec3 calc_point_light(Light light, vec3 normal, vec3 fragPos, vec3 viewDir, ColorInfo colors) {
     if(light.constant == 0.0 && light.linear == 0.0 && light.quadratic == 0.0) {
         return vec3(0.0);
     }
-    vec3 lightDir = normalize(light.position - fragPos);
+    vec3 lightDir = normalize(light.pos - fragPos);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     // attenuation
-    float distance    = length(light.position - fragPos);
+    float distance    = length(light.pos - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance +
     light.quadratic * (distance * distance));
     // combine results
