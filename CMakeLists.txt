@@ -1,15 +1,12 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(SD3D VERSION 0.1.1.0)
+project(SD3D VERSION 0.1.2.0)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if (MSVC)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
 	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-else ()
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -Werror")
 endif ()
 
 if (NOT DEFINED PYTHON_PATH)
@@ -40,32 +37,34 @@ add_custom_target(
 		COMMENT "Generating Shaders"
 )
 
-find_path(BFGROUP_LYRA_INCLUDE_DIRS "lyra/arg.hpp")
-
 add_subdirectory(external/imgui)
 
 add_subdirectory(external/glfw)
 
-find_package(spdlog CONFIG REQUIRED)
+add_subdirectory(external/spdlog)
 
-find_package(Assimp CONFIG REQUIRED)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF CACHE BOOL "enable X functionality")
+add_subdirectory(external/assimp)
 
-find_package(gsl-lite CONFIG REQUIRED)
+add_subdirectory(external/glad)
+
+add_subdirectory(external/gsl-lite)
+
+add_subdirectory(external/xenium)
 
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
 
 # TODO get from vcpkg
-include_directories(${STBI_PATH})
+include_directories(external/stb)
 
-include_directories(${GLAD_PATH}/include)
-include_directories(${GLM_PATH})
+include_directories(external/glad/include)
+include_directories(external/glm)
 include_directories(external/imgui)
 
 configure_file(src/include/version.h.in version.h)
 
 add_executable(SD3D
-			   ${GLAD_PATH}/src/glad.c
 			   src/main.cpp
 			   src/graphics/shaders/Shader.cpp
 			   src/graphics/data/Texture.cpp
@@ -89,8 +88,8 @@ add_executable(SD3D
 			   src/graphics/data/detail/assimp_helpers.cpp
 			   src/graphics/data/detail/AsyncAssimpNode.cpp
 			   src/objects/Transform.cpp
-			   src/objects/Object.cpp
-			   src/scene/SceneTree.cpp
+#			   src/objects/Object.cpp
+#			   src/scene/SceneTree.cpp
 			   )
 
 add_dependencies(SD3D shader_gen)
@@ -103,11 +102,21 @@ if(DEFINED MEMORY_DEBUG AND MEMORY_DEBUG)
 	target_compile_definitions(SD3D PUBLIC -DMEM_DEBUG)
 endif()
 
+if (MSVC)
+	target_compile_options(SD3D PRIVATE /W4 /WX)
+else ()
+	target_compile_options(SD3D PRIVATE -std=c++20)
+#	target_compile_options(SD3D PRIVATE -Wall -Wextra -Wpedantic)
+#	target_compile_options(SD3D PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif ()
+
 target_include_directories(SD3D PRIVATE
 						   ${PROJECT_BINARY_DIR}
-						   ${BFGROUP_LYRA_INCLUDE_DIRS}
+						   external/glad/include
 						   external/imgui/imgui
 						   external/xenium
+		                   external/gsl-lite/include
+						   external/lyra/include
 						   )
 
 target_link_libraries(SD3D PRIVATE
@@ -117,4 +126,5 @@ target_link_libraries(SD3D PRIVATE
 					  imgui
 					  assimp::assimp
 					  gsl::gsl-lite-v1
+					  glad
 					  )

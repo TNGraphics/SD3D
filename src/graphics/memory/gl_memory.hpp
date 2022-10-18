@@ -37,10 +37,10 @@ public:
 	explicit Buffer(buffer_ptr_t bufferPtr) : m_buffer{std::move(bufferPtr)} {}
 	Buffer(const Buffer &) = default;
 	Buffer(Buffer &&) noexcept = default;
-	explicit Buffer(nullptr_t) : m_buffer{nullptr} {}
+	explicit Buffer(std::nullptr_t) : m_buffer{nullptr} {}
 	Buffer &operator=(const Buffer &) = default;
 	Buffer &operator=(Buffer &&) noexcept = default;
-	Buffer &operator=(nullptr_t) {
+	Buffer &operator=(std::nullptr_t) {
 		reset();
 		return *this;
 	}

@@ -1,7 +1,5 @@
 import os
 import argparse
-import string
-import random
 import shutil
 
 if __name__ == "__main__":
